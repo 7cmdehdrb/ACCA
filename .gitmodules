@@ -10,3 +10,6 @@
 [submodule "teb_local_planner"]
 	path = teb_local_planner
 	url = https://github.com/rst-tu-dortmund/teb_local_planner.git
+[submodule "robot_localization"]
+	path = robot_localization
+	url = https://github.com/cra-ros-pkg/robot_localization.git
