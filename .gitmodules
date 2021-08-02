@@ -1,3 +1,6 @@
 [submodule "odometry"]
 	path = odometry
 	url = https://github.com/7cmdehdrb/odometry.git
+[submodule "ROS_erp42_driver"]
+	path = ROS_erp42_driver
+	url = https://github.com/kemjensak/ROS_erp42_driver.git
