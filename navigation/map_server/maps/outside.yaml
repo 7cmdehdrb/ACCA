@@ -1,0 +1,8 @@
+image: /home/acca/catkin_ws/src/navigation/map_server/maps/outside.pgm
+resolution: 0.500000
+# origin: [-128.000000, -256.000000, -nan]
+origin: [-128.000000, -256.000000, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+
