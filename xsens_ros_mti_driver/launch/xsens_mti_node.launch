@@ -1,0 +1,7 @@
+<launch>
+	<arg name="port" default="/dev/ttyUSB0" />
+	<node name="xsens_mti_node" pkg="xsens_mti_driver" type="xsens_mti_node" output="screen">
+		<param name="port" type="str" value="$(arg port)" />
+		<rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml" />
+	</node>
+</launch>
