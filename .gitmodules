@@ -1,21 +1,21 @@
-[submodule "odometry"]
-	path = odometry
-	url = https://github.com/7cmdehdrb/odometry.git
-[submodule "ROS_erp42_driver"]
-	path = ROS_erp42_driver
-	url = https://github.com/kemjensak/ROS_erp42_driver.git
-[submodule "xsens_ros_mti_driver"]
-	path = xsens_ros_mti_driver
-	url = https://github.com/esteve/xsens_ros_mti_driver.git
-[submodule "teb_local_planner"]
-	path = teb_local_planner
-	url = https://github.com/rst-tu-dortmund/teb_local_planner.git
-[submodule "robot_localization"]
-	path = robot_localization
-	url = https://github.com/cra-ros-pkg/robot_localization.git
-[submodule "navigation"]
-	path = navigation
-	url = https://github.com/ros-planning/navigation.git
-[submodule "follow_waypoints"]
-	path = follow_waypoints
-	url = https://github.com/danielsnider/follow_waypoints.git
+# [submodule "odometry"]
+# 	path = odometry
+# 	url = https://github.com/7cmdehdrb/odometry.git
+# [submodule "ROS_erp42_driver"]
+# 	path = ROS_erp42_driver
+# 	url = https://github.com/kemjensak/ROS_erp42_driver.git
+# [submodule "xsens_ros_mti_driver"]
+# 	path = xsens_ros_mti_driver
+# 	url = https://github.com/esteve/xsens_ros_mti_driver.git
+# [submodule "teb_local_planner"]
+# 	path = teb_local_planner
+# 	url = https://github.com/rst-tu-dortmund/teb_local_planner.git
+# [submodule "robot_localization"]
+# 	path = robot_localization
+# 	url = https://github.com/cra-ros-pkg/robot_localization.git
+# [submodule "navigation"]
+# 	path = navigation
+# 	url = https://github.com/ros-planning/navigation.git
+# [submodule "follow_waypoints"]
+# 	path = follow_waypoints
+# 	url = https://github.com/danielsnider/follow_waypoints.git
