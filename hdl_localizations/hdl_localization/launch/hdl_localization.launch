@@ -17,6 +17,9 @@
   <arg name="robot_odom_frame_id" value="odom" />
   <arg name="plot_estimation_errors" value="false" />
 
+  <!-- My arg -->
+  <arg name="map_file" default="$(find hdl_localization)/data/Globalmap2.pcd" />
+
   <include file="$(find hdl_global_localization)/launch/hdl_global_localization.launch" if="$(arg use_global_localization)" />
 
   <!-- in case you use velodyne_driver, comment out the following line -->
@@ -24,7 +27,7 @@
 
     <!-- globalmap_server_nodelet -->
     <node pkg="nodelet" type="nodelet" name="globalmap_server_nodelet" args="load hdl_localization/GlobalmapServerNodelet $(arg nodelet_manager)">
-      <param name="globalmap_pcd" value="$(find hdl_localization)/data/Globalmap2.pcd" />
+      <param name="globalmap_pcd" value="$(arg map_file)" />
       <param name="convert_utm_to_local" value="false" />
       <param name="downsample_resolution" value="0.1" />
     </node>
