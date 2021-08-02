@@ -1,6 +1,0 @@
-<launch> 
-
-    <arg name="map_file" default="$(find tamiya_jetracer)/maps/future.yaml"/>
-    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
-
-</launch>
