@@ -16,3 +16,6 @@
 [submodule "navigation"]
 	path = navigation
 	url = https://github.com/ros-planning/navigation.git
+[submodule "follow_waypoints"]
+	path = follow_waypoints
+	url = https://github.com/danielsnider/follow_waypoints.git
