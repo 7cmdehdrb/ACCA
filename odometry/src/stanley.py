@@ -31,16 +31,16 @@ class PathFinder(object):
         self.ys = [0.0, 0.0]
 
     def pathCallback(self, msg):
-        data = msg
-
         poses = msg.poses
 
         if self.counter is True:
+            # print(msg.header)
 
             self.xs = [0.0]
             self.ys = [0.0]
 
             for pose in poses:
+                print(pose)
                 temp_x = pose.pose.position.x
                 temp_y = pose.pose.position.y
 
@@ -51,8 +51,9 @@ class PathFinder(object):
 
                 self.xs.append(temp_x)
                 self.ys.append(temp_y)
+                self.counter = False
+                break
 
-        if self.counter is True:
             self.counter = False
 
 
@@ -166,31 +167,52 @@ def calc_target_index(state, cx, cy):
     target_idx = np.argmin(d)
 
     # Project RMS error onto front axle vector
-    front_axle_vec = [-np.cos(state.yaw + np.pi / 2),
-                      -np.sin(state.yaw + np.pi / 2)]
+    front_axle_vec = [-np.cos(state.yaw + np.pi / 2), -
+                      np.sin(state.yaw + np.pi / 2)]
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
     return target_idx, error_front_axle
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     rospy.init_node("stanley_method")
 
     # Initial state
     state = State(x=-0.0, y=0, yaw=np.radians(0.0), v=0.0)
     path = PathFinder()
 
-    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
-    rospy.Subscriber("/move_base/TebLocalPlannerROS/global_plan",
-                     Path, path.pathCallback)
+    rospy.Subscriber("/my_odom", Odometry, state.odometryCallback)
+    rospy.Subscriber(
+        "/move_base/TebLocalPlannerROS/global_plan", Path, path.pathCallback
+    )
 
     steer_pub = rospy.Publisher("steer_pub", Float32, queue_size=1)
 
-    ax = path.xs
-    ay = path.ys
+    # ax = path.xs
+    # ay = path.ys
+
+    ax = [
+        0.0,
+        -12.502059936523438,
+        -25.434463500976562,
+        -33.93553161621094,
+        -46.96923065185547,
+        -56.460845947265625,
+    ]
+    ay = [
+        0.0,
+        -14.23615837097168,
+        -29.223724365234375,
+        -35.460575103759766,
+        -31.393835067749023,
+        -21.68545913696289,
+    ]
 
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
         ax, ay, ds=0.1)
+
+    # print(cx)
+    # print(cy)
 
     last_idx = len(cx) - 1
 

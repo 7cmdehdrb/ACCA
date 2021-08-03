@@ -8,7 +8,7 @@
 
         <!-- IMU -->
         <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
-            <arg name="port" value="/dev/ttyUSB0" />
+            <arg name="port" value="/dev/ttyUSB1" />
         </include>
 
         <!-- LiDAR -->
@@ -18,7 +18,9 @@
     <!-- Sensors end -->
         
     <!-- Odometry -->
-    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
+    <!-- <node pkg="erp42_driver" name="erp42_driver" type="erp42_driver.py" />
+    <node pkg="erp42_driver" name="erp42_serial" type="erp42_serial.py" /> -->
+    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" /> -->
     <!-- <include file="$(find odometry)/launch/odometry.launch" /> -->
     <!-- <include file="$(find robot_localization)/launch/navsat_transform_template.launch" /> -->
 
@@ -31,6 +33,7 @@
     <include file="$(find move_base)/move_base_real.launch" />
 
     <!-- Model -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" /> -->
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
 
 </launch>
