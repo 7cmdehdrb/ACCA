@@ -3,13 +3,13 @@
 ##  - port + baudrate information
 ##  - nothing: the driver scans for devices and selects the first found.
 # device_id: '077007EF' # uppercase hex string
-port: '/dev/ttyUSB0'
+port: "/dev/ttyUSB0"
 # baudrate: 921600 # non necessary for some devices
 
 ## Log file (optional), placed in ~/.ros/ otherwise use absolute path
 # log_file: log.mtb
 
-publisher_queue_size: 5
+publisher_queue_size: 1
 
 # TF transform frame_id (default: imu_link), you may want to change it if you use multiple devices
 frame_id: "imu_link"
@@ -35,9 +35,6 @@ pub_twist: trueglobal x_data, y_data, z_data, w_data(optional)
 orientation_stddev: [0.00349066, 0.00872665, 0.0174533] # [rad]
 # magnetic_field_stddev: [0, 0, 0] # [Tesla]
 
-
 #orientation_stddev: [0.0006981317, 0.004363323, 0.0174533] #degree
 angular_velocity_stddev: [0.00006, 0.00006, 0.00006]
 linear_acceleration_stddev: [0.0001, 0.0001, 0.00015]
-
-
