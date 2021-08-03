@@ -42,6 +42,7 @@
 #include <nav_core/base_global_planner.h>
 
 #include <geometry_msgs/PoseStamped.h>
+#include <angles/angles.h>
 
 #include <base_local_planner/world_model.h>
 #include <base_local_planner/costmap_model.h>
@@ -63,11 +64,6 @@ namespace carrot_planner{
        * @param  costmap_ros A pointer to the ROS wrapper of the costmap to use for planning
        */
       CarrotPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
-
-      /**
-       * @brief Destructor
-       */
-      ~CarrotPlanner();
 
       /**
        * @brief  Initialization function for the CarrotPlanner

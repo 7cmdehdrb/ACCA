@@ -666,6 +666,7 @@ namespace move_base {
     lock.unlock();
 
     current_goal_pub_.publish(goal);
+    std::vector<geometry_msgs::PoseStamped> global_plan;
 
     ros::Rate r(controller_frequency_);
     if(shutdown_costmaps_){
@@ -766,7 +767,7 @@ namespace move_base {
       ros::WallTime start = ros::WallTime::now();
 
       //the real work on pursuing a goal is done here
-      bool done = executeCycle(goal);
+      bool done = executeCycle(goal, global_plan);
 
       //if we're done, then we'll return from execute
       if(done)
@@ -799,7 +800,7 @@ namespace move_base {
     return hypot(p1.pose.position.x - p2.pose.position.x, p1.pose.position.y - p2.pose.position.y);
   }
 
-  bool MoveBase::executeCycle(geometry_msgs::PoseStamped& goal){
+  bool MoveBase::executeCycle(geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& global_plan){
     boost::recursive_mutex::scoped_lock ecl(configuration_mutex_);
     //we need to be able to publish velocity commands
     geometry_msgs::Twist cmd_vel;

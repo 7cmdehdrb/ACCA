@@ -3,10 +3,15 @@
     Make sure to use different param files for each sensor. -->
     <!-- <group ns="sensor_1"> -->
 
-        <!-- <node pkg="tf" type="static_transform_publisher" name="imu_publisher" args="0.0 0.0 0.0 0.0 0.0 0 base_link world 10" /> -->
+        <!-- <node pkg="tf" type="static_transform_publisher" name="imu_publisher" args="0.52 0.0 0.48 0.0 0.0 0 base_link imu_link 10" /> -->
 
-        <node  name="xsens_mti_node" pkg="xsens_mti_driver" type="xsens_mti_node" output="screen">
+        <!-- 75 - 27 -->
+
+        <arg name="port" default="/dev/ttyUSB0" /> 
+
+        <node  name="xsens_mti_node" pkg="xsens_mti_driver" type="xsens_mti_node" output="screen" >
             <rosparam command="load" file="$(find xsens_mti_driver)/param/xsens_mti_node.yaml" />
+            <param name="port" value="$(arg port)"/>
             <!-- <param name="angular_velocity_stddev" type="double" value="0.001" /> -->
         </node>
     <!-- </group> -->

@@ -2,19 +2,12 @@
 Changelog for package fake_localization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.17.1 (2020-08-27)
+1.16.7 (2020-08-27)
 -------------------
 * Fix `#796 <https://github.com/ros-planning/navigation/issues/796>`_ (`#1017 <https://github.com/ros-planning/navigation/issues/1017>`_)
   Use ros::Time(0) instead of timestamp in message so as not to fail to lookupTransform.
-* fix isolated build, `#995 <https://github.com/ros-planning/navigation/issues/995>`_ (`#997 <https://github.com/ros-planning/navigation/issues/997>`_)
+* fix isolated build, `#995 <https://github.com/ros-planning/navigation/issues/995>`_ (`#996 <https://github.com/ros-planning/navigation/issues/996>`_)
 * Contributors: Michael Ferguson, Ryo KOYAMA
-
-1.17.0 (2020-04-02)
--------------------
-* Merge pull request `#982 <https://github.com/ros-planning/navigation/issues/982>`_ from ros-planning/noetic_prep
-  Noetic Migration
-* increase required cmake version
-* Contributors: Michael Ferguson
 
 1.16.6 (2020-03-18)
 -------------------

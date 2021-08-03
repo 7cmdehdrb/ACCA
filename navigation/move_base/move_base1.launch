@@ -1,0 +1,44 @@
+<launch>
+
+    <master auto="start"/> 
+ <!-- Run the map server --> 
+    <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find my_map_package)/my_map.pgm my_map_resolution"/> -->
+    <!-- <arg name="map_file" default="$(find tamiya_jetracer)/maps/future.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" /> -->
+    <node pkg="lms1xx" type="LMS1xx_node" name="lms1xx" output="screen">
+      <param name="sensor_param" value="param_value" />
+   </node> -->
+ <!--- Run AMCL --> 
+    <include file="$(find amcl)/launch/amcl.launch" />
+
+   <!-- <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find my_robot_name_2dnav)/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find my_robot_name_2dnav)/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find my_robot_name_2dnav)/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find my_robot_name_2dnav)/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find my_robot_name_2dnav)/base_local_planner_params.yaml" command="load" />
+ </node> -->
+
+
+ <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+   <!-- <arg name="scan" value="$(arg scan)" /> -->
+
+   <rosparam file="$(find move_base)/mybot/costmap_common_params1.yaml" command="load" ns="global_costmap" /> 
+   <rosparam file="$(find move_base)/mybot/costmap_common_params1.yaml" command="load" ns="local_costmap" />
+   <rosparam file="$(find move_base)/mybot/local_costmap_params1.yaml" command="load" />
+   <rosparam file="$(find move_base)/mybot/global_costmap_params1.yaml" command="load" />
+   <rosparam file="$(find move_base)/mybot/base_local_planner_params.yaml" command="load" />
+   <rosparam file="$(find move_base)/mybot/move_base_params.yaml" command="load" />
+   </node>
+
+   <node pkg="odom" type="odom" name="odom" output="screen">
+      <param name="odom_param" value="param_value" />
+   </node>
+   <!-- <node pkg="" type="transform_configuration_type" name="transform_configuration_name" output="screen">
+      <param name="transform_configuration_param" value="param_value" />
+   </node> -->
+  
+   <include file="$(find steer_bot)/launch/view_model.launch">
+     <arg name="model" value="$(find steer_bot)/urdf/steer_bot.urdf.xacro"/>
+  </include>
+</launch> 

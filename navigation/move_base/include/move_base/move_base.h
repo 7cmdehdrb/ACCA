@@ -97,9 +97,10 @@ namespace move_base {
       /**
        * @brief  Performs a control cycle
        * @param goal A reference to the goal to pursue
+       * @param global_plan A reference to the global plan being used
        * @return True if processing of the goal is done, false otherwise
        */
-      bool executeCycle(geometry_msgs::PoseStamped& goal);
+      bool executeCycle(geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& global_plan);
 
     private:
       /**

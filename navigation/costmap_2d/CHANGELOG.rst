@@ -2,22 +2,15 @@
 Changelog for package costmap_2d
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.17.1 (2020-08-27)
+1.16.7 (2020-08-27)
 -------------------
 * add explicit call to ros::Timer::stop in the destructor (`#984 <https://github.com/ros-planning/navigation/issues/984>`_)
   Co-authored-by: Dima Dorezyuk <dorezyuk@magazino.eu>
-* Exposing stopped\_ variable in costmap2D_ros with the getter function isStopped (`#913 <https://github.com/ros-planning/navigation/issues/913>`_)
-* use const for getter methods (`#948 <https://github.com/ros-planning/navigation/issues/948>`_)
-* Contributors: Dima Dorezyuk, Marco Bassa, Yuki Furuta
-
-1.17.0 (2020-04-02)
--------------------
-* Merge pull request `#982 <https://github.com/ros-planning/navigation/issues/982>`_ from ros-planning/noetic_prep
-  Noetic Migration
-* fix invalid memory access
-* attempt to get test to run
-* increase required cmake version
-* Contributors: Michael Ferguson
+* backport noetic memory fixes (`#983 <https://github.com/ros-planning/navigation/issues/983>`_)
+  spent some time with valgrind to fix this test,
+  was failing intermittently in melodic, all the
+  time in noetic.
+* Contributors: Dima Dorezyuk, Michael Ferguson
 
 1.16.6 (2020-03-18)
 -------------------

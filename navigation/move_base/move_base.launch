@@ -1,70 +1,55 @@
 <launch>
+   
+   
+   <!-- <master auto="start"/>  -->
+   <!-- Run the map server --> 
+   <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find my_map_package)/my_map.pgm my_map_resolution"/> -->
+   <!-- <arg name="map_file" default="$(find tamiya_jetracer)/maps/future.yaml"/>
+      <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" /> -->
+      <node pkg="lms1xx" type="LMS1xx_node" name="lms1xx" output="screen">
+         <param name="sensor_param" value="param_value" />
+      </node> 
+      <node pkg="laser_filters" type="scan_to_scan_filter_chain"
+      name="laser_filter">
+    <rosparam command="load" file="$(find laser_filters)/src/my_laser_config.yaml" />
+    <remap from="angle" to="base_scan" />
+   </node>
+      <!--- Run AMCL --> 
+      <include file="$(find amcl)/launch/amcl4.launch" />
+      
+   <!-- <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find my_robot_name_2dnav)/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+    <rosparam file="$(find my_robot_name_2dnav)/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find my_robot_name_2dnav)/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find my_robot_name_2dnav)/global_costmap_params.yaml" command="load" /> 
+    <rosparam file="$(find my_robot_name_2dnav)/base_local_planner_params.yaml" command="load" />
+ </node> -->
 
-    <!-- start lms1xx -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="laser_broadcaster" args="0 0 0 0 0 0 base_link laser 10"/> -->
-    
-    <!-- <node pkg="lms1xx" type="LMS1xx_node" name="lms1xx" output="screen">
-        <param name="sensor_param" value="param_value" />
-        <remap from="scan" to="lms_scan" />
-    </node> -->
 
-    <!-- start lms1xx angle filter change-->
-    <!-- <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
-        <rosparam command="load" file="$(find laser_filters)/src/my_laser_config.yaml" />
-        <remap from="angle" to="base_scan" />
-    </node> -->
+ <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+   <remap from="scan" to="scan_filtered"/>
+   <!-- <arg name="scan" value="$(arg scan)" /> -->
 
-    <!-- <arg name="map_file" default="$(find map_server)/maps/outside.yaml"/>
-    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" /> -->
+   <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="global_costmap" /> 
+   <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="local_costmap" />
+   <rosparam file="$(find move_base)/mybot/local_costmap_params.yaml" command="load" />
+   <rosparam file="$(find move_base)/mybot/global_costmap_params.yaml" command="load" />
 
-    <node pkg="move_base" type="move_base" respawn="true" name="move_base" output="screen">
-        <!-- <remap from="scan" to="lms_scan"/> -->
-        <remap from="base_scan" to="scan"/>
-        <remap from="map" to="/hdl_global_localization/bbs/gridmap" />
 
-        <!-- Planner param yaml -->
 
-        <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find move_base)/mybot/local_costmap_params.yaml" command="load" />
-        <rosparam file="$(find move_base)/mybot/global_costmap_params.yaml" command="load" />
-        <rosparam file="$(find move_base)/yaml/global_planner_params.yaml" command="load" />
-        <rosparam file="$(find move_base)/yaml/teb_local_planner_params.yaml" command="load" />
+   
+   <rosparam file="$(find move_base)/mybot/base_local_planner_params.yaml" command="load" />
+   <rosparam file="$(find move_base)/mybot/move_base_params.yaml" command="load" />
+   </node>
 
-        <!-- Movebase param ros -->
-
-        <param name="base_global_planner" type="string" value="navfn/NavfnROS" />
-        <param name="base_local_planner" type="string" value="teb_local_planner/TebLocalPlannerROS" />
-        
-        <!-- The rate in Hz at which to run the control loop and send velocity commands to the base.  -->
-        <param name="controller_frequency" type="double" value="20.0" />
-
-        <!-- How long the planner will wait in seconds in an attempt to find a valid plan before space-clearing operations are performed.  -->
-        <param name="planner_patience" type="double" value="5.0" />
-
-        <!-- How long the controller will wait in seconds without receiving a valid control before space-clearing operations are performed.  -->
-        <param name="controller_patience" type="double" value="15.0" />
-        
-        <!-- The distance away from the robot in meters beyond which obstacles will be cleared from the costmap when attempting to clear space in the map. Note, this parameter is only used when the default recovery behaviors are used for move_base.  -->
-        <param name="conservative_reset_dist" type="double" value="3.0" />
-        
-        <!-- Whether or not to enable the move_base recovery behaviors to attempt to clear out space.  -->
-        <param name="recovery_behavior_enabled" type="bool" value="true" />
-
-        <!-- Determines whether or not the robot will attempt an in-place rotation when attempting to clear out space. Note: This parameter is only used when the default recovery behaviors are in use, meaning the user has not set the recovery_behaviors parameter to anything custom.  -->
-        <param name="clearing_rotation_allowed" type="bool" value="true" />
-
-        <!-- Determines whether or not to shutdown the costmaps of the node when move_base is in an inactive state  -->
-        <param name="shutdown_costmaps" type="bool" value="false" />
-
-        <!-- How long in seconds to allow for oscillation before executing recovery behaviors. A value of 0.0 corresponds to an infinite timeout. New in navigation 1.3.1 -->
-        <param name="oscillation_timeout" type="double" value="0.0" />
-
-        <!-- How far in meters the robot must move to be considered not to be oscillating. Moving this far resets the timer counting up to the ~oscillation_timeout New in navigation 1.3.1 -->
-        <param name="oscillation_distance" type="double" value="0.5" />
-
-        <!-- The rate in Hz at which to run the global planning loop. If the frequency is set to 0.0, the global planner will only run when a new goal is received or the local planner reports that its path is blocked. New in navigation 1.6.0 -->
-        <param name="planner_frequency" type="double" value="20.0" />
-    </node>
-
+   <node pkg="odom" type="odom" name="odom" output="screen">
+      <param name="odom_param" value="param_value" />
+   </node>
+   <!-- <node pkg="" type="transform_configuration_type" name="transform_configuration_name" output="screen">
+      <param name="transform_configuration_param" value="param_value" />
+   </node> -->
+  
+   <include file="$(find steer_bot)/launch/view_model.launch">
+     <arg name="model" value="$(find steer_bot)/urdf/steer_bot.urdf.xacro"/>
+  </include>
 </launch> 

@@ -150,6 +150,4 @@ int main(int argc, char** argv)
   g_marker_ns = n.resolveName("voxel_grid");
 
   ros::spin();
-
-  return 0;
 }

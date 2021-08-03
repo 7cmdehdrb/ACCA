@@ -66,9 +66,9 @@ LayeredCostmap::LayeredCostmap(std::string global_frame, bool rolling_window, bo
     inscribed_radius_(0.1)
 {
   if (track_unknown)
-    costmap_.setDefaultValue(NO_INFORMATION);
+    costmap_.setDefaultValue(255);
   else
-    costmap_.setDefaultValue(FREE_SPACE);
+    costmap_.setDefaultValue(0);
 }
 
 LayeredCostmap::~LayeredCostmap()
@@ -115,8 +115,6 @@ void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
   for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
        ++plugin)
   {
-    if(!(*plugin)->isEnabled())
-      continue;
     double prev_minx = minx_;
     double prev_miny = miny_;
     double prev_maxx = maxx_;
@@ -150,8 +148,7 @@ void LayeredCostmap::updateMap(double robot_x, double robot_y, double robot_yaw)
   for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
        ++plugin)
   {
-    if((*plugin)->isEnabled())
-      (*plugin)->updateCosts(costmap_, x0, y0, xn, yn);
+    (*plugin)->updateCosts(costmap_, x0, y0, xn, yn);
   }
 
   bx0_ = x0;
@@ -168,8 +165,7 @@ bool LayeredCostmap::isCurrent()
   for (vector<boost::shared_ptr<Layer> >::iterator plugin = plugins_.begin(); plugin != plugins_.end();
       ++plugin)
   {
-    if((*plugin)->isEnabled())
-      current_ = current_ && (*plugin)->isCurrent();
+    current_ = current_ && (*plugin)->isCurrent();
   }
   return current_;
 }

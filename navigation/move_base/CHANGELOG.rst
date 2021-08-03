@@ -2,23 +2,15 @@
 Changelog for package move_base
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.17.1 (2020-08-27)
+1.16.7 (2020-08-27)
 -------------------
-* Fix `#933 <https://github.com/ros-planning/navigation/issues/933>`_ (`#988 <https://github.com/ros-planning/navigation/issues/988>`_)
-* Contributors: David V. Lu!!
-
-1.17.0 (2020-04-02)
--------------------
-* Merge pull request `#982 <https://github.com/ros-planning/navigation/issues/982>`_ from ros-planning/noetic_prep
-  Noetic Migration
-* increase required cmake version
 * move_base: Add options for make_plan service (`#981 <https://github.com/ros-planning/navigation/issues/981>`_)
   Adds the following two parameters for the ~make_plan service:
   1. make_plan_clear_costmap
   Whether or not to clear the global costmap on make_plan service call.
   2. make_plan_add_unreachable_goal
   Whether or not to add the original goal to the path if it is unreachable in the make_plan service call.
-* Contributors: Michael Ferguson, nxdefiant
+* Contributors: nxdefiant
 
 1.16.6 (2020-03-18)
 -------------------

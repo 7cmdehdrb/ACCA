@@ -95,28 +95,10 @@ public:
     return current_;
   }
 
-  /**
-   * @brief getter if the current layer is enabled.
-   *
-   * The user may enable/disable a layer though dynamic reconfigure.
-   * Disabled layers won't receive calls to
-   * - Layer::updateCosts
-   * - Layer::updateBounds
-   * - Layer::isCurrent
-   * from the LayeredCostmap.
-   *
-   * Calls to Layer::activate, Layer::deactivate and Layer::reset won't be
-   * blocked.
-   */
-  inline bool isEnabled() const noexcept
-  {
-    return enabled_;
-  }
-
   /** @brief Implement this to make this layer match the size of the parent costmap. */
   virtual void matchSize() {}
 
-  inline const std::string& getName() const noexcept
+  std::string getName() const
   {
     return name_;
   }
@@ -138,7 +120,7 @@ protected:
 
   LayeredCostmap* layered_costmap_;
   bool current_;
-  bool enabled_;
+  bool enabled_;  ///< Currently this var is managed by subclasses. TODO: make this managed by this class and/or container class.
   std::string name_;
   tf2_ros::Buffer *tf_;
 

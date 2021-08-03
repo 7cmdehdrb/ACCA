@@ -1,9 +1,8 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 2.8.3)
 project(carrot_planner)
 
 find_package(catkin REQUIRED
   COMPONENTS
-    angles
     base_local_planner
     costmap_2d
     nav_core
@@ -24,7 +23,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES carrot_planner
   CATKIN_DEPENDS
-    angles
     base_local_planner
     costmap_2d
     nav_core

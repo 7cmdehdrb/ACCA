@@ -1,5 +1,13 @@
 global_costmap:
   global_frame: map
   robot_base_frame: base_link
-  update_frequency: 100.0
-  static_map: true
+  update_frequency: 5.0
+  static_map: false
+  # plugins:
+  #   - { name: static_layer, type: "costmap_2d::StaticLayer" }
+  # - { name: obstacles_layer, type: "costmap_2d::VoxelLayer" }
+  # - { name: inflation_layer, type: "costmap_2d::InflationLayer" }
+
+  static_layer:
+    map_topic: /hdl_global_localization/bbs/gridmap
+    topic: /hdl_global_localization/bbs/gridmap

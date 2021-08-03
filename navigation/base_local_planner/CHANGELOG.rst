@@ -2,17 +2,10 @@
 Changelog for package base_local_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.17.1 (2020-08-27)
+1.16.7 (2020-08-27)
 -------------------
 * occdist_scale should not be scaled by the costmap resolution as it doesn't multiply a value that includes a distance. (`#1000 <https://github.com/ros-planning/navigation/issues/1000>`_)
 * Contributors: wjwagner
-
-1.17.0 (2020-04-02)
--------------------
-* Merge pull request `#982 <https://github.com/ros-planning/navigation/issues/982>`_ from ros-planning/noetic_prep
-  Noetic Migration
-* increase required cmake version
-* Contributors: Michael Ferguson
 
 1.16.6 (2020-03-18)
 -------------------

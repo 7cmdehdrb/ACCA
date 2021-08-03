@@ -38,7 +38,7 @@
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-
+#include <ros/ros.h>
 #include <ros/console.h>
 
 namespace voxel_grid {
@@ -221,4 +221,5 @@ namespace voxel_grid {
       printf("|\n");
     } 
   }
+
 };
