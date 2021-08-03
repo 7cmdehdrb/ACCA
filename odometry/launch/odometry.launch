@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="erp42_driver" name="erp42_serial" type="erp42_serial.py" />
+    <node pkg="erp42_driver" name="erp42_driver" type="erp42_driver.py" />
+    <node pkg="odometry" name="stanley_method" type="stanley.py" output="screen" />
+</launch>

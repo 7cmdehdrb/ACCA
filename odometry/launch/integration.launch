@@ -1,0 +1,36 @@
+<launch>
+
+    <!-- Sensors -->
+
+        <!-- GPS -->
+        <!-- <include file="$(find ublox_gps)/launch/ublox_zed-f9p.launch" /> -->
+        <!-- <include file="$(find ntrip_ros)/launch/ntrip_ros.launch" /> -->
+
+        <!-- IMU -->
+        <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+            <arg name="port" value="/dev/ttyUSB0" />
+        </include>
+
+        <!-- LiDAR -->
+        <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+        <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" />
+
+    <!-- Sensors end -->
+        
+    <!-- Odometry -->
+    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
+    <!-- <include file="$(find odometry)/launch/odometry.launch" /> -->
+    <!-- <include file="$(find robot_localization)/launch/navsat_transform_template.launch" /> -->
+
+    <!-- Localization -->
+    <include file="$(find hdl_localization)/launch/hdl_localization.launch">
+        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+    </include>
+
+    <!-- MoveBase -->
+    <include file="$(find move_base)/move_base_real.launch" />
+
+    <!-- Model -->
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+
+</launch>
