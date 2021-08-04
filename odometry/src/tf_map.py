@@ -8,6 +8,11 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose, Point, Vector3, Twist, Quaternion
 from model import erp42
 
+"""
+    TF test:
+    change odom frame => map frame
+"""
+
 
 class TF_map(object):
     def __init__(self):

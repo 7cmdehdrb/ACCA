@@ -11,10 +11,9 @@ import rospy
 import math as m
 import numpy as np
 import tf
-from nav_msgs.msg import Odometry
-from nav_msgs.msg import Path
-from std_msgs.msg import Float32
-import cubic_spline_planner
+from nav_msgs.msg import Odometry, Path
+from geometry_msgs.msg import PoseStamped, Twist
+from loadPose import LoadPose
 
 
 k = 0.5  # control gain
@@ -27,34 +26,41 @@ class PathFinder(object):
     def __init__(self):
         super(PathFinder, self).__init__()
         self.counter = True
-        self.xs = [0.0, 100.0]
-        self.ys = [0.0, 0.0]
+
+        self.path = Path()
+
+        self.cx = [0.0, 0.01]
+        self.cy = [0.0, 0.0]
+        self.cyaw = [0.0, 0.0]
 
     def pathCallback(self, msg):
-        poses = msg.poses
-
         if self.counter is True:
-            # print(msg.header)
+            self.path = msg
+            self.cx = []
+            self.cy = []
+            self.cyaw = []
 
-            self.xs = [0.0]
-            self.ys = [0.0]
+            poses = self.path.poses
 
             for pose in poses:
-                print(pose)
-                temp_x = pose.pose.position.x
-                temp_y = pose.pose.position.y
+                x = pose.pose.position.x
+                y = pose.pose.position.y
 
-                temp_quat_x = pose.pose.orientation.x
-                temp_quat_y = pose.pose.orientation.y
-                temp_quat_z = pose.pose.orientation.z
-                temp_quat_w = pose.pose.orientation.w
+                ori_x = pose.pose.orientation.x
+                ori_y = pose.pose.orientation.y
+                ori_z = pose.pose.orientation.z
+                ori_w = pose.pose.orientation.w
 
-                self.xs.append(temp_x)
-                self.ys.append(temp_y)
-                self.counter = False
-                break
+                (_, _, yaw) = tf.transformations.euler_from_quaternion(
+                    [ori_x, ori_y, ori_z, ori_w])
 
-            self.counter = False
+                self.cx.append(x)
+                self.cy.append(y)
+                self.cyaw.append(yaw)
+
+            if len(self.cx) != 0 and len(self.cy) != 0 and len(self.cyaw):
+                if len(self.cx) == len(self.cy) and len(self.cx) == len(self.cyaw):
+                    self.counter = False
 
 
 class State(object):
@@ -69,6 +75,7 @@ class State(object):
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
         """Instantiate the object."""
         super(State, self).__init__()
+        self.data = Odometry()
         self.x = x
         self.y = y
         self.yaw = yaw
@@ -77,15 +84,15 @@ class State(object):
         self.dy = self.v * m.sin(self.yaw)
 
     def odometryCallback(self, msg):
-        data = msg
+        self.data = msg
 
-        self.x = data.pose.pose.position.x
-        self.y = data.pose.pose.position.y
+        self.x = self.data.pose.pose.position.x
+        self.y = self.data.pose.pose.position.y
 
-        x = data.pose.pose.orientation.x
-        y = data.pose.pose.orientation.y
-        z = data.pose.pose.orientation.z
-        w = data.pose.pose.orientation.w
+        x = self.data.pose.pose.orientation.x
+        y = self.data.pose.pose.orientation.y
+        z = self.data.pose.pose.orientation.z
+        w = self.data.pose.pose.orientation.w
 
         quaternion_array = [x, y, z, w]
 
@@ -93,8 +100,8 @@ class State(object):
 
         self.yaw = yaw
 
-        self.dx = data.twist.twist.linear.x
-        self.dy = data.twist.twist.linear.y
+        self.dx = self.data.twist.twist.linear.x
+        self.dy = self.data.twist.twist.linear.y
         self.v = m.sqrt(self.dx ** 2 + self.dy ** 2)
 
 
@@ -178,49 +185,70 @@ if __name__ == "__main__":
     rospy.init_node("stanley_method")
 
     # Initial state
+    load = LoadPose()
+    load.readCSV()
+
     state = State(x=-0.0, y=0, yaw=np.radians(0.0), v=0.0)
     path = PathFinder()
 
-    rospy.Subscriber("/my_odom", Odometry, state.odometryCallback)
-    rospy.Subscriber(
-        "/move_base/TebLocalPlannerROS/global_plan", Path, path.pathCallback
-    )
+    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
+    # rospy.Subscriber(
+    #     "/stanley_path", Path, path.pathCallback
+    # )
 
-    steer_pub = rospy.Publisher("steer_pub", Float32, queue_size=1)
+    cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
+    test_pub = rospy.Publisher("/stanley_cmd_test", PoseStamped, queue_size=1)
 
-    # ax = path.xs
-    # ay = path.ys
+    desired_speed = 10.0  # m/s
 
-    ax = [
-        0.0,
-        -12.502059936523438,
-        -25.434463500976562,
-        -33.93553161621094,
-        -46.96923065185547,
-        -56.460845947265625,
-    ]
-    ay = [
-        0.0,
-        -14.23615837097168,
-        -29.223724365234375,
-        -35.460575103759766,
-        -31.393835067749023,
-        -21.68545913696289,
-    ]
+    # cx = path.cx
+    # cy = path.cy
+    # cyaw = path.cyaw
 
-    cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
-        ax, ay, ds=0.1)
-
-    print(cx)
-    print(cy)
-    print(cyaw)
+    cx = load.cx
+    cy = load.cy
+    cyaw = load.cyaw
 
     last_idx = len(cx) - 1
 
     target_idx, _ = calc_target_index(state, cx, cy)
 
+    target_idx = 1
+
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
         di, target_idx = stanley_control(state, cx, cy, cyaw, target_idx)
-        steer_pub.publish(di)
+
+        # rospy.loginfo(di)
+
+        cmd_msg = Twist()
+
+        cmd_msg.linear.x = desired_speed
+        cmd_msg.linear.y = 0.0
+        cmd_msg.linear.z = 0.0
+
+        cmd_msg.angular.x = 0.0
+        cmd_msg.angular.y = 0.0
+        cmd_msg.angular.z = di
+
+        cmd_pub.publish(cmd_msg)
+
+        test_msg = PoseStamped()
+
+        test_msg.header.stamp = rospy.Time.now()
+        test_msg.header.frame_id = "map"
+
+        test_msg.pose.position.x = state.x
+        test_msg.pose.position.y = state.y
+        test_msg.pose.position.z = 0.0
+
+        (x, y, z, w) = tf.transformations.quaternion_from_euler(0.0, 0.0, di)
+
+        test_msg.pose.orientation.x = x
+        test_msg.pose.orientation.y = y
+        test_msg.pose.orientation.z = z
+        test_msg.pose.orientation.w = w
+
+        test_pub.publish(test_msg)
+
         r.sleep()

@@ -7,7 +7,8 @@ import tf
 import csv
 import math as m
 from std_msgs.msg import Empty
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose, PoseStamped
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Path
 
 
 class LoadPose(object):
@@ -39,18 +40,21 @@ class LoadPose(object):
         # use planner, create cx, cy, cyaw
 
         for i in range(0, len(self.cx)):
-            pose = Pose()
+            pose = PoseStamped()
+
+            pose.header.stamp = rospy.Time.now()
+            pose.header.frame_id = "map"
 
             quat = tf.transformations.quaternion_from_euler(0, 0, self.cyaw[i])
 
-            pose.position.x = self.cx[i]
-            pose.position.y = self.cy[i]
-            pose.position.z = 0.0
+            pose.pose.position.x = self.cx[i]
+            pose.pose.position.y = self.cy[i]
+            pose.pose.position.z = 0.0
 
-            pose.orientation.x = quat[0]
-            pose.orientation.y = quat[1]
-            pose.orientation.z = quat[2]
-            pose.orientation.w = quat[3]
+            pose.pose.orientation.x = quat[0]
+            pose.pose.orientation.y = quat[1]
+            pose.pose.orientation.z = quat[2]
+            pose.pose.orientation.w = quat[3]
 
             msg.poses.append(pose)
 
@@ -63,9 +67,9 @@ if __name__ == "__main__":
     load_pose = LoadPose()
     load_pose.readCSV()
 
-    msg = PoseArray()
+    msg = Path()
 
-    path_pub = rospy.Publisher("stanley_path", PoseArray, queue_size=1)
+    path_pub = rospy.Publisher("stanley_path", Path, queue_size=1)
 
     r = rospy.Rate(1.0)
     while not rospy.is_shutdown():
