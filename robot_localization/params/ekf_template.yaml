@@ -93,7 +93,7 @@ odom0_config: [
     true, # vr
     true, # vp
     true, # vy
-    false, # axs
+    false, # ax
     false, # ay
     false, # az
   ]
