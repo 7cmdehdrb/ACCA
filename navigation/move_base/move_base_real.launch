@@ -51,9 +51,9 @@
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" /> -->
 
     <node pkg="move_base" type="move_base" respawn="true" name="move_base" output="screen">
-        <remap from="base_scan" to="scan"/>
+        <!-- <remap from="base_scan" to="scan"/> -->
         <!-- <remap from="base_scan" to="lms_scan"/> -->
-        <remap from="map" to="/hdl_global_localization/bbs/gridmap" />
+        <!-- <remap from="map" to="/hdl_global_localization/bbs/gridmap" /> -->
         <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="global_costmap" />
         <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="local_costmap" />
         <rosparam file="$(find move_base)/mybot/local_costmap_params.yaml" command="load" />

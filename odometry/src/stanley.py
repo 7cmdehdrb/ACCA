@@ -211,8 +211,9 @@ if __name__ == "__main__":
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
         ax, ay, ds=0.1)
 
-    # print(cx)
-    # print(cy)
+    print(cx)
+    print(cy)
+    print(cyaw)
 
     last_idx = len(cx) - 1
 

@@ -1,13 +1,14 @@
 global_costmap:
+  plugins:
+    - { name: static_layer, type: "costmap_2d::StaticLayer" }
   global_frame: map
   robot_base_frame: base_link
+  transform_tolerance: 0.2
   update_frequency: 5.0
-  static_map: false
-  # plugins:
-  #   - { name: static_layer, type: "costmap_2d::StaticLayer" }
-  # - { name: obstacles_layer, type: "costmap_2d::VoxelLayer" }
-  # - { name: inflation_layer, type: "costmap_2d::InflationLayer" }
+  publish_frequency: 0.0
 
   static_layer:
-    map_topic: /hdl_global_localization/bbs/gridmap
-    topic: /hdl_global_localization/bbs/gridmap
+    unknown_cost_value: -1
+    lethal_cost_threshold: 100
+    map_topic: /map
+    first_map_only: false

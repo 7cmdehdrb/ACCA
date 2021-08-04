@@ -158,8 +158,6 @@ Visualization Manager:
           Value: true
         imu_link:
           Value: true
-        laser:
-          Value: true
         map:
           Value: true
         odom:
@@ -192,8 +190,6 @@ Visualization Manager:
               front_steer_link:
                 {}
               imu_link:
-                {}
-              laser:
                 {}
               rear_left_wheel_link:
                 {}
@@ -447,7 +443,7 @@ Visualization Manager:
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
-      Topic: /waypoints
+      Topic: /stanley_path
       Unreliable: false
       Value: true
   Enabled: true
@@ -478,7 +474,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 77.1541519165039
+      Distance: 285.2464904785156
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

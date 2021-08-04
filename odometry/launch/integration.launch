@@ -7,20 +7,18 @@
         <!-- <include file="$(find ntrip_ros)/launch/ntrip_ros.launch" /> -->
 
         <!-- IMU -->
-        <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+        <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
             <arg name="port" value="/dev/ttyUSB1" />
-        </include>
+        </include> -->
 
         <!-- LiDAR -->
-        <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
-        <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" />
+        <!-- <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+        <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" /> -->
 
     <!-- Sensors end -->
         
     <!-- Odometry -->
-    <!-- <node pkg="erp42_driver" name="erp42_driver" type="erp42_driver.py" />
-    <node pkg="erp42_driver" name="erp42_serial" type="erp42_serial.py" /> -->
-    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" /> -->
+    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
     <!-- <include file="$(find odometry)/launch/odometry.launch" /> -->
     <!-- <include file="$(find robot_localization)/launch/navsat_transform_template.launch" /> -->
 
@@ -29,11 +27,15 @@
         <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
     </include>
 
+    <!-- Open mapfile-->
+    <arg name="map_file" default="$(find map_server)/maps/outside.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
     <!-- MoveBase -->
     <include file="$(find move_base)/move_base_real.launch" />
 
     <!-- Model -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" /> -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" />
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
 
 </launch>
