@@ -27,7 +27,7 @@ class TF_map(object):
     def listenTF(self):
         try:
             (trans, rot) = listener.lookupTransform(
-                "/odom", "/map", rospy.Time(0))
+                "/map", "/odom", rospy.Time(0))
             self.trans = trans
             self.rot = rot
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
