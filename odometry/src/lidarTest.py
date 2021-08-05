@@ -39,10 +39,13 @@ if __name__ == "__main__":
 
     laser = Laser()
 
+    print("???")
+
     scan_pub = rospy.Publisher("test_scan", LaserScan, queue_size=1)
 
     rospy.Subscriber("/scan", LaserScan, laser.laserCallback)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
+        print("kkk")
         r.sleep()

@@ -16,10 +16,10 @@ from geometry_msgs.msg import PoseStamped, Twist
 from loadPose import LoadPose
 
 
-k = 0.5  # control gain
-Kp = 1.0  # speed proportional gain
+k = 1.0  # control gain
+Kp = 0.5  # speed proportional gain
 L = 1.040  # [m] Wheel base of vehicle
-max_steer = np.radians(30.0)  # [rad] max steering angle
+max_steer = np.radians(25.0)  # [rad] max steering angle
 
 
 class PathFinder(object):
@@ -76,15 +76,29 @@ class State(object):
         """Instantiate the object."""
         super(State, self).__init__()
         self.data = Odometry()
+
+        self.currentTime = rospy.Time.now()
+        self.lastTime = rospy.Time.now()
+
+        self.dt = 0.1
+
         self.x = x
         self.y = y
         self.yaw = yaw
+
+        self.last_x = x
+        self.last_y = y
+
         self.v = v
         self.dx = self.v * m.cos(self.yaw)
         self.dy = self.v * m.sin(self.yaw)
 
     def odometryCallback(self, msg):
         self.data = msg
+
+        self.currentTime = rospy.Time.now()
+
+        self.dt = (self.currentTime - self.lastTime).to_sec()
 
         self.x = self.data.pose.pose.position.x
         self.y = self.data.pose.pose.position.y
@@ -100,9 +114,20 @@ class State(object):
 
         self.yaw = yaw
 
-        self.dx = self.data.twist.twist.linear.x
-        self.dy = self.data.twist.twist.linear.y
-        self.v = m.sqrt(self.dx ** 2 + self.dy ** 2)
+        try:
+
+            self.dx = (self.x - self.last_x) / self.dt
+            self.dy = (self.x - self.last_y) / self.dt
+            self.v = m.sqrt((self.dx ** 2) + (self.dy ** 2))
+
+        except ZeroDivisionError:
+            pass
+        except Exception as ex:
+            print(ex)
+
+        self.last_x = self.x
+        self.last_y = self.y
+        self.lastTime = rospy.Time.now()
 
 
 def pid_control(target, current):
@@ -132,10 +157,12 @@ def stanley_control(state, cx, cy, cyaw, last_target_idx):
 
     # theta_e corrects the heading error
     theta_e = normalize_angle(cyaw[current_target_idx] - state.yaw)
+
     # theta_d corrects the cross track error
     theta_d = np.arctan2(k * error_front_axle, state.v)
     # Steering control
     delta = theta_e + theta_d
+    # print(theta_d)
 
     return delta, current_target_idx
 
@@ -188,14 +215,19 @@ if __name__ == "__main__":
     load = LoadPose()
     load.readCSV()
 
-    state = State(x=-0.0, y=0, yaw=np.radians(0.0), v=0.0)
+    state = State(x=-10.0, y=10, yaw=np.radians(0.0), v=0.0)
     path = PathFinder()
 
-    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
+    cmd_msg = Twist()
+
+    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
+    # rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
     cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
+    path_pub = rospy.Publisher("stanley_path", Path, queue_size=1)
+    # cmd_pub = rospy.Publisher("/test_stanley_cmd", Twist, queue_size=1)
 
-    desired_speed = 30.0  # kph
+    desired_speed = 3.0  # kph
 
     cx = load.cx
     cy = load.cy
@@ -205,15 +237,11 @@ if __name__ == "__main__":
 
     target_idx, _ = calc_target_index(state, cx, cy)
 
-    target_idx = 1
-
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
         di, target_idx = stanley_control(state, cx, cy, cyaw, target_idx)
 
         di = np.clip(di, -m.radians(30), m.radians(30))
-
-        cmd_msg = Twist()
 
         cmd_msg.linear.x = desired_speed
         cmd_msg.linear.y = 0.0
@@ -221,10 +249,11 @@ if __name__ == "__main__":
 
         cmd_msg.angular.x = 0.0
         cmd_msg.angular.y = 0.0
-        cmd_msg.angular.z = di
+        cmd_msg.angular.z = -di
 
         cmd_pub.publish(cmd_msg)
+        load.posePublish(pub=path_pub)
 
-        rospy.loginfo(target_idx)
+        rospy.loginfo((-m.degrees(di), target_idx))
 
         r.sleep()

@@ -1,0 +1,26 @@
+<launch>
+
+    <!-- Sensors -->
+
+        <!-- LiDAR -->
+        <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+        <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" />
+
+    <!-- Sensors end -->
+        
+    <!-- Odometry -->
+    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
+    <node name="get_pose" pkg="odometry" type="getPose.py" output="screen" />
+
+    <!-- Localization -->
+    <include file="$(find hdl_localization)/launch/hdl_localization.launch">
+        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+    </include>
+
+    <!-- MoveBase -->
+    <include file="$(find move_base)/move_base_real.launch" />
+
+    <!-- Model -->
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+
+</launch>

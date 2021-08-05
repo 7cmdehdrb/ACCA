@@ -32,7 +32,9 @@ class LoadPose(object):
 
         rospy.loginfo("LOADING FINISHED")
 
-    def posePublish(self):
+    def posePublish(self, pub):
+        msg = Path()
+
         msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = "map"
         msg.poses = []
@@ -58,7 +60,7 @@ class LoadPose(object):
 
             msg.poses.append(pose)
 
-        path_pub.publish(msg)
+        pub.publish(msg)
 
 
 if __name__ == "__main__":
@@ -67,11 +69,11 @@ if __name__ == "__main__":
     load_pose = LoadPose()
     load_pose.readCSV()
 
-    msg = Path()
+    # msg = Path()
 
     path_pub = rospy.Publisher("stanley_path", Path, queue_size=1)
 
     r = rospy.Rate(1.0)
     while not rospy.is_shutdown():
-        load_pose.posePublish()
+        load_pose.posePublish(pub=path_pub)
         r.sleep()

@@ -144,7 +144,7 @@ class control():
                 self.feedback_speed, self.feedback_steer, self.feedback_brake]
 
         # print("SERIAL READ(AorM, Gear, Speed, Steer, Brake): ")
-        print(data[2], data[3])
+        # print(data[2], data[3])
 
         encoder_data = Float32MultiArray(data=data)
 
@@ -217,6 +217,18 @@ class control():
             speed(KPH), steer(Deg), Brake(1~200), Gear(2: drive)
         """
 
+        SPEED = SPEED * 10
+        if SPEED > 200:
+            SPEED = 200
+        elif SPEED < 0:
+            SPEED = 0
+
+        STEER = STEER * 71
+        if STEER > 1999:
+            STEER = 1999
+        if STEER < -1999:
+            STEER = -1999
+
         try:
 
             if STEER >= 0:
@@ -230,7 +242,7 @@ class control():
             self.DATA[5] = 2    # GEAR
             self.DATA[6] = int(SPEED // 256)
             self.DATA[7] = int(SPEED % 256)
-            self.DATA[10] = BRAKE
+            self.DATA[10] = 1   # BREAK
             self.DATA[11] = self.ALIVE
 
             self.ser.write((self.DATA))
@@ -248,7 +260,7 @@ if __name__ == "__main__":
     rospy.init_node('erp42_encoder')
 
     """ Param """
-    port = rospy.get_param('/port', '/dev/ttyUSB0')
+    port = rospy.get_param('/erp_port', '/dev/ttyUSB0')
 
     """ Object """
     mycar = control(port_num=port)
@@ -262,7 +274,7 @@ if __name__ == "__main__":
         '/erp42_encoder', Float32MultiArray, queue_size=1)
 
     """ Subscriber"""
-    rospy.Subscriber("/cmd_vel", Twist, mycar.callback_cmd)
+    rospy.Subscriber("/stanley_cmd", Twist, mycar.cmd_vel_callback)
 
     rate = rospy.Rate(50.0)
     while not rospy.is_shutdown():
@@ -270,8 +282,10 @@ if __name__ == "__main__":
         # mycar.send_data(SPEED=mycar.command_speed,
         #                 STEER=mycar.command_steer, BRAKE=1, GEAR=2)
 
-        mycar.send_data(SPEED=mycar.cmd_vel_msg.linear.x,
-                        STEER=m.degrees(mycar.cmd_vel_msg.angular.z), BRAKE=1, GEAR=2)
+        mycar.send_data(SPEED=(mycar.cmd_vel_msg.linear.x),
+                        STEER=(m.degrees(mycar.cmd_vel_msg.angular.z)), BRAKE=1, GEAR=2)
+
+        # mycar.send_data(SPEED=0, STEER=30, BRAKE=1, GEAR=2)
 
         rate.sleep()
 

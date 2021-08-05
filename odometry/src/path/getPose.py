@@ -6,6 +6,7 @@ import threading
 import csv
 import tf
 import math as m
+import time as t
 from std_msgs.msg import Empty
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 import cubic_spline_planner
@@ -14,6 +15,8 @@ import cubic_spline_planner
 class GetPose(object):
     def __init__(self):
         super(GetPose, self).__init__()
+
+        self.deleteFlag = True
 
         self.initial_xs = []
         self.initial_ys = []
@@ -52,7 +55,7 @@ class GetPose(object):
             cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
                 self.initial_xs, self.initial_ys, ds=0.1)
         except Exception as ex:
-            print(ex)
+            pass
 
         for i in range(0, len(cx)):
             pose = Pose()
@@ -96,6 +99,23 @@ class GetPose(object):
 
         rospy.loginfo("SAVING FINISHED")
 
+    def deleteOne(self):
+        while not rospy.is_shutdown():
+            if self.deleteFlag is True:
+                data = rospy.wait_for_message("/delete_path", Empty)
+                rospy.loginfo("DELETE LATEST POINT... PLZ WAIT")
+
+                self.initial_xs.pop()
+                self.initial_ys.pop()
+
+                self.deleteFlag = False
+
+                t.sleep(5.0)
+
+                self.deleteFlag = True
+
+                rospy.loginfo("SUCCESS")
+
 
 if __name__ == "__main__":
     rospy.init_node("get_pose")
@@ -109,8 +129,10 @@ if __name__ == "__main__":
     rospy.Subscriber(
         "/move_base_simple/goal", PoseStamped, get_pose.poseCallback)
 
-    th = threading.Thread(target=get_pose.savePoseArray)
-    th.start()
+    th1 = threading.Thread(target=get_pose.savePoseArray)
+    th2 = threading.Thread(target=get_pose.deleteOne)
+    th1.start()
+    th2.start()
 
     r = rospy.Rate(1.0)
     while not rospy.is_shutdown():

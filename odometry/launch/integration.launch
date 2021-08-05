@@ -12,8 +12,8 @@
         </include> -->
 
         <!-- LiDAR -->
-        <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
-        <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" />
+        <!-- <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+        <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" /> -->
 
     <!-- Sensors end -->
         
@@ -21,20 +21,21 @@
     <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
     <node name="stanley_method" pkg="odometry" type="stanley.py" output="screen" />
     <node name="load_pose" pkg="odometry" type="loadPose.py" output="screen" />
-    <!-- <include file="$(find odometry)/launch/odometry.launch" /> -->
+
+    <!-- <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" output="screen" /> -->
     <!-- <include file="$(find robot_localization)/launch/navsat_transform_template.launch" /> -->
 
     <!-- Localization -->
-    <include file="$(find hdl_localization)/launch/hdl_localization.launch">
+    <!-- <include file="$(find hdl_localization)/launch/hdl_localization.launch">
         <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
-    </include>
+    </include> -->
 
     <!-- Open mapfile-->
-    <!-- <arg name="map_file" default="$(find map_server)/maps/outside.yaml"/>
-    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" /> -->
+    <arg name="map_file" default="$(find map_server)/maps/outside.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <!-- MoveBase -->
-    <!-- <include file="$(find move_base)/move_base_real.launch" /> -->
+    <include file="$(find move_base)/move_base_real.launch" />
 
     <!-- Model -->
     <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" />

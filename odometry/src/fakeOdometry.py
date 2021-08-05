@@ -2,6 +2,7 @@
 
 import rospy
 import math as m
+import numpy as np
 import tf
 from model import erp42
 from nav_msgs.msg import Odometry
@@ -57,8 +58,10 @@ class FakeOdometry(erp42):
         data = Twist()
         data = msg
 
+        steer = np.clip(data.angular.z, -m.radians(30), m.radians(30))
+
         self.v = data.linear.x
-        self.yaw += (self.v / 1.040) * m.tan(data.angular.z) * self.dt
+        self.yaw += (self.v / 1.040) * m.tan(steer) * self.dt
 
 
 if __name__ == "__main__":
@@ -69,7 +72,7 @@ if __name__ == "__main__":
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
 
-    rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
+    # rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
