@@ -15,8 +15,8 @@ class GetPose(object):
     def __init__(self):
         super(GetPose, self).__init__()
 
-        self.initial_xs = [0.0, 0.01]
-        self.initial_ys = [0.0, 0.0]
+        self.initial_xs = []
+        self.initial_ys = []
 
         self.Path = PoseArray()
 
@@ -35,6 +35,8 @@ class GetPose(object):
         self.initial_xs.append(temp_x)
         self.initial_ys.append(temp_y)
 
+        rospy.loginfo("HELLO")
+
     def posePublish(self):
         msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = "map"
@@ -42,8 +44,15 @@ class GetPose(object):
 
         # use planner, create cx, cy, cyaw
 
-        cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
-            self.initial_xs, self.initial_ys, ds=0.1)
+        cx = []
+        cy = []
+        cyaw = []
+
+        try:
+            cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
+                self.initial_xs, self.initial_ys, ds=0.1)
+        except Exception as ex:
+            print(ex)
 
         for i in range(0, len(cx)):
             pose = Pose()
@@ -95,12 +104,12 @@ if __name__ == "__main__":
 
     msg = PoseArray()
 
-    path_pub = rospy.Publisher("save_path", PoseArray, queue_size=1)
+    path_pub = rospy.Publisher("mypath", PoseArray, queue_size=1)
 
     rospy.Subscriber(
-        "/move_base/current_goal", PoseStamped, pose.poseCallback)
+        "/move_base_simple/goal", PoseStamped, get_pose.poseCallback)
 
-    th = threading.Thread(target=pose.savePoseArray)
+    th = threading.Thread(target=get_pose.savePoseArray)
     th.start()
 
     r = rospy.Rate(1.0)

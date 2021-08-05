@@ -191,18 +191,11 @@ if __name__ == "__main__":
     state = State(x=-0.0, y=0, yaw=np.radians(0.0), v=0.0)
     path = PathFinder()
 
-    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
-    # rospy.Subscriber(
-    #     "/stanley_path", Path, path.pathCallback
-    # )
+    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
     cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
 
     desired_speed = 30.0  # kph
-
-    # cx = path.cx
-    # cy = path.cy
-    # cyaw = path.cyaw
 
     cx = load.cx
     cy = load.cy
@@ -231,5 +224,7 @@ if __name__ == "__main__":
         cmd_msg.angular.z = di
 
         cmd_pub.publish(cmd_msg)
+
+        rospy.loginfo(target_idx)
 
         r.sleep()

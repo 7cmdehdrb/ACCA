@@ -14,7 +14,7 @@ class FakeOdometry(erp42):
 
         self.currentTime = rospy.Time.now()
         self.lastTime = rospy.Time.now()
-        self.dt = 0.0
+        self.dt = 0.1
 
     def update(self):
         self.dx = self.v * m.cos(self.yaw)
@@ -41,15 +41,24 @@ class FakeOdometry(erp42):
         odom.header.frame_id = "odom"
         odom.child_frame_id = "base_link"
 
-        odom.pose.pose = Pose(Point(self.x, self.y, 0.0), Quaternion(*odom_quat))
+        odom.pose.pose = Pose(Point(self.x, self.y, 0.0),
+                              Quaternion(*odom_quat))
 
         odom.twist.twist = Twist(
-            Vector3(self.dx, self.dy, 0.0), Vector3(0.0, 0.0, (0.0))
+            Vector3(self.dx, self.dy, 0.0), Vector3(
+                0.0, 0.0, self.yaw / self.dt)
         )
 
         odom_pub.publish(odom)
 
         self.lastTime = rospy.Time.now()
+
+    def cmd_callback(self, msg):
+        data = Twist()
+        data = msg
+
+        self.v = data.linear.x
+        self.yaw += (self.v / 1.040) * m.tan(data.angular.z) * self.dt
 
 
 if __name__ == "__main__":
@@ -59,6 +68,8 @@ if __name__ == "__main__":
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
+
+    rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
