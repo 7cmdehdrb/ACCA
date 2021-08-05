@@ -18,9 +18,12 @@
     </include>
 
     <!-- MoveBase -->
-    <include file="$(find move_base)/move_base_real.launch" />
+    <!-- <include file="$(find move_base)/move_base_real.launch" /> -->
 
     <!-- Model -->
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+
+    <!-- Test -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" /> -->
 
 </launch>
