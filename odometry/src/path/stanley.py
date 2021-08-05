@@ -197,9 +197,8 @@ if __name__ == "__main__":
     # )
 
     cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
-    test_pub = rospy.Publisher("/stanley_cmd_test", PoseStamped, queue_size=1)
 
-    desired_speed = 10.0  # m/s
+    desired_speed = 30.0  # kph
 
     # cx = path.cx
     # cy = path.cy
@@ -219,7 +218,7 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         di, target_idx = stanley_control(state, cx, cy, cyaw, target_idx)
 
-        # rospy.loginfo(di)
+        di = np.clip(di, -m.radians(30), m.radians(30))
 
         cmd_msg = Twist()
 
@@ -232,23 +231,5 @@ if __name__ == "__main__":
         cmd_msg.angular.z = di
 
         cmd_pub.publish(cmd_msg)
-
-        test_msg = PoseStamped()
-
-        test_msg.header.stamp = rospy.Time.now()
-        test_msg.header.frame_id = "map"
-
-        test_msg.pose.position.x = state.x
-        test_msg.pose.position.y = state.y
-        test_msg.pose.position.z = 0.0
-
-        (x, y, z, w) = tf.transformations.quaternion_from_euler(0.0, 0.0, di)
-
-        test_msg.pose.orientation.x = x
-        test_msg.pose.orientation.y = y
-        test_msg.pose.orientation.z = z
-        test_msg.pose.orientation.w = w
-
-        test_pub.publish(test_msg)
 
         r.sleep()

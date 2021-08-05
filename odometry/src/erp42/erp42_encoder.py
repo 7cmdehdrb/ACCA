@@ -267,8 +267,11 @@ if __name__ == "__main__":
     rate = rospy.Rate(50.0)
     while not rospy.is_shutdown():
 
-        mycar.send_data(SPEED=mycar.command_speed,
-                        STEER=mycar.command_steer, BRAKE=1, GEAR=2)
+        # mycar.send_data(SPEED=mycar.command_speed,
+        #                 STEER=mycar.command_steer, BRAKE=1, GEAR=2)
+
+        mycar.send_data(SPEED=mycar.cmd_vel_msg.linear.x,
+                        STEER=m.degrees(mycar.cmd_vel_msg.angular.z), BRAKE=1, GEAR=2)
 
         rate.sleep()
 
