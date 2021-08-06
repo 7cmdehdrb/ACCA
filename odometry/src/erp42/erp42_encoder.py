@@ -4,7 +4,7 @@ import rospy
 import serial
 import threading
 import math as m
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Float32
 from geometry_msgs.msg import Twist
 
 # Params
@@ -51,6 +51,9 @@ class control():
         self.command_speed = 0.0
         self.command_steer = 0.0
         self.command_brake = 1
+
+        self.distance_ratio = 1.0
+        self.control_brake = 1
 
         """
             Encoder variable
@@ -255,6 +258,25 @@ class control():
         except Exception as ex:
             print(ex)
 
+    def distanceCallback(self, msg):
+        distance = msg.data
+
+        if distance < 3.0:
+            self.distance_ratio = (1 / 3) * distance
+        else:
+            self.distance_ratio = 1.0
+
+        if distance < 1.0:
+            brake = int(-200.0 * distance + 200.0)
+
+            if brake < 1:
+                brake = 1
+
+        else:
+            brake = 1
+
+        self.control_brake = brake
+
 
 if __name__ == "__main__":
     rospy.init_node('erp42_encoder')
@@ -275,6 +297,7 @@ if __name__ == "__main__":
 
     """ Subscriber"""
     rospy.Subscriber("/stanley_cmd", Twist, mycar.cmd_vel_callback)
+    rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
     rate = rospy.Rate(50.0)
     while not rospy.is_shutdown():
@@ -282,8 +305,11 @@ if __name__ == "__main__":
         # mycar.send_data(SPEED=mycar.command_speed,
         #                 STEER=mycar.command_steer, BRAKE=1, GEAR=2)
 
-        mycar.send_data(SPEED=(mycar.cmd_vel_msg.linear.x),
-                        STEER=(m.degrees(mycar.cmd_vel_msg.angular.z)), BRAKE=1, GEAR=2)
+        sp = mycar.cmd_vel_msg.linear.x
+        st = m.degrees(mycar.cmd_vel_msg.angular.z)
+
+        mycar.send_data(SPEED=(sp),
+                        STEER=(st), BRAKE=1, GEAR=2)
 
         # mycar.send_data(SPEED=0, STEER=30, BRAKE=1, GEAR=2)
 

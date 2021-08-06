@@ -227,7 +227,7 @@ if __name__ == "__main__":
     path_pub = rospy.Publisher("stanley_path", Path, queue_size=1)
     # cmd_pub = rospy.Publisher("/test_stanley_cmd", Twist, queue_size=1)
 
-    desired_speed = 3.0  # kph
+    desired_speed = 5.0  # kph
 
     cx = load.cx
     cy = load.cy

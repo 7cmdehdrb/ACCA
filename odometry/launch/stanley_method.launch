@@ -5,7 +5,7 @@
     
     <!-- IMU -->
     <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
-        <arg name="port" value="/dev/ttyUSB1" />
+        <arg name="port" value="/dev/ttyUSB0" />
     </include>
     
     <!-- LiDAR -->
@@ -22,7 +22,7 @@
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
-        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+        <arg name="map_file" value="$(find hdl_localization)/data/123123.pcd" /> 
     </include>
 
     <!-- MoveBase -->
@@ -32,6 +32,6 @@
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
 
     <!-- Test -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" /> -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" />
 
 </launch>
