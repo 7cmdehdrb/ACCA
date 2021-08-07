@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+
 import math
-import numpy as np
 from enum import Enum
+
+import numpy as np
 
 
 def dwa_control(x, config, goal, ob):
@@ -10,8 +13,6 @@ def dwa_control(x, config, goal, ob):
     dw = calc_dynamic_window(x, config)
 
     u, trajectory = calc_control_and_trajectory(x, dw, config, goal, ob)
-
-    # trajectory => [x, y, yaw, v, ?]
 
     return u, trajectory
 
@@ -30,9 +31,9 @@ class Config:
         # robot parameter
         self.max_speed = 10.0  # [m/s]
         self.min_speed = -0.5  # [m/s]
-        self.max_yaw_rate = 30.0 * math.pi / 180.0  # [rad/s]
+        self.max_yaw_rate = 40.0 * math.pi / 180.0  # [rad/s]
         self.max_accel = 0.5  # [m/ss]
-        self.max_delta_yaw_rate = 30.0 * math.pi / 180.0  # [rad/ss]
+        self.max_delta_yaw_rate = 40.0 * math.pi / 180.0  # [rad/ss]
         self.v_resolution = 0.01  # [m/s]
         self.yaw_rate_resolution = 0.1 * math.pi / 180.0  # [rad/s]
         self.dt = 0.1  # [s] Time tick for motion prediction
@@ -41,12 +42,17 @@ class Config:
         self.speed_cost_gain = 1.0
         self.obstacle_cost_gain = 1.0
         self.robot_stuck_flag_cons = 0.001  # constant to prevent robot stucked
-        self.robot_type = RobotType.rectangle
+        self.robot_type = RobotType.circle
 
-        self.robot_width = 1.2  # [m] for collision check
-        self.robot_length = 1.7  # [m] for collision check
+        # if robot_type == RobotType.circle
+        # Also used to check if goal is reached in both types
+        self.robot_radius = 1.0  # [m] for collision check
 
-        self.ob = np.array([[-1, -1], ])
+        # if robot_type == RobotType.rectangle
+        self.robot_width = 0.5  # [m] for collision check
+        self.robot_length = 1.2  # [m] for collision check
+        # obstacles [x(m) y(m), ....]
+        self.ob = np.array([[10.0, 10.0], ])
 
     @property
     def robot_type(self):
@@ -64,15 +70,11 @@ def motion(x, u, dt):
     motion model
     """
 
-    # u[0] => linear vel / u[1] => angular vel
-
-    x[2] += u[1] * dt                   # yaw
-    x[0] += u[0] * math.cos(x[2]) * dt  # x
-    x[1] += u[0] * math.sin(x[2]) * dt  # y
-    x[3] = u[0]                         # v
-    x[4] = u[1]                         # dyaw
-
-    # [x(m), y(m), yaw(rad), v(m/s), omega(rad/s)]
+    x[2] += u[1] * dt
+    x[0] += u[0] * math.cos(x[2]) * dt
+    x[1] += u[0] * math.sin(x[2]) * dt
+    x[3] = u[0]
+    x[4] = u[1]
 
     return x
 
@@ -172,7 +174,7 @@ def calc_obstacle_cost(trajectory, ob, config):
         rot = np.transpose(rot, [2, 0, 1])
         local_ob = ob[:, None] - trajectory[:, 0:2]
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])
-        local_ob = np.array([local_ob @ x for x in rot])
+        local_ob = np.array([np.dot(local_ob, x) for x in rot])
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])
         upper_check = local_ob[:, 0] <= config.robot_length / 2
         right_check = local_ob[:, 1] <= config.robot_width / 2
@@ -201,30 +203,3 @@ def calc_to_goal_cost(trajectory, goal):
     cost = abs(math.atan2(math.sin(cost_angle), math.cos(cost_angle)))
 
     return cost
-
-
-config = Config()
-
-
-def main(gx=10.0, gy=10.0, robot_type=RobotType.circle):
-    print(__file__ + " start!!")
-
-    # initial state [x(m), y(m), yaw(rad), v(m/s), omega(rad/s)]
-    x = np.array([0.0, 0.0, math.pi / 8.0, 0.0, 0.0])
-
-    # goal position [x(m), y(m)]
-    goal = np.array([gx, gy])
-
-    config.robot_type = robot_type
-    trajectory = np.array(x)
-    ob = config.ob
-    while True:
-        u, predicted_trajectory = dwa_control(x, config, goal, ob)
-        x = motion(x, u, config.dt)  # simulate robot
-        trajectory = np.vstack((trajectory, x))  # store state history
-
-    print("Done")
-
-
-if __name__ == '__main__':
-    main(robot_type=RobotType.circle)
