@@ -3,9 +3,7 @@
 import rospy
 import rospkg
 import threading
-import csv
 import tf
-import math as m
 import time as t
 from std_msgs.msg import Empty
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
@@ -54,7 +52,7 @@ class GetPose(object):
         try:
             cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
                 self.initial_xs, self.initial_ys, ds=0.1)
-        except Exception as ex:
+        except Exception:
             pass
 
         for i in range(0, len(cx)):
@@ -76,7 +74,7 @@ class GetPose(object):
         path_pub.publish(msg)
 
     def savePoseArray(self):
-        data = rospy.wait_for_message("/save_path", Empty)
+        rospy.wait_for_message("/save_path", Empty)
         rospy.loginfo("TRYING TO SAVE PATH...")
 
         output_file_path = rospkg.RosPack().get_path('odometry')+"/saved_path/pose.csv"
@@ -102,7 +100,7 @@ class GetPose(object):
     def deleteOne(self):
         while not rospy.is_shutdown():
             if self.deleteFlag is True:
-                data = rospy.wait_for_message("/delete_path", Empty)
+                rospy.wait_for_message("/delete_path", Empty)
                 rospy.loginfo("DELETE LATEST POINT... PLZ WAIT")
 
                 self.initial_xs.pop()

@@ -12,7 +12,7 @@ import math as m
 import numpy as np
 import tf
 from nav_msgs.msg import Odometry, Path
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import Twist
 from loadPose import LoadPose
 
 

@@ -2,11 +2,8 @@
 
 import rospy
 import rospkg
-import threading
 import tf
 import csv
-import math as m
-from std_msgs.msg import Empty
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
