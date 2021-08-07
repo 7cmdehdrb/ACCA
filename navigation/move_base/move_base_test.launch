@@ -1,0 +1,31 @@
+<launch>
+    <master auto="start"/>
+  
+
+    <!-- Open mapfile-->
+    <arg name="map_file" default="$(find map_server)/maps/outside.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+
+    <!-- LiDAR -->
+    <!-- <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+    <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" /> -->
+
+
+    <!-- Localization -->
+    <!-- <include file="$(find hdl_localization)/launch/hdl_localization.launch">
+        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+    </include> -->
+
+  
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find move_base)/mybot/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find move_base)/mybot/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find move_base)/mybot/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find move_base)/mybot/base_local_planner_params.yaml" command="load" />
+
+        <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+        <param name="controller_frequency" value="10.0" />
+    </node>
+  </launch>

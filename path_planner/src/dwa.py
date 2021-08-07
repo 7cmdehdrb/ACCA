@@ -29,18 +29,18 @@ class Config:
 
     def __init__(self):
         # robot parameter
-        self.max_speed = 5.0  # [m/s]
-        self.min_speed = -0.5  # [m/s]
-        self.max_yaw_rate = 40.0 * math.pi / 180.0  # [rad/s]
-        self.max_accel = 0.1  # [m/ss]
-        self.max_delta_yaw_rate = 40.0 * math.pi / 180.0  # [rad/ss]
-        self.v_resolution = 0.02  # [m/s]
+        self.max_speed = 3.0  # [m/s]
+        self.min_speed = 0.0  # [m/s]
+        self.max_yaw_rate = 25.0 * math.pi / 180.0  # [rad/s]
+        self.max_accel = 1.0  # [m/ss]
+        self.max_delta_yaw_rate = 20.0 * math.pi / 180.0  # [rad/ss]
+        self.v_resolution = 0.1  # [m/s]
         self.yaw_rate_resolution = 0.1 * math.pi / 180.0  # [rad/s]
-        self.dt = 0.2  # [s] Time tick for motion prediction
+        self.dt = 0.1  # [s] Time tick for motion prediction
         self.predict_time = 5.0  # [s]
-        self.to_goal_cost_gain = 0.15
-        self.speed_cost_gain = 1.0
-        self.obstacle_cost_gain = 1.0
+        self.to_goal_cost_gain = 1.0
+        self.speed_cost_gain = 5.0
+        self.obstacle_cost_gain = 10.0
         self.robot_stuck_flag_cons = 0.001  # constant to prevent robot stucked
         self.robot_type = RobotType.circle
 

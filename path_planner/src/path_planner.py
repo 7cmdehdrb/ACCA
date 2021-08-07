@@ -19,6 +19,8 @@ class PathPlanner(object):
         self.cy = []
         self.cyaw = []
 
+        self.msg = Path()
+
     def readCSV(self):
         output_file_path = rospkg.RosPack().get_path(
             'path_planner')+"/saved_path/path.csv"
@@ -39,7 +41,6 @@ class PathPlanner(object):
 
         msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = "map"
-        msg.poses = []
 
         for i in range(0, len(self.cx)):
             pose = PoseStamped()
@@ -47,7 +48,8 @@ class PathPlanner(object):
             pose.header.stamp = rospy.Time.now()
             pose.header.frame_id = "map"
 
-            quat = tf.transformations.quaternion_from_euler(0, 0, self.cyaw[i])
+            quat = tf.transformations.quaternion_from_euler(
+                0, 0, self.cyaw[i])
 
             pose.pose.position.x = self.cx[i]
             pose.pose.position.y = self.cy[i]
@@ -70,6 +72,7 @@ class PathPlanner(object):
         msg.poses = []
 
         if len(paths) == 1:
+            rospy.loginfo("CANNOT FIND PATH...")
             return
 
         for path in paths:
@@ -212,19 +215,16 @@ if __name__ == "__main__":
     goal = path_planner.getTempGoal()   # [x, y, yaw]
     ob = config.ob
 
-    trajectory = np.array(x)
-
-    r = rospy.Rate(50.0)
+    r = rospy.Rate(100.0)
     while not rospy.is_shutdown():
-        goal = path_planner.getTempGoal(gap=50)
+        goal = path_planner.getTempGoal(gap=100)
 
-        # u, predicted_trajectory = dwa_control(x, config, goal, ob)
-        # x = state.getX()  # simulate robot
-        # trajectory = np.vstack((trajectory, x))  # store state history
+        u, predicted_trajectory = dwa_control(x, config, goal, ob)
+        x = state.getX()  # simulate robot
 
-        path_planner.publishGlobalPath(pub=global_path_pub)
-        # path_planner.publishLocalPath(
-        #     paths=predicted_trajectory, pub=local_path_pub)
-        path_planner.publishTempGoal(pub=goal_pub, goal=goal)
+        # path_planner.publishGlobalPath(pub=global_path_pub)
+        path_planner.publishLocalPath(
+            paths=predicted_trajectory, pub=local_path_pub)
+        # path_planner.publishTempGoal(pub=goal_pub, goal=goal)
 
         r.sleep()
