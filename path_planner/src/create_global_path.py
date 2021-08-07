@@ -103,7 +103,7 @@ class GetPose(object):
     def deleteOne(self):
         while not rospy.is_shutdown():
             if self.deleteFlag is True:
-                data = rospy.wait_for_message("/delete_path", Empty)
+                rospy.wait_for_message("/delete_path", Empty)
                 rospy.loginfo("DELETE LATEST POINT... PLZ WAIT")
 
                 self.initial_xs.pop()

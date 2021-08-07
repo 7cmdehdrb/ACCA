@@ -6,7 +6,6 @@ import tf
 import csv
 import math as m
 import numpy as np
-from std_msgs.msg import Empty
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path, Odometry
 from dwa import Config, dwa_control
@@ -70,8 +69,6 @@ class PathPlanner(object):
         msg.header.frame_id = "map"
         msg.poses = []
 
-        print(len(paths))
-
         if len(paths) == 1:
             return
 
@@ -104,6 +101,14 @@ class PathPlanner(object):
 
         msg.pose.position.x = goal[0]
         msg.pose.position.y = goal[1]
+        msg.pose.position.z = 0.0
+
+        quat = tf.transformations.quaternion_from_euler(0, 0, goal[2])
+
+        msg.pose.orientation.x = quat[0]
+        msg.pose.orientation.y = quat[1]
+        msg.pose.orientation.z = quat[2]
+        msg.pose.orientation.w = quat[3]
 
         pub.publish(msg)
 
@@ -123,7 +128,7 @@ class PathPlanner(object):
         if target_idx > last_idx:
             target_idx = last_idx - 1
 
-        return np.array([self.cx[target_idx], self.cy[target_idx]])
+        return np.array([self.cx[target_idx], self.cy[target_idx], self.cyaw[target_idx]])
 
 
 class State(object):
@@ -211,17 +216,15 @@ if __name__ == "__main__":
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
-        goal = path_planner.getTempGoal(gap=100)
+        goal = path_planner.getTempGoal(gap=50)
 
-        print(goal)
-
-        u, predicted_trajectory = dwa_control(x, config, goal, ob)
-        x = state.getX()  # simulate robot
-        trajectory = np.vstack((trajectory, x))  # store state history
+        # u, predicted_trajectory = dwa_control(x, config, goal, ob)
+        # x = state.getX()  # simulate robot
+        # trajectory = np.vstack((trajectory, x))  # store state history
 
         path_planner.publishGlobalPath(pub=global_path_pub)
-        path_planner.publishLocalPath(
-            paths=predicted_trajectory, pub=local_path_pub)
+        # path_planner.publishLocalPath(
+        #     paths=predicted_trajectory, pub=local_path_pub)
         path_planner.publishTempGoal(pub=goal_pub, goal=goal)
 
         r.sleep()

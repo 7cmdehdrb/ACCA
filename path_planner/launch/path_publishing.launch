@@ -20,7 +20,7 @@
     <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     <!-- Path Publish -->
-    <!-- <node name="path_planner" pkg="path_planner" type="path_planner.py" output="screen" /> -->
+    <node name="path_planner" pkg="path_planner" type="path_planner.py" output="screen" />
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
