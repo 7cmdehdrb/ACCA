@@ -39,7 +39,7 @@ class FakeOdometry(erp42):
         )
 
         odom.header.stamp = self.currentTime
-        odom.header.frame_id = "odom"
+        odom.header.frame_id = "map"
         odom.child_frame_id = "base_link"
 
         odom.pose.pose = Pose(Point(self.x, self.y, 0.0),
@@ -61,18 +61,29 @@ class FakeOdometry(erp42):
         steer = np.clip(data.angular.z, -m.radians(30), m.radians(30))
 
         self.v = data.linear.x
-        self.yaw += (self.v / 1.040) * m.tan(steer) * self.dt
+        self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
+
+    def cmd_callback2(self, msg):
+        data = Twist()
+        data = msg
+
+        steer = np.clip(data.angular.z, -m.radians(30), m.radians(30))
+
+        self.v = data.linear.x
+        self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
 
 
 if __name__ == "__main__":
     rospy.init_node("fake_odometry")
 
-    fake_odom = FakeOdometry(x=0.0, y=0.0, yaw=0.0, v=0.0)
+    fake_odom = FakeOdometry(x=-8.360734939575195, y=-
+                             10.727249145507812, yaw=-1.31937820329, v=0.0)
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
 
-    # rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
+    rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
+    # rospy.Subscriber("/dwa_stanley_cmd", Twist, fake_odom.cmd_callback2)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():

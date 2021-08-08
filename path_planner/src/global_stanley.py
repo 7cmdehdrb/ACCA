@@ -9,7 +9,7 @@ from geometry_msgs.msg import Twist
 from loadPose import LoadPose
 
 
-k = 2.0  # control gain
+k = 100.0  # control gain
 L = 1.040  # [m] Wheel base of vehicle
 max_steer = np.radians(25.0)  # [rad] max steering angle
 
@@ -21,38 +21,9 @@ class PathFinder(object):
 
         self.path = Path()
 
-        self.cx = [0.0, 0.01]
-        self.cy = [0.0, 0.0]
-        self.cyaw = [0.0, 0.0]
-
-    def pathCallback(self, msg):
-        if self.counter is True:
-            self.path = msg
-            self.cx = []
-            self.cy = []
-            self.cyaw = []
-
-            poses = self.path.poses
-
-            for pose in poses:
-                x = pose.pose.position.x
-                y = pose.pose.position.y
-
-                ori_x = pose.pose.orientation.x
-                ori_y = pose.pose.orientation.y
-                ori_z = pose.pose.orientation.z
-                ori_w = pose.pose.orientation.w
-
-                (_, _, yaw) = tf.transformations.euler_from_quaternion(
-                    [ori_x, ori_y, ori_z, ori_w])
-
-                self.cx.append(x)
-                self.cy.append(y)
-                self.cyaw.append(yaw)
-
-            if len(self.cx) != 0 and len(self.cy) != 0 and len(self.cyaw):
-                if len(self.cx) == len(self.cy) and len(self.cx) == len(self.cyaw):
-                    self.counter = False
+        self.cx = []
+        self.cy = []
+        self.cyaw = []
 
 
 class State(object):
@@ -119,16 +90,6 @@ class State(object):
         self.last_y = self.y
         self.last_yaw = self.yaw
         self.lastTime = rospy.Time.now()
-
-
-def pid_control(target, current):
-    """
-    Proportional control for the speed.
-    :param target: (float)
-    :param current: (float)
-    :return: (float)
-    """
-    return Kp * (target - current)
 
 
 def stanley_control(state, cx, cy, cyaw, last_target_idx):
@@ -206,34 +167,34 @@ if __name__ == "__main__":
     load = LoadPose()
     load.readCSV()
 
-    state = State(x=-10.0, y=10, yaw=np.radians(0.0), v=0.0)
+    state = State(x=-0.0, y=0.0, yaw=np.radians(180.0), v=0.0)
     path = PathFinder()
 
     cmd_msg = Twist()
 
-    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
+    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
     cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
     path_pub = rospy.Publisher("/cublic_global_path", Path, queue_size=1)
 
     desired_speed = 5.0  # kph
 
-    cx = load.cx
-    cy = load.cy
-    cyaw = load.cyaw
+    path.cx = load.cx
+    path.cy = load.cy
+    path.cyaw = load.cyaw
 
-    last_idx = len(cx) - 1
+    last_idx = len(path.cx) - 1
 
-    target_idx, _ = calc_target_index(state, cx, cy)
+    target_idx, _ = calc_target_index(state, path.cx, path.cy)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
         di, target_idx = stanley_control(
-            state, cx[:target_idx + 100], cy[:target_idx + 100], cyaw[:target_idx + 100], target_idx)
+            state, path.cx, path.cy, path.cyaw, target_idx)
 
-        di = np.clip(di, -m.radians(30), m.radians(30))
+        di = np.clip(di, -m.radians(30.0), m.radians(30.0))
 
-        cmd_msg.linear.x = desired_speed
+        cmd_msg.linear.x = desired_speed if last_idx != target_idx else 0.0
         cmd_msg.linear.y = 0.0
         cmd_msg.linear.z = 0.0
 
@@ -245,5 +206,5 @@ if __name__ == "__main__":
 
         rospy.loginfo((-m.degrees(di), target_idx))
 
-        load.posePublish(pub=path_pub)
+        load.pathPublish(pub=path_pub)
         r.sleep()

@@ -32,15 +32,15 @@ class Config:
         self.max_speed = 3.0  # [m/s]
         self.min_speed = 0.0  # [m/s]
         self.max_yaw_rate = 30.0 * math.pi / 180.0  # [rad/s]
-        self.max_accel = 1.0  # [m/ss]
-        self.max_delta_yaw_rate = 20.0 * math.pi / 180.0  # [rad/ss]
+        self.max_accel = 0.2  # [m/ss]
+        self.max_delta_yaw_rate = 40.0 * math.pi / 180.0  # [rad/ss]
         self.v_resolution = 0.1  # [m/s]
-        self.yaw_rate_resolution = 0.1 * math.pi / 180.0  # [rad/s]
+        self.yaw_rate_resolution = 0.05 * math.pi / 180.0  # [rad/s]
         self.dt = 0.1  # [s] Time tick for motion prediction
         self.predict_time = 3.0  # [s]
-        self.to_goal_cost_gain = 1.0
-        self.speed_cost_gain = 5.0
-        self.obstacle_cost_gain = 10.0
+        self.to_goal_cost_gain = 0.2
+        self.speed_cost_gain = 1.0
+        self.obstacle_cost_gain = 1.0
         self.robot_stuck_flag_cons = 0.001  # constant to prevent robot stucked
         self.robot_type = RobotType.circle
 
@@ -52,7 +52,7 @@ class Config:
         self.robot_width = 0.5  # [m] for collision check
         self.robot_length = 1.2  # [m] for collision check
         # obstacles [x(m) y(m), ....]
-        self.ob = np.array([[-10.0, -10.0], ])
+        self.ob = np.array([[10.0, 10.0], ])
 
     @property
     def robot_type(self):
@@ -95,7 +95,7 @@ def calc_dynamic_window(x, config):
           x[4] + config.max_delta_yaw_rate * config.dt]
 
     #  [v_min, v_max, yaw_rate_min, yaw_rate_max]
-    dw = [0.0, min(Vs[1], Vd[1]),
+    dw = [0.0, 4.0,
           max(Vs[2], Vd[2]), min(Vs[3], Vd[3])]
 
     return dw
@@ -173,7 +173,7 @@ def calc_obstacle_cost(trajectory, ob, config):
         rot = np.array([[np.cos(yaw), -np.sin(yaw)],
                        [np.sin(yaw), np.cos(yaw)]])
         rot = np.transpose(rot, [2, 0, 1])
-        local_ob = ob[:, None] - trajectory[:, 0:2]
+        local_ob = ob[:, None] - trajectory[:, 0: 2]
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])
         local_ob = np.array([np.dot(local_ob, x) for x in rot])
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])

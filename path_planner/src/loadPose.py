@@ -30,7 +30,7 @@ class LoadPose(object):
 
         rospy.loginfo("LOADING FINISHED")
 
-    def posePublish(self, pub):
+    def pathPublish(self, pub):
         msg = Path()
 
         msg.header.stamp = rospy.Time.now()
