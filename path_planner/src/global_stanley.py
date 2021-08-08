@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-"""
-Path tracking simulation with Stanley steering control and PID speed control.
-author: Atsushi Sakai (@Atsushi_twi)
-Ref:
-    - [Stanley: The robot that won the DARPA grand challenge](http://isl.ecst.csuchico.edu/DOCS/darpa2005/DARPA%202005%20Stanley.pdf)
-    - [Autonomous Automobile Path Tracking](https://www.ri.cmu.edu/pub_files/2009/2/Automatic_Steering_Methods_for_Autonomous_Automobile_Path_Tracking.pdf)
-"""
 import rospy
 import math as m
 import numpy as np
@@ -16,8 +9,7 @@ from geometry_msgs.msg import Twist
 from loadPose import LoadPose
 
 
-k = 1.0  # control gain
-Kp = 0.5  # speed proportional gain
+k = 2.0  # control gain
 L = 1.040  # [m] Wheel base of vehicle
 max_steer = np.radians(25.0)  # [rad] max steering angle
 
@@ -88,6 +80,7 @@ class State(object):
 
         self.last_x = x
         self.last_y = y
+        self.last_yaw = yaw
 
         self.v = v
         self.dx = self.v * m.cos(self.yaw)
@@ -99,6 +92,9 @@ class State(object):
         self.currentTime = rospy.Time.now()
 
         self.dt = (self.currentTime - self.lastTime).to_sec()
+
+        if self.dt == 0:
+            return
 
         self.x = self.data.pose.pose.position.x
         self.y = self.data.pose.pose.position.y
@@ -114,19 +110,14 @@ class State(object):
 
         self.yaw = yaw
 
-        try:
-
-            self.dx = (self.x - self.last_x) / self.dt
-            self.dy = (self.x - self.last_y) / self.dt
-            self.v = m.sqrt((self.dx ** 2) + (self.dy ** 2))
-
-        except ZeroDivisionError:
-            pass
-        except Exception as ex:
-            print(ex)
+        self.dx = (self.x - self.last_x) / self.dt
+        self.dy = (self.x - self.last_y) / self.dt
+        self.dyaw = (self.yaw - self.last_yaw) / self.dt
+        self.v = m.sqrt((self.dx ** 2) + (self.dy ** 2))
 
         self.last_x = self.x
         self.last_y = self.y
+        self.last_yaw = self.yaw
         self.lastTime = rospy.Time.now()
 
 
@@ -221,11 +212,9 @@ if __name__ == "__main__":
     cmd_msg = Twist()
 
     rospy.Subscriber("/odom", Odometry, state.odometryCallback)
-    # rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
     cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
-    path_pub = rospy.Publisher("stanley_path", Path, queue_size=1)
-    # cmd_pub = rospy.Publisher("/test_stanley_cmd", Twist, queue_size=1)
+    path_pub = rospy.Publisher("/cublic_global_path", Path, queue_size=1)
 
     desired_speed = 5.0  # kph
 
@@ -239,7 +228,8 @@ if __name__ == "__main__":
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
-        di, target_idx = stanley_control(state, cx, cy, cyaw, target_idx)
+        di, target_idx = stanley_control(
+            state, cx[:target_idx + 100], cy[:target_idx + 100], cyaw[:target_idx + 100], target_idx)
 
         di = np.clip(di, -m.radians(30), m.radians(30))
 
@@ -252,8 +242,8 @@ if __name__ == "__main__":
         cmd_msg.angular.z = -di
 
         cmd_pub.publish(cmd_msg)
-        load.posePublish(pub=path_pub)
 
         rospy.loginfo((-m.degrees(di), target_idx))
 
+        load.posePublish(pub=path_pub)
         r.sleep()

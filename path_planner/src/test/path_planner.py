@@ -209,20 +209,20 @@ if __name__ == "__main__":
 
     global_path_pub = rospy.Publisher("cublic_global_path", Path, queue_size=1)
     local_path_pub = rospy.Publisher("dwa_local_path", Path, queue_size=1)
-    goal_pub = rospy.Publisher("temp_goal", PoseStamped, queue_size=1)
+    # goal_pub = rospy.Publisher("temp_goal", PoseStamped, queue_size=1)
 
     x = state.getX()
     goal = path_planner.getTempGoal()   # [x, y, yaw]
     ob = config.ob
 
-    r = rospy.Rate(100.0)
+    r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
         goal = path_planner.getTempGoal(gap=100)
 
         u, predicted_trajectory = dwa_control(x, config, goal, ob)
         x = state.getX()  # simulate robot
 
-        # path_planner.publishGlobalPath(pub=global_path_pub)
+        path_planner.publishGlobalPath(pub=global_path_pub)
         path_planner.publishLocalPath(
             paths=predicted_trajectory, pub=local_path_pub)
         # path_planner.publishTempGoal(pub=goal_pub, goal=goal)

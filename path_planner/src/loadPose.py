@@ -17,7 +17,8 @@ class LoadPose(object):
         self.cyaw = []
 
     def readCSV(self):
-        output_file_path = rospkg.RosPack().get_path('odometry')+"/saved_path/pose.csv"
+        output_file_path = rospkg.RosPack().get_path(
+            'path_planner')+"/saved_path/path.csv"
 
         rospy.loginfo("LOADING CSV FILE...")
         with open(output_file_path, "r") as csvFile:
@@ -58,19 +59,3 @@ class LoadPose(object):
             msg.poses.append(pose)
 
         pub.publish(msg)
-
-
-if __name__ == "__main__":
-    rospy.init_node("load_pose")
-
-    load_pose = LoadPose()
-    load_pose.readCSV()
-
-    # msg = Path()
-
-    path_pub = rospy.Publisher("stanley_path", Path, queue_size=1)
-
-    r = rospy.Rate(1.0)
-    while not rospy.is_shutdown():
-        load_pose.posePublish(pub=path_pub)
-        r.sleep()

@@ -12,7 +12,7 @@
     <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     <!-- Path Planner -->
-    <!-- <node name="create_global_path" pkg="path_planner" type="create_global_path.py" output="screen" /> -->
+    <node name="create_global_path" pkg="path_planner" type="create_global_path.py" output="screen" />
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
@@ -20,7 +20,7 @@
     </include>
 
     <!-- MoveBase -->
-    <include file="$(find move_base)/move_base_test.launch" />
+    <!-- <include file="$(find move_base)/move_base_test.launch" /> -->
 
     <!-- Model -->
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
