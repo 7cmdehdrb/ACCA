@@ -7,12 +7,12 @@ import tf
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import Twist
 from loadPose import LoadPose
+from path_planner.msg import stanleyMsg
 
 
-k = 100.0  # control gain
+k = rospy.get_param("/c_gain", 100.0)  # control gain
+desired_speed = rospy.get_param("/desired_speed", 3.0)  # kph
 L = 1.040  # [m] Wheel base of vehicle
-max_steer = np.radians(25.0)  # [rad] max steering angle
-desired_speed = 4.0  # kph
 
 
 class PathFinder(object):
@@ -85,7 +85,7 @@ class State(object):
         self.dx = (self.x - self.last_x) / self.dt
         self.dy = (self.x - self.last_y) / self.dt
         self.dyaw = (self.yaw - self.last_yaw) / self.dt
-        self.v = m.sqrt((self.dx ** 2) + (self.dy ** 2))
+        self.v = np.hypot(self.dx, self.dy)
 
         self.last_x = self.x
         self.last_y = self.y
@@ -115,7 +115,6 @@ def stanley_control(state, cx, cy, cyaw, last_target_idx):
     theta_d = np.arctan2(k * error_front_axle, state.v)
     # Steering control
     delta = theta_e + theta_d
-    # print(theta_d)
 
     return delta, current_target_idx
 
@@ -164,17 +163,18 @@ def calc_target_index(state, cx, cy):
 def checkGoal(current_speed, last_idx, current_idx):
     global desired_speed
 
-    temp_speed = current_speed
+    temp_speed = 0.0
+    temp_brake = 1
 
-    accel = 0.05
-
-    if abs(last_idx - current_idx) < 50:
-        temp_speed -= accel
+    if abs(last_idx - current_idx) < 20:
+        temp_speed = 0.0
+        temp_brake = 80
 
     else:
-        temp_speed += accel
+        temp_speed = desired_speed
+        temp_brake = 1
 
-    return np.clip(temp_speed, 0.0, desired_speed)
+    return temp_speed, temp_brake
 
 
 if __name__ == "__main__":
@@ -184,25 +184,26 @@ if __name__ == "__main__":
     load = LoadPose()
     load.readCSV()
 
-    state = State(x=-0.0, y=0.0, yaw=np.radians(180.0), v=0.0)
+    state = State(x=-0.0, y=0.0, yaw=np.radians(0.0), v=0.0)
     path = PathFinder()
 
-    cmd_msg = Twist()
+    cmd_msg = stanleyMsg()
 
     rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
-    cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
+    cmd_pub = rospy.Publisher("/stanley_cmd", stanleyMsg, queue_size=1)
     path_pub = rospy.Publisher("/cublic_global_path", Path, queue_size=1)
 
     path.cx = load.cx
     path.cy = load.cy
     path.cyaw = load.cyaw
 
+    speed = 0.0
+    brake = 0.0
+
     last_idx = len(path.cx) - 1
 
     target_idx, _ = calc_target_index(state, path.cx, path.cy)
-
-    speed = 4.0
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
@@ -211,20 +212,17 @@ if __name__ == "__main__":
 
         di = np.clip(di, -m.radians(30.0), m.radians(30.0))
 
-        speed = checkGoal(current_speed=speed,
-                          last_idx=last_idx, current_idx=target_idx)
+        speed, brake = checkGoal(current_speed=speed,
+                                 last_idx=last_idx, current_idx=target_idx)
 
-        cmd_msg.linear.x = speed
-        cmd_msg.linear.y = 0.0
-        cmd_msg.linear.z = 0.0
-
-        cmd_msg.angular.x = 0.0
-        cmd_msg.angular.y = 0.0
-        cmd_msg.angular.z = -di
+        cmd_msg.speed = speed
+        cmd_msg.steer = -di
+        cmd_msg.brake = brake
 
         cmd_pub.publish(cmd_msg)
 
         rospy.loginfo((-m.degrees(di), target_idx))
 
         load.pathPublish(pub=path_pub)
+
         r.sleep()

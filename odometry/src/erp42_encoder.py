@@ -6,6 +6,7 @@ import threading
 import math as m
 from std_msgs.msg import Float32MultiArray, Float32
 from geometry_msgs.msg import Twist
+from path_planner.msg import stanleyMsg
 
 # Params
 
@@ -27,6 +28,8 @@ class control():
         ETX0 = 13
         ETX1 = 10
         ALIVE = 0
+
+        self.stanley_control = stanleyMsg()
 
         """
             Feed back variable
@@ -156,8 +159,9 @@ class control():
     """ Serial Write"""
 
     def cmd_vel_callback(self, msg):
-        self.cmd_vel_msg = msg
-        self.handle_cmd_vel()
+        # self.cmd_vel_msg = msg
+        # self.handle_cmd_vel()
+        self.stanley_control = msg
 
     def handle_cmd_vel(self):
         # Determine Gear(linear.x => gear(0 / 1/ 2))
@@ -296,22 +300,17 @@ if __name__ == "__main__":
         '/erp42_encoder', Float32MultiArray, queue_size=1)
 
     """ Subscriber"""
-    rospy.Subscriber("/stanley_cmd", Twist, mycar.cmd_vel_callback)
+    rospy.Subscriber("/stanley_cmd", stanleyMsg, mycar.cmd_vel_callback)
     rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
     rate = rospy.Rate(50.0)
     while not rospy.is_shutdown():
 
-        # mycar.send_data(SPEED=mycar.command_speed,
-        #                 STEER=mycar.command_steer, BRAKE=1, GEAR=2)
+        sp = mycar.stanley_control.speed
+        st = m.degrees(mycar.stanley_control.steer)
+        br = int(mycar.stanley_control.brake)
 
-        sp = mycar.cmd_vel_msg.linear.x
-        st = m.degrees(mycar.cmd_vel_msg.angular.z)
-
-        mycar.send_data(SPEED=(sp),
-                        STEER=(st), BRAKE=1, GEAR=2)
-
-        # mycar.send_data(SPEED=0, STEER=30, BRAKE=1, GEAR=2)
+        mycar.send_data(SPEED=(sp), STEER=(st), BRAKE=(br), GEAR=2)
 
         rate.sleep()
 

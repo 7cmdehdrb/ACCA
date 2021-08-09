@@ -7,6 +7,7 @@ import tf
 from model import erp42
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
+from path_planner.msg import stanleyMsg
 
 
 class FakeOdometry(erp42):
@@ -72,6 +73,32 @@ class FakeOdometry(erp42):
         self.v = data.linear.x
         self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
 
+    def cmd_callback3(self, msg):
+        data = stanleyMsg()
+        data = msg
+
+        speed = data.speed
+        steer = np.clip(data.steer, -m.radians(30.0), m.radians(30.0))
+        brake = data.brake
+
+        print(speed, steer, brake)
+
+        self.v = speed
+        self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
+
+    def cmd_callback4(self, msg):
+        data = stanleyMsg()
+        data = msg
+
+        speed = data.speed
+        steer = np.clip(data.steer, -m.radians(30.0), m.radians(30.0))
+        brake = data.brake
+
+        print(speed, m.degrees(steer), brake)
+
+        self.v = speed
+        self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
+
 
 if __name__ == "__main__":
     rospy.init_node("fake_odometry")
@@ -86,6 +113,9 @@ if __name__ == "__main__":
 
     # rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
     # rospy.Subscriber("/dwa_stanley_cmd", Twist, fake_odom.cmd_callback2)
+    # rospy.Subscriber("/stanley_cmd", stanleyMsg, fake_odom.cmd_callback3)
+    rospy.Subscriber("/potential_stanley_cmd",
+                     stanleyMsg, fake_odom.cmd_callback4)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
