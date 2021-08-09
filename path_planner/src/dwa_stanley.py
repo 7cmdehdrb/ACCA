@@ -30,6 +30,11 @@ class PathFinder(object):
         self.di = 0.0
 
     def publishLocalPath(self, paths, pub):
+        if len(paths) == 1:
+            rospy.loginfo("CANNOT FIND PATH...")
+            pub.publish(self.path)
+            return
+
         msg = Path()
 
         msg.header.stamp = rospy.Time.now()
@@ -40,10 +45,6 @@ class PathFinder(object):
         x_temp = []
         y_temp = []
         yaw_temp = []
-
-        if len(paths) == 1:
-            rospy.loginfo("CANNOT FIND PATH...")
-            return
 
         for path in paths:
             pose = PoseStamped()
@@ -73,6 +74,7 @@ class PathFinder(object):
         di = stanley_control(
             state=state, cx=x_temp, cy=y_temp, cyaw=yaw_temp)
 
+        self.path = msg
         self.di = np.clip(di, -m.radians(30.0), m.radians(30.0))
 
         pub.publish(msg)
@@ -182,7 +184,7 @@ def stanley_control(state, cx, cy, cyaw):
     current_target_idx, error_front_axle = calc_error(state, cx, cy)
 
     # theta_e corrects the heading error
-    theta_e = normalize_angle(cyaw[current_target_idx] - state.yaw)
+    theta_e = normalize_angle(cyaw[-1] - state.yaw)
 
     # theta_d corrects the cross track error
     theta_d = np.arctan2(k * error_front_axle, state.v)
@@ -198,15 +200,20 @@ def calc_error(state, cx, cy):
     fy = state.y + L * np.sin(state.yaw)
 
     # Search nearest point index
-    dx = [fx - icx for icx in cx]
-    dy = [fy - icy for icy in cy]
+    # dx = [fx - icx for icx in cx]
+    # dy = [fy - icy for icy in cy]
+
+    dx = cx[-1]
+    dy = cy[-1]
+
     d = np.hypot(dx, dy)
     target_idx = np.argmin(d)
 
     # Project RMS error onto front axle vector
     front_axle_vec = [-np.cos(state.yaw + np.pi / 2), -
                       np.sin(state.yaw + np.pi / 2)]
-    error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
+    # error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
+    error_front_axle = np.dot([dx, dy], front_axle_vec)
 
     return target_idx, error_front_axle
 
@@ -240,7 +247,8 @@ if __name__ == "__main__":
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
-        goal = path.getTempGoal(gap=100)
+        goal = path.getTempGoal(gap=50)
+        rospy.loginfo(goal)
 
         u, predicted_trajectory = dwa_control(x, config, goal, ob)
         x = state.getX()
@@ -258,7 +266,6 @@ if __name__ == "__main__":
 
         cmd_pub.publish(cmd_msg)
 
-        rospy.loginfo(goal)
         rospy.loginfo(-m.degrees(path.di))
 
         r.sleep()

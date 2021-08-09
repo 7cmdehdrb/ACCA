@@ -12,6 +12,7 @@ from loadPose import LoadPose
 k = 100.0  # control gain
 L = 1.040  # [m] Wheel base of vehicle
 max_steer = np.radians(25.0)  # [rad] max steering angle
+desired_speed = 4.0  # kph
 
 
 class PathFinder(object):
@@ -160,6 +161,22 @@ def calc_target_index(state, cx, cy):
     return target_idx, error_front_axle
 
 
+def checkGoal(current_speed, last_idx, current_idx):
+    global desired_speed
+
+    temp_speed = current_speed
+
+    accel = 0.05
+
+    if abs(last_idx - current_idx) < 50:
+        temp_speed -= accel
+
+    else:
+        temp_speed += accel
+
+    return np.clip(temp_speed, 0.0, desired_speed)
+
+
 if __name__ == "__main__":
     rospy.init_node("stanley_method")
 
@@ -177,8 +194,6 @@ if __name__ == "__main__":
     cmd_pub = rospy.Publisher("/stanley_cmd", Twist, queue_size=1)
     path_pub = rospy.Publisher("/cublic_global_path", Path, queue_size=1)
 
-    desired_speed = 5.0  # kph
-
     path.cx = load.cx
     path.cy = load.cy
     path.cyaw = load.cyaw
@@ -187,14 +202,19 @@ if __name__ == "__main__":
 
     target_idx, _ = calc_target_index(state, path.cx, path.cy)
 
+    speed = 4.0
+
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
         di, target_idx = stanley_control(
-            state, path.cx, path.cy, path.cyaw, target_idx)
+            state, path.cx[:target_idx+100], path.cy[:target_idx+100], path.cyaw[:target_idx+100], target_idx)
 
         di = np.clip(di, -m.radians(30.0), m.radians(30.0))
 
-        cmd_msg.linear.x = desired_speed if last_idx != target_idx else 0.0
+        speed = checkGoal(current_speed=speed,
+                          last_idx=last_idx, current_idx=target_idx)
+
+        cmd_msg.linear.x = speed
         cmd_msg.linear.y = 0.0
         cmd_msg.linear.z = 0.0
 

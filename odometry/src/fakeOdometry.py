@@ -76,13 +76,15 @@ class FakeOdometry(erp42):
 if __name__ == "__main__":
     rospy.init_node("fake_odometry")
 
-    fake_odom = FakeOdometry(x=-8.360734939575195, y=-
-                             10.727249145507812, yaw=-1.31937820329, v=0.0)
+    # fake_odom = FakeOdometry(x=-8.360734939575195, y=-
+    #                          10.727249145507812, yaw=-2.31937820329, v=0.0)
+
+    fake_odom = FakeOdometry(x=-0.0, y=-0.0, yaw=-0.0, v=0.0)
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
 
-    rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
+    # rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
     # rospy.Subscriber("/dwa_stanley_cmd", Twist, fake_odom.cmd_callback2)
 
     r = rospy.Rate(50.0)

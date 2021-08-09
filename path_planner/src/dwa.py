@@ -34,11 +34,11 @@ class Config:
         self.max_yaw_rate = 30.0 * math.pi / 180.0  # [rad/s]
         self.max_accel = 0.2  # [m/ss]
         self.max_delta_yaw_rate = 40.0 * math.pi / 180.0  # [rad/ss]
-        self.v_resolution = 0.1  # [m/s]
+        self.v_resolution = 0.5  # [m/s]
         self.yaw_rate_resolution = 0.05 * math.pi / 180.0  # [rad/s]
         self.dt = 0.1  # [s] Time tick for motion prediction
         self.predict_time = 3.0  # [s]
-        self.to_goal_cost_gain = 0.2
+        self.to_goal_cost_gain = 3.0
         self.speed_cost_gain = 1.0
         self.obstacle_cost_gain = 1.0
         self.robot_stuck_flag_cons = 0.001  # constant to prevent robot stucked
@@ -95,7 +95,7 @@ def calc_dynamic_window(x, config):
           x[4] + config.max_delta_yaw_rate * config.dt]
 
     #  [v_min, v_max, yaw_rate_min, yaw_rate_max]
-    dw = [0.0, 4.0,
+    dw = [0.0, min(Vs[1], Vd[1]),
           max(Vs[2], Vd[2]), min(Vs[3], Vd[3])]
 
     return dw
