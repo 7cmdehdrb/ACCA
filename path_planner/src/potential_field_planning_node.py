@@ -189,7 +189,7 @@ def calc_target_index(state, cx, cy):
     """
     # Calc front axle position
     fx = state.x + L * np.cos(state.yaw)
-    fy = state.y + L * np.sin(staWte.yaw)
+    fy = state.y + L * np.sin(state.yaw)
 
     # Search nearest point index
     dx = [fx - icx for icx in cx]
