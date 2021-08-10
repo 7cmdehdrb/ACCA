@@ -106,7 +106,7 @@ class PathDetection(object):
         distance = np.hypot(
             abs(self.paths[-1][0] - new_path_position[0]), abs(self.paths[-1][1] - new_path_position[1]))
 
-        if abs(distance) > 0.05:
+        if abs(distance) > 1.0:
             self.paths.append(new_path_position)
             self.x_paths.append(new_path_position[0])
             self.y_paths.append(new_path_position[1])
@@ -115,14 +115,14 @@ class PathDetection(object):
         path = Path()
 
         path.header.stamp = rospy.Time.now()
-        path.header.frame_id = "map"
+        path.header.frame_id = "odom"
         path.poses = []
 
         for i in range(0, len(cx) - 1):
             temp_pose = PoseStamped()
 
             temp_pose.header.stamp = rospy.Time.now()
-            temp_pose.header.frame_id = "map"
+            temp_pose.header.frame_id = "odom"
 
             temp_pose.pose.position.x = cx[i]
             temp_pose.pose.position.y = cy[i]

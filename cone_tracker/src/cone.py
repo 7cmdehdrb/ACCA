@@ -97,7 +97,7 @@ class Laser(object):
         self.meanx = a/len(self.tot_x)
         self.meany = b/len(self.tot_y)
 
-        # print(self.meany,self.cmeanx)
+        print(self.meany, self.cmeanx)
 
     def pubResults(self, publisher):
         cone_pose = PoseStamped()

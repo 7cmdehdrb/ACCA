@@ -221,7 +221,7 @@ if __name__ == "__main__":
         '/erp42_encoder', encoderMsg, queue_size=1)
 
     """ Subscriber"""
-    rospy.Subscriber("/stanley_cmd", stanleyMsg, mycar.cmd_vel_callback)
+    rospy.Subscriber("/cone_stanley_cmd", stanleyMsg, mycar.cmd_vel_callback)
     rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
     rate = rospy.Rate(50.0)

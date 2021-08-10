@@ -26,9 +26,11 @@ class TF_lidar(object):
     def listenTF(self):
         try:
             (trans, rot) = listener.lookupTransform(
-                "/map", "/laser", rospy.Time(0))
+                "/odom", "/laser", rospy.Time(0))
             self.trans = trans
             self.rot = rot
+
+            print(trans)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             pass
         except Exception as ex:
@@ -42,7 +44,7 @@ class TF_lidar(object):
         new_msg = PoseStamped()
 
         new_msg.header.stamp = rospy.Time.now()
-        new_msg.header.frame_id = "map"
+        new_msg.header.frame_id = "odom"
 
         new_msg.pose.position.x = self.subscribedMsg.pose.position.x + \
             self.trans[0]
@@ -53,7 +55,7 @@ class TF_lidar(object):
         new_msg.pose.orientation.x = 0.0
         new_msg.pose.orientation.y = 0.0
         new_msg.pose.orientation.z = 0.0
-        new_msg.pose.orientation.w = 0.0
+        new_msg.pose.orientation.w = 1.0
 
         return new_msg
 
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     transformed_pub = rospy.Publisher(
         "transformed_cone_position", PoseStamped, queue_size=1)
 
-    r = rospy.Rate(30.0)
+    r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
         tf_pose.listenTF()
         tf_pose.publishTransformedPose(publisher=transformed_pub)
