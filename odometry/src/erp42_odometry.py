@@ -7,73 +7,116 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Float32MultiArray
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
+from odometry.msg import encoderMsg
 
 
-class my_odometry():
-    def __init__(self):
+wheelbase = 1.040
+wheeltrack = 0.985
+TICK2RAD = 0.06283185307
+wheel_radius = 0.265
 
-        self.currentTime = rospy.Time.now()
-        self.lastTime = rospy.Time.now()
 
-        self.x = 0.0
-        self.y = 0.0
+class my_odometry(object):
+    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
+        super(my_odometry, self).__init__()
 
-        self.v = 0.0
-        self.th = 0.0
+        self.encoder_msg = encoderMsg()
 
-        self.init_yaw = 0.0
+        self.current_time = rospy.Time.now()
+        self.last_time = rospy.Time.now()
 
-        self.dx = 0.0
-        self.dy = 0.0
-        self.dth = 0.0
+        self.initial_enc = 0
+        self.last_encoder = 0
 
-        self.dt = 0.0
+        self.x = x
+        self.y = y
+        self.yaw = yaw
+        self.v = v
 
     def encoder_callback(self, msg):
-        """
-            data = [self.feedback_AorM, self.feedback_gear,
-                    self.feedback_speed, self.feedback_steer, self.feedback_brake]
-        """
+        self.encoder_msg = msg
 
-        data = msg
+    def publishOdometry(self, publisher, broadcaster):
+        # to save the orgin of odom frame
+        if self.encoder_msg.Encoder != 0 and self.last_encoder == 0:
+            self.initial_enc = self.encoder_msg.Encoder
 
-        gear = int(data.data[1])    # 2: D / 1: N / 0: B
-        gear = 1.0 if gear == 2 else -1.0
+        # sometimes, prior feedback msgs received
+        if self.encoder_msg.Encoder == self.last_encoder and self.v != 0:
+            self.v = 0
+            return
 
-        self.v = data.data[2] * gear  # mps
+        # calculate linear velocity with incremental encoder
+        self.current_time = rospy.Time.now()
 
-    def imu_callback(self, msg):
-        data = msg
+        dt = (self.current_time - self.last_time).to_sec()
 
-        x = data.orientation.x
-        y = data.orientation.y
-        z = data.orientation.z
-        w = data.orientation.w
+        delta_encoder = self.encoder_msg.Encoder - self.last_encoder
+        self.last_encoder = self.encoder_msg.Encoder + self.initial_enc
 
-        quaternion_array = [x, y, z, w]
+        wheel_pos = TICK2RAD * delta_encoder
+        delta_pos = wheel_radius * wheel_pos
 
-        (_, _, yaw) = tf.transformations.euler_from_quaternion(quaternion_array)
+        linear_vel = delta_pos / dt
+        self.v = linear_vel
 
-        if yaw != 0.0 and self.init_yaw == 0.0:
-            self.init_yaw = yaw
-            print("IMU initialize success : %f" % self.init_yaw)
-        else:
-            self.th = yaw - self.init_yaw
+        # transformation from FL to base_link
+        DEG = int(m.degrees(self.encoder_msg.steer))
 
-        self.dth = data.angular_velocity.z
+        if (DEG) != 0:
+            A = wheelbase / \
+                m.tan(m.radians(abs(DEG))) - wheeltrack / 2
+            th1 = m.atan(wheelbase / (wheeltrack + A))
+            th2 = m.atan(wheelbase / A)
+            r1 = wheelbase / m.sin(th1)
+            r2 = wheelbase / m.sin(th2)
+            rb = wheelbase / m.tan(m.radians(abs(DEG)))
+            if DEG < 0:
+                delta_pos *= rb / r1
+                delta_pos *= R_err_cal
+                linear_vel *= rb / r1
+                linear_vel *= R_err_cal
+            else:
+                delta_pos *= rb / r2
+                delta_pos *= L_err_cal
+                linear_vel *= rb / r2
+                linear_vel *= L_err_cal
+            self.v = linear_vel
 
-    def update(self):
-        self.currentTime = rospy.Time.now()
+        angular_vel = m.tan(m.radians(DEG)) * \
+            linear_vel / wheelbase
 
-        self.dt = (self.currentTime - self.lastTime).to_sec()
+        self.yaw += angular_vel * dt
+        self.x += delta_pos * m.cos(self.yaw)
+        self.y += delta_pos * m.sin(self.yaw)
+        vx = linear_vel * m.cos(self.yaw)
+        vy = linear_vel * m.sin(self.yaw)
 
-        self.dx = self.v * m.cos(self.th)
-        self.dy = self.v * m.sin(self.th)
+        odom_quat = tf.transformations.quaternion_from_euler(
+            0, 0, self.yaw)
 
-        self.x += self.dx * self.dt
-        self.y += self.dy * self.dt
+        broadcaster.sendTransform(
+            (self.x, self.y, 0.),
+            odom_quat,
+            self.current_time,
+            "base_link",
+            "odom"
+        )
 
-        self.lastTime = rospy.Time.now()
+        odom = Odometry()
+        odom.header.stamp = self.current_time
+        odom.header.frame_id = "odom"
+
+        odom.pose.pose = Pose(Point(self.x, self.y, 0.),
+                              Quaternion(*odom_quat))
+
+        odom.child_frame_id = "base_link"
+        odom.twist.twist = Twist(
+            Vector3(vx, vy, 0), Vector3(0, 0, angular_vel))
+
+        publisher.publish(odom)
+
+        self.last_time = rospy.Time.now()
 
 
 if __name__ == "__main__":
@@ -83,45 +126,17 @@ if __name__ == "__main__":
 
     odom_pub = rospy.Publisher("erp42_odometry", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
-    odom = Odometry()
 
     """ Subscriber """
-    # IMU subscribe
-    rospy.Subscriber("/imu/data", Imu, my_odom.imu_callback)
-
     # Encoder subscibe
-    # rospy.Subscriber("/erp42/erp42_encoder",
-    #                  Float32MultiArray, my_odom.encoder_callback)
+    rospy.Subscriber("/erp42_encoder",
+                     encoderMsg, my_odom.encoder_callback)
 
-    r = rospy.Rate(1.0)
+    r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
-
         """ Odometry """
 
-        my_odom.update()
+        my_odom.publishOdometry(
+            publisher=odom_pub, broadcaster=odom_broadcaster)
 
-        odom_quat = tf.transformations.quaternion_from_euler(0, 0, my_odom.th)
-
-        odom_broadcaster.sendTransform(
-            (my_odom.x, my_odom.y, 0.0),
-            odom_quat,
-            my_odom.currentTime,
-            "base_link",
-            "odom"
-        )
-
-        odom.header.stamp = my_odom.currentTime
-        odom.header.frame_id = "odom"
-        odom.child_frame_id = "base_link"
-
-        # Position information
-
-        odom.pose.pose = Pose(
-            Point(my_odom.x, my_odom.y, 0.0), Quaternion(*odom_quat))
-
-        odom.twist.twist = Twist(Vector3(my_odom.dx, my_odom.dy, 0.0),
-                                 Vector3(0.0, 0.0, my_odom.dth))
-
-        odom_pub.publish(odom)
-
-        my_odom.lastTime = rospy.Time.now()
+        r.sleep()

@@ -10,8 +10,8 @@ from loadPose import LoadPose
 from path_planner.msg import stanleyMsg
 
 
-k = rospy.get_param("/c_gain", 100.0)  # control gain
-desired_speed = rospy.get_param("/desired_speed", 3.0)  # kph
+k = rospy.get_param("/c_gain", 30.0)  # control gain
+desired_speed = rospy.get_param("/desired_speed", 30.0)  # kph
 L = 1.040  # [m] Wheel base of vehicle
 
 

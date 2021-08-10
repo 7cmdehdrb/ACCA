@@ -7,6 +7,7 @@ import math as m
 from std_msgs.msg import Float32MultiArray, Float32
 from geometry_msgs.msg import Twist
 from path_planner.msg import stanleyMsg
+from odometry.msg import encoderMsg
 
 # Params
 
@@ -30,33 +31,10 @@ class control():
         ALIVE = 0
 
         self.stanley_control = stanleyMsg()
+        self.feedbackMsg = encoderMsg()
+        self.control_msg = stanleyMsg()
 
-        """
-            Feed back variable
-            For (encoder => odom)
-        """
-
-        self.feedback_AorM = 0
-        self.feedback_gear = 1
-        self.feedback_speed = 0.0
-        self.feedback_steer = 0.0
-        self.feedback_brake = 1
         self.feedback_encoder = 0
-
-        """
-            cmd_vel variable
-            For (cmd_vel => erp42 packet)
-        """
-
-        self.cmd_vel_msg = Twist()
-        self.command_AorM = 0
-        self.command_gear = 1
-        self.command_speed = 0.0
-        self.command_steer = 0.0
-        self.command_brake = 1
-
-        self.distance_ratio = 1.0
-        self.control_brake = 1
 
         """
             Encoder variable
@@ -77,7 +55,6 @@ class control():
         self.ser = serial.Serial(
             port=port_num,
             baudrate=115200,
-            # timeout=0
         )
 
     """ Util """
@@ -116,14 +93,14 @@ class control():
         """
 
         # AorM - 0: M / 1: A
-        self.feedback_AorM = ord(line[4])
+        feedback_AorM = ord(line[4])
 
         # Gear - 0: B / 1: N / 2: D
-        self.feedback_gear = ord(line[5])
+        feedback_gear = ord(line[5])
 
         # Speed
         feedback_KPH = (ord(line[6]) + ord(line[7]) * 256) / 10
-        self.feedback_speed = self.kph2mps(value=feedback_KPH)
+        feedback_speed = self.kph2mps(value=feedback_KPH)
 
         # Steer
         feedback_DEG = ord(line[8]) + ord(line[9]) * 256
@@ -134,10 +111,10 @@ class control():
         if feedback_DEG != 0:
             feedback_DEG /= 71.0
 
-        self.feedback_steer = m.radians(feedback_DEG)
+        feedback_steer = m.radians(feedback_DEG)
 
         # Brake
-        self.feedback_brake = ord(line[10])
+        feedback_brake = ord(line[10])
 
         # Encoder
         self.feedback_encoder = (ord(line[11]) + ord(line[12]) * 256 + ord(
@@ -146,77 +123,22 @@ class control():
         if self.feedback_encoder >= 2147483648:
             self.feedback_encoder -= 4294967296
 
-        data = [self.feedback_AorM, self.feedback_gear,
-                self.feedback_speed, self.feedback_steer, self.feedback_brake]
+        data = encoderMsg()
 
-        # print("SERIAL READ(AorM, Gear, Speed, Steer, Brake): ")
-        # print(data[2], data[3])
+        data.speed = feedback_speed
+        data.steer = feedback_steer
+        data.brake = feedback_brake
+        data.gear = feedback_gear
+        data.AorM = feedback_AorM
+        data.Encoder = self.feedback_encoder
 
-        encoder_data = Float32MultiArray(data=data)
-
-        encoder_pub.publish(encoder_data)
+        self.feedbackMsg = data
+        encoder_pub.publish(data)
 
     """ Serial Write"""
 
     def cmd_vel_callback(self, msg):
-        # self.cmd_vel_msg = msg
-        # self.handle_cmd_vel()
-        self.stanley_control = msg
-
-    def handle_cmd_vel(self):
-        # Determine Gear(linear.x => gear(0 / 1/ 2))
-        if self.cmd_vel_msg.linear.x > 0:
-            self.command_gear = 2
-        elif self.cmd_vel_msg.linear.x < 0:
-            self.command_gear = 0
-        elif self.cmd_vel_msg.linear.x == 0:
-            self.command_gear = 1
-        else:
-            print("cmd_vel.linear.x is not available")
-
-        # Determine Steer(linear.x & angular.z => DEG)
-
-        radius = 0.0
-
-        if (self.cmd_vel_msg.linear.x == 0 or self.cmd_vel_msg.angular.z == 0):
-            radius = 0.0
-            steering_angle = 0
-        else:
-            radius = self.cmd_vel_msg.linear.x / self.cmd_vel_msg.angular.z
-            steering_angle = m.atan(wheelbase / radius)
-
-        if self.cmd_vel_msg.linear.x != 0:
-            self.command_steer = m.degrees(steering_angle)
-        else:
-            self.command_steer = 0
-
-        # Determine Speed(linear.x => KPH)
-        self.command_speed = self.mps2kph(self.cmd_vel_msg.linear.x)
-
-        self.callback_cmd()
-
-    def callback_cmd(self):
-
-        self.command_speed = int(self.command_speed * 10)
-        if self.command_speed > 200:  # max speed is 20 km/h
-            self.command_speed = 200
-
-        self.command_steer = int(self.command_steer * 71)
-        if self.command_steer > 1999:
-            self.command_steer = 1999
-        if self.command_steer < -1999:
-            self.command_steer = -1999
-
-        self.command_brake = int(self.command_brake)
-        if self.command_brake > 200:
-            self.command_brake = 200
-
-        self.command_brake = int(self.command_brake)
-
-        # print("SERIAL WRITE(Speed, Steer, Brake, Gear): ")
-        # print(Speed, Steer, Brake, Gear)
-
-        # self.send_data(SPEED=Speed, STEER=Steer, BRAKE=Brake, GEAR=Gear)
+        self.control_msg = msg
 
     def send_data(self, SPEED, STEER, BRAKE, GEAR):
         """
@@ -253,7 +175,6 @@ class control():
             self.DATA[11] = self.ALIVE
 
             self.ser.write((self.DATA))
-            # print(self.DATA)
 
             self.ALIVE = self.ALIVE + 1
             if self.ALIVE == 256:
@@ -297,7 +218,7 @@ if __name__ == "__main__":
 
     """ Publisher """
     encoder_pub = rospy.Publisher(
-        '/erp42_encoder', Float32MultiArray, queue_size=1)
+        '/erp42_encoder', encoderMsg, queue_size=1)
 
     """ Subscriber"""
     rospy.Subscriber("/stanley_cmd", stanleyMsg, mycar.cmd_vel_callback)
@@ -306,9 +227,9 @@ if __name__ == "__main__":
     rate = rospy.Rate(50.0)
     while not rospy.is_shutdown():
 
-        sp = mycar.stanley_control.speed
-        st = m.degrees(mycar.stanley_control.steer)
-        br = int(mycar.stanley_control.brake)
+        sp = mycar.control_msg.speed
+        st = m.degrees(mycar.control_msg.steer)
+        br = int(mycar.control_msg.brake)
 
         mycar.send_data(SPEED=(sp), STEER=(st), BRAKE=(br), GEAR=2)
 
