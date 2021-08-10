@@ -10,7 +10,7 @@
 
     <node pkg="cone_tracker" type="cone.py" name="cone" output="screen"/>
     <node pkg="cone_tracker" type="tf_lidar.py" name="tf_lidar" output="screen"/>
-    <!-- <node pkg="cone_tracker" type="cone_tracker.py" name="cone_tracker" output="screen"/> -->
+    <node pkg="cone_tracker" type="cone_tracker.py" name="cone_tracker" output="screen"/>
 
     <node pkg="tf" type="static_transform_publisher" name="laser_tf_publisher" args="0.57 0.0 0.30 0 0.0 0.0 base_link laser 10" />
 

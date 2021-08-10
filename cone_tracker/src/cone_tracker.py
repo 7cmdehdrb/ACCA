@@ -220,8 +220,6 @@ if __name__ == "__main__":
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
 
-        print(len(path.x_paths), len(path.y_paths))
-
         if len(path.x_paths) > 1:
 
             cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(

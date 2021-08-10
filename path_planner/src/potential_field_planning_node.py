@@ -7,12 +7,13 @@ import tf
 import math as m
 import numpy as np
 from nav_msgs.msg import Path, Odometry
-from geometry_msgs.msg import Twist, PoseStamped
+from geometry_msgs.msg import Twist, PoseStamped, PoseArray, Pose
 from path_planner.msg import stanleyMsg
 from potential_field_planning import *
 from stanley_control import *
 import cubic_spline_planner
 from loadPose import LoadPose
+from obstacle_detection import Obstacle
 
 grid_size = 0.5  # potential grid size [m]
 robot_radius = 2.0  # robot radius [m]
@@ -30,6 +31,9 @@ class PotentialFieldPlanning(object):
         self.cy = []
         self.cyaw = []
         self.target_idx = 0
+
+        self.obstacle_x = [0]
+        self.obstacle_y = [0]
 
     def calc_target_idx(self, state):
         # Search nearest point index
@@ -78,6 +82,24 @@ class PotentialFieldPlanning(object):
             path.poses.append(pose)
 
         publisher.publish(path)
+
+    def obstacleCallback(self, msg):
+        poses = msg.poses
+
+        temp_xs = []
+        temp_ys = []
+
+        for pose in poses:
+            temp_xs.append(pose.position.x)
+            temp_ys.append(pose.position.y)
+
+        if len(temp_xs) == len(temp_ys):
+            self.obstacle_x = temp_xs
+            self.obstacle_y = temp_ys
+
+            if len(temp_xs) < 1:
+                self.obstacle_x = [0]
+                self.obstacle_y = [0]
 
 
 class State(object):
@@ -221,18 +243,20 @@ if __name__ == '__main__':
     potential_planning.cyaw = load.cyaw
 
     rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
+    rospy.Subscriber("/obstacles", PoseArray,
+                     potential_planning.obstacleCallback)
 
     path_pub = rospy.Publisher(
         "/potential_field_planning", Path, queue_size=1)
     cmd_pub = rospy.Publisher("/potential_stanley_cmd",
                               stanleyMsg, queue_size=1)
 
-    ox = [100.0]  # obstacle x position list [m]
-    oy = [100.0]  # obstacle y position list [m]
-
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
         target_idx = 0
+
+        ox = potential_planning.obstacle_x
+        oy = potential_planning.obstacle_y
 
         sx = state.x
         sy = state.y
@@ -245,25 +269,30 @@ if __name__ == '__main__':
         cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(
             rx, ry, ds=0.1)
 
-        while True:
-            distance = np.hypot(gx - state.x, gy - state.y)
+        potential_planning.publishPath(
+            publisher=path_pub, rx=cx, ry=cy, ryaw=cyaw)
 
-            if distance < 3.0:
-                break
+        # while True:
+        #     distance = np.hypot(gx - state.x, gy - state.y)
 
-            di, target_idx = stanley_control(
-                state, cx, cy, cyaw, target_idx
-            )
+        #     if distance < 3.0:
+        #         break
 
-            di = np.clip(di, -m.radians(30.0), m.radians(30.0))
+        #     di, target_idx = stanley_control(
+        #         state, cx, cy, cyaw, target_idx
+        #     )
 
-            cmd_msg.speed = desired_speed
-            cmd_msg.steer = -di
-            cmd_msg.brake = 1
+        #     di = np.clip(di, -m.radians(30.0), m.radians(30.0))
 
-            cmd_pub.publish(cmd_msg)
+        #     cmd_msg.speed = desired_speed
+        #     cmd_msg.steer = -di
+        #     cmd_msg.brake = 1
 
-            potential_planning.publishPath(
-                publisher=path_pub, rx=cx, ry=cy, ryaw=cyaw)
+        #     cmd_pub.publish(cmd_msg)
+
+        #     potential_planning.publishPath(
+        #         publisher=path_pub, rx=cx, ry=cy, ryaw=cyaw)
+
+        #     r.sleep()
 
         r.sleep()

@@ -15,23 +15,24 @@
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <param name="erp_port" type="str" value="/dev/ttyUSB1" />
+    <!-- <param name="erp_port" type="str" value="/dev/ttyUSB1" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" output="screen" />
-    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" output="screen" />
-    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" /> -->
+    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" output="screen" /> -->
+    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     
     <!-- Path Publish -->
     <param name="c_gain" type="double" value="30.0" />
     <param name="desired_speed" type="double" value="4.0" />
     <node name="stanley_method" pkg="path_planner" type="global_stanley.py" output="screen" />
+    <!-- <node name="potential_field_planning_node" pkg="path_planner" type="potential_field_planning_node.py" output="screen" />  -->
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
         <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
     </include>
 
-    <include file="$(find cone_tracker)/launch/cone_integration.launch"></include>
+    <!-- <include file="$(find cone_tracker)/launch/cone_integration.launch"></include> -->
 
     <!-- Model -->
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
