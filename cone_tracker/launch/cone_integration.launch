@@ -1,0 +1,20 @@
+<launch>
+
+    <node pkg="lms1xx" type="LMS1xx_node" name="lms1xx" output="screen">
+        <param name="sensor_param" value="param_value" />
+    </node>
+
+    <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+        <rosparam command="load" file="$(find laser_filters)/my_laser_config.yaml" />
+    </node>
+
+    <node pkg="cone_tracker" type="cone.py" name="cone" output="screen"/>
+    <node pkg="cone_tracker" type="tf_lidar.py" name="tf_lidar" output="screen"/>
+    <!-- <node pkg="cone_tracker" type="cone_tracker.py" name="cone_tracker" output="screen"/> -->
+
+    <node pkg="tf" type="static_transform_publisher" name="laser_tf_publisher" args="0.57 0.0 0.30 0 0.0 0.0 base_link laser 10" />
+
+    <!-- Model -->
+    <!-- <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" /> -->
+
+</launch>

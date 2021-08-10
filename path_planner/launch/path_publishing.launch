@@ -31,11 +31,13 @@
         <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
     </include>
 
+    <include file="$(find cone_tracker)/launch/cone_integration.launch"></include>
+
     <!-- Model -->
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
 
     <!-- Test -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="-2.67 -3.75 0.0 -2.29 0.0 0.0 map odom 10" /> -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="-2.67 -3.75 0.0 -2.29 0.0 0.0 map odom 10" />
     <!-- -2.676659107208252,-3.7524757385253906,-2.29648101519 -->
 
 

@@ -114,8 +114,8 @@ if __name__ == "__main__":
     # rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
     # rospy.Subscriber("/dwa_stanley_cmd", Twist, fake_odom.cmd_callback2)
     # rospy.Subscriber("/stanley_cmd", stanleyMsg, fake_odom.cmd_callback3)
-    rospy.Subscriber("/potential_stanley_cmd",
-                     stanleyMsg, fake_odom.cmd_callback4)
+    # rospy.Subscriber("/potential_stanley_cmd",
+    #                  stanleyMsg, fake_odom.cmd_callback4)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
