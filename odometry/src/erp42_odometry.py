@@ -37,57 +37,7 @@ class my_odometry(object):
     def encoder_callback(self, msg):
         self.encoder_msg = msg
 
-    def publishOdometry2(self, publisher, broadcaster):
-        self.current_time = rospy.Time.now()
-
-        dt = (self.current_time - self.last_time).to_sec()
-
-        self.v = self.encoder_msg.speed
-        self.yaw += (self.v / wheelbase) * m.tan(self.encoder_msg.steer) * dt
-
-        dx = self.v * m.cos(self.yaw)
-        dy = self.v * m.sin(self.yaw)
-
-        self.x += dx * dt
-        self.y += dy * dt
-
-        odom_quat = tf.transformations.quaternion_from_euler(
-            0, 0, self.yaw)
-
-        broadcaster.sendTransform(
-            (self.x, self.y, 0.),
-            odom_quat,
-            self.current_time,
-            "base_link",
-            "odom"
-        )
-
-        odom = Odometry()
-        odom.header.stamp = self.current_time
-        odom.header.frame_id = "odom"
-
-        odom.pose.pose = Pose(Point(self.x, self.y, 0.),
-                              Quaternion(*odom_quat))
-
-        odom.child_frame_id = "base_link"
-        odom.twist.twist = Twist(
-            Vector3(dx, dy, 0), Vector3(0, 0, 0.0))
-
-        publisher.publish(odom)
-
-        self.last_time = rospy.Time.now()
-
     def publishOdometry(self, publisher, broadcaster):
-        # to save the orgin of odom frame
-        # if self.encoder_msg.Encoder != 0 and self.last_encoder == 0:
-        #     self.initial_enc = self.encoder_msg.Encoder
-
-        # # sometimes, prior feedback msgs received
-        # if self.encoder_msg.Encoder == self.last_encoder and self.v != 0:
-        #     self.v = 0
-        #     return
-
-        # calculate linear velocity with incremental encoder
         self.current_time = rospy.Time.now()
 
         dt = (self.current_time - self.last_time).to_sec()
@@ -155,9 +105,8 @@ class my_odometry(object):
         odom.twist.twist = Twist(
             Vector3(vx, vy, 0), Vector3(0, 0, angular_vel))
 
-        publisher.publish(odom)
-
         self.last_time = rospy.Time.now()
+        publisher.publish(odom)
 
 
 if __name__ == "__main__":
