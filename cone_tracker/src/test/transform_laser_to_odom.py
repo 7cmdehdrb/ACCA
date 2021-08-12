@@ -4,6 +4,7 @@ import rospy
 import sys
 import os
 import tf
+import time as t
 import math as m
 import numpy as np
 from geometry_msgs.msg import PoseArray, Pose
@@ -24,7 +25,7 @@ class TransformLaser(TransformNode):
     def poseArrayCallback(self, msg):
         self.subscribedPoseArray = msg
 
-    def transformPoseArray(self, poseArray):
+    def transformPoseArray(self):
         poses = self.subscribedPoseArray.poses
 
         temp_poses = []
@@ -33,7 +34,7 @@ class TransformLaser(TransformNode):
             p = Pose()
 
             p.position.x = pose.position.x + self.trans[0]
-            p.position.y = pose.position.x + self.trans[1]
+            p.position.y = pose.position.y + self.trans[1]
             p.position.z = 0.0
 
             p.orientation.x = 0.0
@@ -60,9 +61,11 @@ class TransformLaser(TransformNode):
 if __name__ == "__main__":
     rospy.init_node("transform_laser_to_odom")
 
+    # t.sleep(5.0)
+
     transformNode = TransformLaser()
 
-    rospy.Subscriber("obstacles", PoseArray,
+    rospy.Subscriber("cone_position", PoseArray,
                      callback=transformNode.poseArrayCallback)
 
     poseArrayPub = rospy.Publisher(
@@ -70,6 +73,9 @@ if __name__ == "__main__":
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
-        transform_node.listenTF()
+        transformNode.listenTF()
         transformNode.publishPoseArray(publisher=poseArrayPub)
+
+        print(transformNode.trans)
+
         r.sleep()

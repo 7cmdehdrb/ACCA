@@ -52,10 +52,10 @@ class MaRRTPathPlanNode:
         if not self.map:
             return
 
-        frontConesDist = 20
+        frontConesDist = 5
         frontCones = self.getFrontConeObstacles(self.map, frontConesDist)
 
-        coneObstacleSize = 1.0
+        coneObstacleSize = 0.5
         coneObstacleList = []
         rrtConeTargets = []
         coneTargetsDistRatio = 0.5
@@ -69,8 +69,8 @@ class MaRRTPathPlanNode:
 
         # Set Initial parameters
         start = [self.carPosX, self.carPosY, self.carPosYaw]
-        iterationNumber = 1000
-        planDistance = 10
+        iterationNumber = 500
+        planDistance = 5
         expandDistance = 1.0
         expandAngle = 20
 
@@ -152,10 +152,10 @@ class MaRRTPathPlanNode:
 
     def findBestBranch(self, leafNodes, nodeList, largerGroupFrontCones, coneObstacleSize, expandDistance, planDistance):
         if not leafNodes:
-            print("NO LEAFNODES")
+            # print("NO LEAFNODES")
             return
 
-        coneDistLimit = 4.0
+        coneDistLimit = 3.0
         coneDistanceLimitSq = coneDistLimit * coneDistLimit
 
         bothSidesImproveFactor = 3
@@ -209,7 +209,7 @@ class MaRRTPathPlanNode:
         node = leafNodes[maxRatingInd]
 
         if maxRating < minAcceptableBranchRating:
-            print("RATING ERROR")
+            # print("RATING ERROR")
             return
 
         reverseBranch = []
@@ -307,7 +307,7 @@ class Map(object):
         self.cones = []
         self.obstacles = PoseArray()
 
-        self.distance_threshhold = 0.5
+        self.distance_threshhold = 0.2
 
     def obstacleCallback(self, msg):
         self.obstacles = msg
@@ -326,6 +326,10 @@ class Map(object):
 
             new_cones.append(new_cone)
 
+        if len(self.cones) == 0:
+            self.cones = new_cones
+            return
+
         for new_cone in new_cones:
 
             min_distance = float("inf")
@@ -333,11 +337,14 @@ class Map(object):
             for cone in self.cones:
                 distance = np.hypot(new_cone.x - cone.x, new_cone.y - cone.y)
 
-                if distance < min_distance:
+                if abs(distance) < min_distance:
                     min_distance = distance
 
-            if min_distance < self.distance_threshhold:
+            if min_distance > self.distance_threshhold:
+                # print(min_distance)
                 self.cones.append(new_cone)
+
+        print("DETECTED CONES: " + str(len(self.cones)))
 
 
 class Cone(object):
@@ -355,18 +362,18 @@ if __name__ == '__main__':
     map = Map()
 
     map.cones = [
-        Cone(x=1.0, y=-3.0),
-        Cone(x=1.0, y=3.0),
-        Cone(x=3.0, y=-3.0),
-        Cone(x=3.0, y=3.0),
-        Cone(x=6.0, y=-3.0),
-        Cone(x=6.0, y=3.0),
-        Cone(x=9.0, y=-3.0),
-        Cone(x=9.0, y=3.0),
-        Cone(x=12.0, y=-3.0),
-        Cone(x=12.0, y=3.0),
-        # Cone(x=16.0, y=-3.0),
-        # Cone(x=16.0, y=3.0),
+        # Cone(x=1.0, y=-3.0),
+        # Cone(x=1.0, y=3.0),
+        # Cone(x=3.0, y=-2.0),
+        # Cone(x=3.0, y=4.0),
+        # Cone(x=6.0, y=-1.0),
+        # Cone(x=6.0, y=5.0),
+        # Cone(x=9.0, y=-0.0),
+        # Cone(x=9.0, y=6.0),
+        # Cone(x=12.0, y=-0.0),
+        # Cone(x=12.0, y=6.0),
+        # Cone(x=16.0, y=-0.0),
+        # Cone(x=16.0, y=6.0),
     ]
 
     state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
@@ -375,17 +382,20 @@ if __name__ == '__main__':
     rospy.Subscriber("transformed_obstacles", PoseArray,
                      callback=map.obstacleCallback)
 
-    rospy.Subscriber("/odom", Odometry, callback=state.odometryCallback)
+    rospy.Subscriber("/fake_odom", Odometry,
+                     callback=state.odometryCallback)
 
     path_pub = rospy.Publisher("/rrt_star_path", Path, queue_size=1)
 
-    r = rospy.Rate(30.0)
+    r = rospy.Rate(1.0)
     while not rospy.is_shutdown():
+        maNode.carPosX = state.x
+        maNode.carPosY = state.y
+        maNode.carPosYaw = state.yaw
+
         best_branch = maNode.sampleTree()
 
-        # maNode.carPosX = state.x
-        # maNode.carPosY = state.y
-        # maNode.carPosYaw = state.yaw
+        # print(maNode.carPosX, maNode.carPosY)
 
         path = Path()
 
@@ -402,7 +412,7 @@ if __name__ == '__main__':
             poses = []
 
             for node in best_branch:
-                print(node.x, node.y, node.yaw)
+                # print(node.x, node.y, node.yaw)
 
                 p = PoseStamped()
 

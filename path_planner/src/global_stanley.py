@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
     cmd_msg = stanleyMsg()
 
-    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
+    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
 
     cmd_pub = rospy.Publisher("/stanley_cmd", stanleyMsg, queue_size=1)
     path_pub = rospy.Publisher("/cublic_global_path", Path, queue_size=1)
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
         MSG = str(speed) + ",  " + str(DEG) + ",  " + str(target_idx)
 
-        rospy.loginfo(MSG)
+        # rospy.loginfo(MSG)
 
         load.pathPublish(pub=path_pub)
 

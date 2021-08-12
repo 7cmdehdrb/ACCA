@@ -224,7 +224,7 @@ if __name__ == "__main__":
         '/erp42_encoder', encoderMsg, queue_size=1)
 
     """ Subscriber"""
-    rospy.Subscriber("/cone_stanley_cmd", stanleyMsg, mycar.cmd_vel_callback)
+    rospy.Subscriber("/stanley_cmd", stanleyMsg, mycar.cmd_vel_callback)
     rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
     rate = rospy.Rate(50.0)
@@ -233,6 +233,8 @@ if __name__ == "__main__":
         sp = mycar.control_msg.speed
         st = m.degrees(mycar.control_msg.steer)
         br = int(mycar.control_msg.brake)
+
+        print(sp, st, br)
 
         mycar.send_data(SPEED=(sp), STEER=(st), BRAKE=(br), GEAR=2)
 

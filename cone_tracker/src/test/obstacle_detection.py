@@ -47,7 +47,7 @@ class Laser(object):
                 self.block = []
 
         if len(self.block) == 1:
-            self.block_index.append([self.block[0], len(self.ranges)])
+            self.block_index.append([self.block[0], len(self.ranges)-1])
 
         # print(self.block_index, self.ranges)
 
@@ -76,7 +76,7 @@ class Laser(object):
             b = self.block_index[i][1]
             cen_x = 0
             cen_y = 0
-            for j in range(a, b, 1):
+            for j in range(a, b+1, 1):
                 cen_x = cen_x + self.alp[j]
                 cen_y = cen_y + self.bet[j]
             self.tot_x.append(cen_x/(b-a+1))
@@ -101,23 +101,28 @@ class Laser(object):
         cone_pose.header.stamp = rospy.Time.now()
         cone_pose.header.frame_id = "laser"
         cone_pose.poses = []
+        try:
+            for i in range(len(self.tot_x)):
+                p = Pose()
+                p.position.x = self.tot_y[i]
+                p.position.y = self.tot_x[i] * -1
+                p.position.z = 0.0
+                p.orientation.x = 0.0
+                p.orientation.y = 0.0
+                p.orientation.z = 0.0
+                p.orientation.w = 1.0
+                cone_pose.poses.append(p)
 
-        for i in range(len(self.tot_x)):
-            p = Pose()
-            p.position.x = self.tot_y[i]
-            p.position.y = self.tot_x[i] * -1
-            p.position.z = 0.0
-            p.orientation.x = 0.0
-            p.orientation.y = 0.0
-            p.orientation.z = 0.0
-            p.orientation.w = 1.0
-            cone_pose.poses.append(p)
+            publisher.publish(cone_pose)
 
-        publisher.publish(cone_pose)
+        except IndexError:
+            pass
+        except Exception as ex:
+            print(ex)
 
 
 if __name__ == "__main__":
-    rospy.init_node("lms_test")
+    rospy.init_node("obstacle_detection")
 
     laser = Laser()
 
