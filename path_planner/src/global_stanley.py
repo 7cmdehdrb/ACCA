@@ -1,15 +1,22 @@
 #!/usr/bin/env python
 
+import sys
+import os
 import rospy
+import tf
 import math as m
 import numpy as np
-import tf
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import Twist
 from path_planner.msg import stanleyMsg
 from loadPose import LoadPose
-from stanley import stanley_control, calc_target_index, normalize_angle
 
+
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    from stanley import Stanley
+except Exception as ex:
+    print(ex)
 
 desired_speed = rospy.get_param("/desired_speed", 30.0)  # kph
 
@@ -118,6 +125,7 @@ if __name__ == "__main__":
 
     state = State(x=-0.0, y=0.0, yaw=np.radians(0.0), v=0.0)
     path = PathFinder()
+    stanley = Stanley()
 
     cmd_msg = stanleyMsg()
 
@@ -135,11 +143,11 @@ if __name__ == "__main__":
 
     last_idx = len(path.cx) - 1
 
-    target_idx, _ = calc_target_index(state, path.cx, path.cy)
+    target_idx, _ = stanley.calc_target_index(state, path.cx, path.cy)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
-        di, target_idx = stanley_control(
+        di, target_idx = stanley.stanley_control(
             state, path.cx[:target_idx+100], path.cy[:target_idx+100], path.cyaw[:target_idx+100], target_idx)
 
         di = np.clip(di, -m.radians(30.0), m.radians(30.0))

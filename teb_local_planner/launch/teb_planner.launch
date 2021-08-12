@@ -1,3 +1,0 @@
-<launch>
-    <node name="teb_local_planner_ros" pkg="teb_local_planner" type="teb_local_planner" />
-</launch>

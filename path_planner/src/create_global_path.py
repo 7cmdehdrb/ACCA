@@ -2,6 +2,8 @@
 
 import rospy
 import rospkg
+import sys
+import os
 import threading
 import csv
 import tf
@@ -9,7 +11,12 @@ import math as m
 import time as t
 from std_msgs.msg import Empty
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
-import cubic_spline_planner
+
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    import cubic_spline_planner
+except Exception as ex:
+    print(ex)
 
 
 class GetPose(object):

@@ -6,7 +6,7 @@ import csv
 import ma_rrt
 
 from geometry_msgs.msg import Point
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Pose, PoseArray
 from nav_msgs.msg import Odometry
 from nav_msgs.msg import Path
 
@@ -300,6 +300,30 @@ class Map(object):
         super(Map, self).__init__()
 
         self.cones = []
+        self.obstacles = PoseArray()
+
+    def updateMap(self):
+        obstacles = self.obstacles.poses
+        new_cones = []
+
+        min_distance = float("inf")
+
+        for obstacle in obstacles:
+            x = obstacle.position.x
+            y = obstacle.position.y
+
+            new_cone = Cone(x=x, y=y, r=1.0)
+
+            new_cones.append(new_cone)
+
+        for cone in self.cones:
+            for new_cone in new_cones:
+                distance = np.hypot(new_cone.x - cone.x, new_cone.y - cone.y)
+
+                if distance < min_distance:
+                    min_distance = distance
+
+            # if min_distance
 
 
 class Cone(object):
