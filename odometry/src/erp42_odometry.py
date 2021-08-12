@@ -21,7 +21,6 @@ class my_odometry(object):
         super(my_odometry, self).__init__()
 
         self.encoder_msg = encoderMsg()
-        self.imu_msg = Imu()
 
         self.current_time = rospy.Time.now()
         self.last_time = rospy.Time.now()

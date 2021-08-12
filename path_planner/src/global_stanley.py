@@ -105,7 +105,7 @@ def checkGoal(current_speed, last_idx, current_idx):
     temp_speed = 0.0
     temp_brake = 1
 
-    if abs(last_idx - current_idx) < 20:
+    if abs(last_idx - current_idx) < 10:
         temp_speed = 0.0
         temp_brake = 80
 
@@ -161,7 +161,11 @@ if __name__ == "__main__":
 
         cmd_pub.publish(cmd_msg)
 
-        rospy.loginfo((-m.degrees(di), target_idx))
+        DEG = round(-m.degrees(di), 2)
+
+        MSG = str(speed) + ",  " + str(DEG) + ",  " + str(target_idx)
+
+        rospy.loginfo(MSG)
 
         load.pathPublish(pub=path_pub)
 
