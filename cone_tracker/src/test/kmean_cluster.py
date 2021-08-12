@@ -15,6 +15,7 @@ class ObstacleDetection(object):
         self.laserData = LaserScan()
 
     def laserCallback(self, msg):
+        # self.laserData = msg
         self.handelLaser(msg=msg)
 
     def handelLaser(self, msg):
@@ -23,11 +24,17 @@ class ObstacleDetection(object):
         ranges = new_laser.ranges
         new_ranges = []
 
+        init_angle = m.radians(-45.0)
+
         for r in ranges:
-            if 1.0 < r and r < 5.0:
+            # if 0.0 < m.degrees(init_angle) and m.degrees(init_angle) < 180.0:
+
+            if r < 1.0:
                 new_ranges.append(r)
             else:
                 new_ranges.append(float("inf"))
+
+            init_angle += m.radians(0.5)
 
         new_laser.ranges = new_ranges
 
@@ -62,7 +69,7 @@ class ObstacleDetection(object):
         if len(data) == 0:
             return []
 
-        km = KMeans(n_jobs=5, random_state=10)
+        km = KMeans(n_jobs=5, max_iter=500, n_clusters=1)
         km.fit(data)
 
         centers = km.cluster_centers_
@@ -80,9 +87,9 @@ class ObstacleDetection(object):
             if r != float("inf"):
 
                 x = r * m.sin(init_yaw)
-                y = -r * m.cos(init_yaw)
+                y = r * m.cos(init_yaw)
 
-                temp_poses.append([x, y])
+                temp_poses.append([y, x])
 
             init_yaw += m.radians(0.5)
 
@@ -94,15 +101,18 @@ if __name__ == "__main__":
 
     obstacle = ObstacleDetection()
 
-    rospy.Subscriber("/scan", LaserScan, obstacle.laserCallback)
+    rospy.Subscriber("/scan_filtered", LaserScan, obstacle.laserCallback)
 
     obstacle_pub = rospy.Publisher("obstacles", PoseArray, queue_size=1)
 
     r = rospy.Rate(10.0)
     while not rospy.is_shutdown():
-        centers = obstacle.kmean_clustering()
-        # centers = obstacle.transform_laser_to_pose()
 
-        obstacle.publishCenter(centers=centers, publisher=obstacle_pub)
+        try:
+            centers = obstacle.kmean_clustering()
+
+            obstacle.publishCenter(centers=centers, publisher=obstacle_pub)
+        except Exception as ex:
+            print(ex)
 
         r.sleep()

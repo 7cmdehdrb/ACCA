@@ -1,0 +1,12 @@
+<launch>
+    <node name="LMS1xx_node" pkg="lms1xx" type="LMS1xx_node" />
+    <node name="obstacle_detection" pkg="cone_tracker" type="kmean_cluster.py" output="screen" />
+
+    <include file="$(find laser_filters)/my_laser_cloud_filter.launch" />
+    <include file="$(find odometry)/launch/odometry.launch" />
+
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+
+    <node pkg="tf" type="static_transform_publisher" name="laser_tf_publisher" args="0.57 0.0 0.30 0 0.0 0.0 base_link laser 10" />
+
+</launch>

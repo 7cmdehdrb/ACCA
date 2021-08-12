@@ -20,15 +20,12 @@ class TransformLaser(TransformNode):
         super(TransformLaser, self).__init__(parent=parent, child=child)
 
         self.subscribedPoseArray = PoseArray()
-        self.newPoseArray = PoseArray()
 
     def poseArrayCallback(self, msg):
         self.subscribedPoseArray = msg
 
     def transformPoseArray(self, poseArray):
-        new_pose_array = self.subscribedPoseArray
-
-        poses = new_pose_array.poses
+        poses = self.subscribedPoseArray.poses
 
         temp_poses = []
 
@@ -46,12 +43,18 @@ class TransformLaser(TransformNode):
 
             temp_poses.append(p)
 
-        new_pose_array.poses = temp_poses
-
-        self.newPoseArray = new_pose_array
+        return temp_poses
 
     def publishPoseArray(self, publisher):
-        publisher.publish(self.newPoseArray)
+        new_poses = self.transformPoseArray()
+
+        newPoseArray = PoseArray()
+
+        newPoseArray.header.stamp = rospy.Time.now()
+        newPoseArray.header.frame_id = "odom"
+        newPoseArray.poses = new_poses
+
+        publisher.publish(newPoseArray)
 
 
 if __name__ == "__main__":

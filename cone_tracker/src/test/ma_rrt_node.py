@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import sys
+import os
+
 import rospy
-import csv
 
 import ma_rrt
 
@@ -11,26 +13,29 @@ from nav_msgs.msg import Odometry
 from nav_msgs.msg import Path
 
 # For odometry message
-from tf.transformations import euler_from_quaternion
-
-from scipy.spatial import Delaunay
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 # Matrix/Array library
 import numpy as np
-import time
 import math
-from matplotlib import pyplot as plt
+
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    from state import State
+except Exception as ex:
+    print(ex)
 
 
 class MaRRTPathPlanNode:
     # All variables, placed here are static
-
-    def __init__(self):
+    def __init__(self, map):
         self.carPosX = 0.0
         self.carPosY = 0.0
         self.carPosYaw = 0.0
 
-        self.map = []
+        self.poses = []
+
+        self.map = map
         self.savedWaypoints = []
         self.preliminaryLoopClosure = False
         self.loopClosure = False
@@ -50,7 +55,7 @@ class MaRRTPathPlanNode:
         frontConesDist = 20
         frontCones = self.getFrontConeObstacles(self.map, frontConesDist)
 
-        coneObstacleSize = 2.0
+        coneObstacleSize = 1.0
         coneObstacleList = []
         rrtConeTargets = []
         coneTargetsDistRatio = 0.5
@@ -154,7 +159,7 @@ class MaRRTPathPlanNode:
         coneDistanceLimitSq = coneDistLimit * coneDistLimit
 
         bothSidesImproveFactor = 3
-        minAcceptableBranchRating = 30  # fits good fsg18
+        minAcceptableBranchRating = 50  # fits good fsg18
 
         leafRatings = []
         for leaf in leafNodes:
@@ -302,12 +307,17 @@ class Map(object):
         self.cones = []
         self.obstacles = PoseArray()
 
+        self.distance_threshhold = 0.5
+
+    def obstacleCallback(self, msg):
+        self.obstacles = msg
+        self.updateMap()
+
     def updateMap(self):
         obstacles = self.obstacles.poses
         new_cones = []
 
-        min_distance = float("inf")
-
+        # real-time obstacles
         for obstacle in obstacles:
             x = obstacle.position.x
             y = obstacle.position.y
@@ -316,14 +326,18 @@ class Map(object):
 
             new_cones.append(new_cone)
 
-        for cone in self.cones:
-            for new_cone in new_cones:
+        for new_cone in new_cones:
+
+            min_distance = float("inf")
+
+            for cone in self.cones:
                 distance = np.hypot(new_cone.x - cone.x, new_cone.y - cone.y)
 
                 if distance < min_distance:
                     min_distance = distance
 
-            # if min_distance
+            if min_distance < self.distance_threshhold:
+                self.cones.append(new_cone)
 
 
 class Cone(object):
@@ -336,60 +350,81 @@ class Cone(object):
 
 
 if __name__ == '__main__':
-
-    # ====Search Path with RRT====
-    radius = 1
-    obstacleList = [
-        (1, -3, radius),
-        (1, 3, radius),
-        (3, -3, radius),
-        (3, 3, radius),
-        (6, -3, radius),
-        (6, 3, radius),
-        (9, -2.8, radius),
-        (9, 3.2, radius),
-        (12.5, -2.5, radius),
-        (12, 4, radius),
-        (16, -2, radius),
-        (15, 5, radius),
-        (20, -1, radius),
-        (18.5, 6.5, radius),
-        (24, 1, radius),
-        (22, 8, radius)
-    ]  # [x,y,size(radius)]
-
-    maNode = MaRRTPathPlanNode()
+    rospy.init_node("ma_rrt_node")
 
     map = Map()
 
-    for obstacle in obstacleList:
-        cone = Cone(x=obstacle[0], y=obstacle[1], r=obstacle[2])
-        map.cones.append(cone)
+    map.cones = [
+        Cone(x=1.0, y=-3.0),
+        Cone(x=1.0, y=3.0),
+        Cone(x=3.0, y=-3.0),
+        Cone(x=3.0, y=3.0),
+        Cone(x=6.0, y=-3.0),
+        Cone(x=6.0, y=3.0),
+        Cone(x=9.0, y=-3.0),
+        Cone(x=9.0, y=3.0),
+        Cone(x=12.0, y=-3.0),
+        Cone(x=12.0, y=3.0),
+        # Cone(x=16.0, y=-3.0),
+        # Cone(x=16.0, y=3.0),
+    ]
 
-    maNode.map = map
+    state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
+    maNode = MaRRTPathPlanNode(map=map)
 
-    plt.show()
+    rospy.Subscriber("transformed_obstacles", PoseArray,
+                     callback=map.obstacleCallback)
 
-    while True:
+    rospy.Subscriber("/odom", Odometry, callback=state.odometryCallback)
 
-        maNode.carPosX += 0.1
+    path_pub = rospy.Publisher("/rrt_star_path", Path, queue_size=1)
 
+    r = rospy.Rate(30.0)
+    while not rospy.is_shutdown():
         best_branch = maNode.sampleTree()
 
+        # maNode.carPosX = state.x
+        # maNode.carPosY = state.y
+        # maNode.carPosYaw = state.yaw
+
+        path = Path()
+
+        path.header.stamp = rospy.Time.now()
+        path.header.frame_id = "odom"
+        path.poses = []
+
         if not best_branch:
-            continue
+            path.poses = maNode.poses
+        else:
 
-        """ result """
+            """ result """
 
-        for obs in obstacleList:
-            plt.scatter(obs[0], obs[1])
+            poses = []
 
-        for node in best_branch:
-            plt.scatter(node.x, node.y, color="black", marker="^")
+            for node in best_branch:
+                print(node.x, node.y, node.yaw)
 
-        if maNode.carPosX > 10.0:
-            print("FIN!!")
-            break
+                p = PoseStamped()
 
-        plt.pause(0.1)
-        plt.cla()
+                p.header.stamp = rospy.Time.now()
+                p.header.frame_id = "odom"
+
+                p.pose.position.x = node.x
+                p.pose.position.y = node.y
+                p.pose.position.z = 0.0
+
+                quat = quaternion_from_euler(0.0, 0.0, node.yaw)
+
+                p.pose.orientation.x = quat[0]
+                p.pose.orientation.y = quat[1]
+                p.pose.orientation.z = quat[2]
+                p.pose.orientation.w = quat[3]
+
+                poses.append(p)
+
+            path.poses = poses
+            maNode.poses = poses
+
+        path_pub.publish(path)
+
+        r.sleep()

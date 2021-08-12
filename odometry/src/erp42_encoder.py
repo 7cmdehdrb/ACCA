@@ -76,16 +76,16 @@ class control():
                     if ord(i) == 83:
                         del line[:]
                         line.append(i)
-                    elif ord(i) == 10 and ord(line[17]) == 10 and len(line) == 18:
+                    elif ord(i) == 10 and ord(line[-1]) == 10 and len(line) == 18:
                         self.handle_data(line)
                         del line[:]
                         break
-                    elif len(line) >= 18:
+                    if len(line) >= 18:
                         del line[:]
                         break
 
-            except Exception:
-                pass
+            except Exception as ex:
+                print(ex)
 
     def handle_data(self, line):
         """
@@ -123,10 +123,13 @@ class control():
         if self.feedback_encoder >= 2147483648:
             self.feedback_encoder -= 4294967296
 
+        # print(self.feedback_encoder)
+
         data = encoderMsg()
 
         data.speed = feedback_speed
         data.steer = feedback_steer
+        data.steer = feedback_DEG
         data.brake = feedback_brake
         data.gear = feedback_gear
         data.AorM = feedback_AorM

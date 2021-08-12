@@ -16,6 +16,10 @@ TICK2RAD = 0.06283185307
 wheel_radius = 0.265
 
 
+R_err_cal = 0.8254
+L_err_cal = 0.7202
+
+
 class my_odometry(object):
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
         super(my_odometry, self).__init__()
@@ -51,7 +55,7 @@ class my_odometry(object):
         self.v = linear_vel
 
         # transformation from FL to base_link
-        DEG = int(m.degrees(self.encoder_msg.steer))
+        DEG = (self.encoder_msg.steer)
 
         if (DEG) != 0:
             A = wheelbase / \
