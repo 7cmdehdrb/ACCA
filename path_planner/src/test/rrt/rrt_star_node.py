@@ -16,7 +16,7 @@ try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
     from state import State
     import cubic_spline_planner
-    from pure_pursuit import pure_pursuit_control, pure_pursuit_control2
+    from pure_pursuit import pure_pursuit_control
 except Exception as ex:
     print(ex)
 
@@ -161,11 +161,11 @@ if __name__ == '__main__':
         else:
             path = rrt_star_path.reversePath(path)
 
-            middle = int(len(path) / 3)
+            # middle = int(len(path) / 2)
 
-            goal = path[middle]
+            goal = path[-1]
 
-            steer = pure_pursuit_control2(state, goal)
+            steer = pure_pursuit_control(state, goal)
 
             cmd_msg.speed = desired_speed
             cmd_msg.steer = -steer
