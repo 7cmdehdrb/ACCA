@@ -212,8 +212,7 @@ if __name__ == "__main__":
 
         di = np.clip(di, -m.radians(30.0), m.radians(30.0))
 
-        speed, brake = checkGoal(current_speed=speed,
-                                 last_idx=last_idx, current_idx=target_idx)
+        speed, brake = checkGoal(current_speed=speed,last_idx=last_idx, current_idx=target_idx)
 
         cmd_msg.speed = speed
         cmd_msg.steer = -di
