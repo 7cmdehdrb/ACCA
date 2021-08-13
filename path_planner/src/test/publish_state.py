@@ -19,7 +19,11 @@ try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
     from state import State
 except Exception as ex:
-    print(ex)
+    try:
+        sys.path.insert(0, "ADD PATH HERE")
+        from state import State
+    except Exception as ex:
+        print(ex)
 
 
 class Area(object):

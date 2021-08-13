@@ -15,91 +15,72 @@ from loadPose import LoadPose
 try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
     from stanley import Stanley
+    from state import State
 except Exception as ex:
-    print(ex)
+    try:
+        sys.path.insert(0, "ADD ABSOLUTE PATH HERE")
+        from stanley import Stanley
+        from state import State
+    except Exception as ex:
+        print(ex)
 
-desired_speed = rospy.get_param("/desired_speed", 30.0)  # kph
+
+desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
+max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
 
 
 class PathFinder(object):
-    def __init__(self):
+    def __init__(self, load):
         super(PathFinder, self).__init__()
-        self.counter = True
 
         self.path = Path()
 
-        self.cx = []
-        self.cy = []
-        self.cyaw = []
+        self.cx = load.cx
+        self.cy = load.cy
+        self.cyaw = load.cyaw
 
 
-class State(object):
-    """
-    Class representing the state of a vehicle.
-    :param x: (float) x-coordinate
-    :param y: (float) y-coordinate
-    :param yaw: (float) yaw angle
-    :param v: (float) speed
-    """
+class GlobalStanley(object):
+    def __init__(self, state, cmd_publisher):
+        super(GlobalStanley, self).__init__()
 
-    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
-        """Instantiate the object."""
-        super(State, self).__init__()
-        self.data = Odometry()
+        self.state = state
+        self.stanley = Stanley()
+        self.load = LoadPose()
+        self.path = PathFinder(load=self.load)
 
-        self.currentTime = rospy.Time.now()
-        self.lastTime = rospy.Time.now()
+        self.cmd_msg = stanleyMsg()
 
-        self.dt = 0.1
+        self.cmd_pub = cmd_publisher
+        self.path_pub = rospy.Publisher(
+            "/cublic_global_path", Path, queue_size=1)
 
-        self.x = x
-        self.y = y
-        self.yaw = yaw
+        self.last_idx = len(self.path.cx) - 1
+        self.target_idx, _ = self.stanley.calc_target_index(
+            self.state, self.path.cx, self.path.cy)
 
-        self.last_x = x
-        self.last_y = y
-        self.last_yaw = yaw
+    def main(self):
+        target_idx = self.target_idx
+        di, target_idx = self.stanley.stanley_control(
+            self.state, self.path.cx[:target_idx+100], self.path.cy[:target_idx+100], self.path.cyaw[:target_idx+100], target_idx)
 
-        self.v = v
-        self.dx = self.v * m.cos(self.yaw)
-        self.dy = self.v * m.sin(self.yaw)
+        self.target_idx = target_idx
+        di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
-    def odometryCallback(self, msg):
-        self.data = msg
+        speed, brake = checkGoal(
+            last_idx=self.last_idx, current_idx=self.target_idx)
 
-        self.currentTime = rospy.Time.now()
+        self.cmd_msg.speed = speed
+        self.cmd_msg.steer = -di
+        self.cmd_msg.brake = brake
 
-        self.dt = (self.currentTime - self.lastTime).to_sec()
+        self.cmd_pub.publish(self.cmd_msg)
+        self.load.pathPublish(pub=self.path_pub)
 
-        if self.dt == 0:
-            return
-
-        self.x = self.data.pose.pose.position.x
-        self.y = self.data.pose.pose.position.y
-
-        x = self.data.pose.pose.orientation.x
-        y = self.data.pose.pose.orientation.y
-        z = self.data.pose.pose.orientation.z
-        w = self.data.pose.pose.orientation.w
-
-        quaternion_array = [x, y, z, w]
-
-        (_, _, yaw) = tf.transformations.euler_from_quaternion(quaternion_array)
-
-        self.yaw = yaw
-
-        self.dx = (self.x - self.last_x) / self.dt
-        self.dy = (self.x - self.last_y) / self.dt
-        self.dyaw = (self.yaw - self.last_yaw) / self.dt
-        self.v = np.hypot(self.dx, self.dy)
-
-        self.last_x = self.x
-        self.last_y = self.y
-        self.last_yaw = self.yaw
-        self.lastTime = rospy.Time.now()
+        print(self.cmd_msg)
 
 
-def checkGoal(current_speed, last_idx, current_idx):
+def checkGoal(last_idx, current_idx):
     global desired_speed
 
     temp_speed = 0.0
@@ -117,56 +98,16 @@ def checkGoal(current_speed, last_idx, current_idx):
 
 
 if __name__ == "__main__":
-    rospy.init_node("stanley_method")
+    rospy.init_node("global_stanley")
 
-    # Initial state
-    load = LoadPose()
-    load.readCSV()
-
-    state = State(x=-0.0, y=0.0, yaw=np.radians(0.0), v=0.0)
-    path = PathFinder()
-    stanley = Stanley()
-
-    cmd_msg = stanleyMsg()
-
-    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
-
+    state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
     cmd_pub = rospy.Publisher("/stanley_cmd", stanleyMsg, queue_size=1)
-    path_pub = rospy.Publisher("/cublic_global_path", Path, queue_size=1)
 
-    path.cx = load.cx
-    path.cy = load.cy
-    path.cyaw = load.cyaw
+    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
-    speed = 0.0
-    brake = 0.0
-
-    last_idx = len(path.cx) - 1
-
-    target_idx, _ = stanley.calc_target_index(state, path.cx, path.cy)
+    global_stanley = GlobalStanley(state=state, cmd_publisher=cmd_pub)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
-        di, target_idx = stanley.stanley_control(
-            state, path.cx[:target_idx+100], path.cy[:target_idx+100], path.cyaw[:target_idx+100], target_idx)
-
-        di = np.clip(di, -m.radians(30.0), m.radians(30.0))
-
-        speed, brake = checkGoal(current_speed=speed,
-                                 last_idx=last_idx, current_idx=target_idx)
-
-        cmd_msg.speed = speed
-        cmd_msg.steer = -di
-        cmd_msg.brake = brake
-
-        cmd_pub.publish(cmd_msg)
-
-        DEG = round(-m.degrees(di), 2)
-
-        MSG = str(speed) + ",  " + str(DEG) + ",  " + str(target_idx)
-
-        # rospy.loginfo(MSG)
-
-        load.pathPublish(pub=path_pub)
-
+        global_stanley.main()
         r.sleep()

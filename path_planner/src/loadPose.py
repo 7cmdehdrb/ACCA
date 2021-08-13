@@ -16,9 +16,13 @@ class LoadPose(object):
         self.cy = []
         self.cyaw = []
 
+        self.file_name = rospy.get_param("/global_path", "path.csv")
+
+        self.readCSV()
+
     def readCSV(self):
-        output_file_path = rospkg.RosPack().get_path(
-            'path_planner')+"/saved_path/path.csv"
+        output_file_path = rospkg.RosPack().get_path('path_planner') + \
+            "/saved_path/" + str(self.file_name)
 
         rospy.loginfo("LOADING CSV FILE...")
         with open(output_file_path, "r") as csvFile:

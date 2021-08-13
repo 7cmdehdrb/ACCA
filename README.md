@@ -4,29 +4,9 @@
 
 ## Downloaded Packages
 
-- [ROS_erp42_driver](https://github.com/kemjensak/erp42_driver)
-
 - [erp42_telop/erp42_vihicle](https://github.com/jdj2261/ERP42-ROS)
 
 - [fast_gicp](https://github.com/SMRT-AIST/fast_gicp)
-
-- [follow_waypoints](https://github.com/danielsnider/follow_waypoints)
-
-<detail>
-
-#### Save waypoints
-
-```
-rostopic pub /path_ready std_msgs/Empty -1
-```
-
-#### Start waypoints
-
-```
-rostopic pub /start_journey std_msgs/Empty -1
-```
-
-</detail>
 
 - [geometry2]
 
