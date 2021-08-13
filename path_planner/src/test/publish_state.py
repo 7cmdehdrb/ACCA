@@ -84,7 +84,7 @@ class PublishState(State):
             marker.scale.y = area.r
             marker.scale.z = 0.1
 
-            marker.color.a = 1.0
+            marker.color.a = 0.5
             marker.color.r = 1.0
 
             marker.pose.position.x = area.x
