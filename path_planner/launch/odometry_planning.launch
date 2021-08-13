@@ -2,6 +2,11 @@
 
     <!-- Sensors -->
 
+        <!-- IMU -->
+        <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+            <arg name="port" value="/dev/ttyUSB1" />
+        </include>
+        
         <!-- LiDAR -->
         <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
 

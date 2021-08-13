@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     path_pub = rospy.Publisher("create_global_path", PoseArray, queue_size=1)
 
-    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
+    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
 
     th = threading.Thread(target=state.savePoseArray)
     th.start()
