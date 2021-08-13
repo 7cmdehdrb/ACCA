@@ -106,7 +106,7 @@ if __name__ == "__main__":
     # fake_odom = FakeOdometry(x=-8.360734939575195, y=-
     #                          10.727249145507812, yaw=-2.31937820329, v=0.0)
 
-    fake_odom = FakeOdometry(x=-0.0, y=-0.0, yaw=-0.0, v=0.1)
+    fake_odom = FakeOdometry(x=-0.0, y=-0.0, yaw=-1.0, v=0.1)
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
