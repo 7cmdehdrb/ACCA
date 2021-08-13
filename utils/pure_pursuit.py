@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-import math
+import math as m
 
 # Parameters
 k = 0.1  # look forward gain
@@ -9,63 +9,34 @@ Lfc = 0.5  # [m] look-ahead distance
 WB = 1.04  # [m] wheel base of vehicle
 
 
-class TargetCourse:
+def pure_pursuit_control2(state, goal):
+    Lf = np.hypot(goal[0] - state.x, goal[1] - state.y)
 
-    def __init__(self, cx, cy):
-        self.cx = cx
-        self.cy = cy
-        self.old_nearest_point_index = None
+    tx = goal[0]
+    ty = goal[1]
 
-    def search_target_index(self, state):
+    alpha = m.atan2(ty - state.rear_y, tx - state.rear_x) - state.yaw
 
-        # To speed up nearest point search, doing it at only first time.
-        if self.old_nearest_point_index is None:
-            # search nearest point index
-            dx = [state.rear_x - icx for icx in self.cx]
-            dy = [state.rear_y - icy for icy in self.cy]
-            d = np.hypot(dx, dy)
-            ind = np.argmin(d)
-            self.old_nearest_point_index = ind
-        else:
-            ind = self.old_nearest_point_index
-            distance_this_index = state.calc_distance(self.cx[ind],
-                                                      self.cy[ind])
-            while True:
-                distance_next_index = state.calc_distance(self.cx[ind + 1],
-                                                          self.cy[ind + 1])
-                if distance_this_index < distance_next_index:
-                    break
-                ind = ind + 1 if (ind + 1) < len(self.cx) else ind
-                distance_this_index = distance_next_index
-            self.old_nearest_point_index = ind
+    delta = m.atan2(2.0 * WB * m.sin(alpha) / Lf, 1.0)
 
-        Lf = k * state.v + Lfc  # update look ahead distance
-
-        # search look ahead target point index
-        while Lf > state.calc_distance(self.cx[ind], self.cy[ind]):
-            if (ind + 1) >= len(self.cx):
-                break  # not exceed goal
-            ind += 1
-
-        return ind, Lf
+    return delta
 
 
-def pure_pursuit_steer_control(state, trajectory, pind):
-    ind, Lf = trajectory.search_target_index(state)
+def pure_pursuit_control(state, goal):
+    Ld = np.hypot(state.x - goal[0], state.y - goal[1])
 
-    if pind >= ind:
-        ind = pind
+    G_Vec = np.array([goal[0] - state.x, goal[1] - state.y])
+    F_Vec = np.array([m.cos(state.yaw), m.sin(state.yaw)])
 
-    if ind < len(trajectory.cx):
-        tx = trajectory.cx[ind]
-        ty = trajectory.cy[ind]
-    else:  # toward goal
-        tx = trajectory.cx[-1]
-        ty = trajectory.cy[-1]
-        ind = len(trajectory.cx) - 1
+    abs_GVec = np.hypot(G_Vec[0], G_Vec[1])
+    abs_FVec = np.hypot(F_Vec[0], F_Vec[1])
 
-    alpha = math.atan2(ty - state.rear_y, tx - state.rear_x) - state.yaw
+    dot_product = np.dot(G_Vec, F_Vec)
 
-    delta = math.atan2(2.0 * WB * math.sin(alpha) / Lf, 1.0)
+    alpha = m.acos(dot_product / (abs_GVec * abs_FVec))
 
-    return delta, ind
+    e = Ld * (m.sin(alpha))
+
+    theta = m.atan((2 * WB * e) / (m.pow(Ld, 2)))
+
+    return theta

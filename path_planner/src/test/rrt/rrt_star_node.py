@@ -16,7 +16,7 @@ try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
     from state import State
     import cubic_spline_planner
-    from pure_pursuit import TargetCourse, pure_pursuit_steer_control
+    from pure_pursuit import pure_pursuit_control, pure_pursuit_control2
 except Exception as ex:
     print(ex)
 
@@ -139,35 +139,36 @@ if __name__ == '__main__':
 
     target_idx = 1
 
-    r = rospy.Rate(30.0)
+    r = rospy.Rate(10.0)
     while not rospy.is_shutdown():
 
         state.updateRear()
 
         rrt_star = RRTStar(
             start=[state.x, state.y],
-            goal=rrt_star_path.getTempGoal(gap=100),
-            rand_area=[[state.x - 4, state.x + 4],
-                       [state.y - 4, state.y + 4]],
+            goal=rrt_star_path.getTempGoal(gap=70),
+            rand_area=[[state.x - 5, state.x + 5],
+                       [state.y - 5, state.y + 5]],
             obstacle_list=obstacle_list,
             expand_dis=3,
-            max_iter=100
+            max_iter=300
         )
 
-        path = rrt_star_path.reversePath(rrt_star.planning())
+        path = rrt_star.planning()
 
         if path is None:
             print("CAN NOT FIND PATH")
         else:
-            cx, cy = rrt_star_path.dividePath(path)
-            target_course = TargetCourse(cx, cy)
+            path = rrt_star_path.reversePath(path)
 
-            di, target_idx = pure_pursuit_steer_control(
-                state, target_course, target_idx
-            )
+            middle = int(len(path) / 3)
+
+            goal = path[middle]
+
+            steer = pure_pursuit_control2(state, goal)
 
             cmd_msg.speed = desired_speed
-            cmd_msg.steer = di
+            cmd_msg.steer = -steer
             cmd_msg.brake = 1
 
             cmd_pub.publish(cmd_msg)
