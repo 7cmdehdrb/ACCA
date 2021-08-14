@@ -12,11 +12,13 @@ WB = 1.04  # [m] wheel base of vehicle
 def pure_pursuit_control(state, goal):
     Lf = np.hypot(goal[0] - state.x, goal[1] - state.y)
 
+    if Lf == 0.0:
+        return 0.0
+
     tx = goal[0]
     ty = goal[1]
 
     alpha = m.atan2(ty - state.rear_y, tx - state.rear_x) - state.yaw
-
     delta = m.atan2(2.0 * WB * m.sin(alpha) / Lf, 1.0)
 
     return delta

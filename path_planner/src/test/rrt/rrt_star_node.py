@@ -8,6 +8,7 @@ import math as m
 import numpy as np
 from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import Twist, PoseStamped, PoseArray, Pose
+from visualization_msgs.msg import MarkerArray, Marker
 from path_planner.msg import stanleyMsg
 from loadPose import LoadPose
 from rrt_star import RRTStar
@@ -21,7 +22,7 @@ except Exception as ex:
     print(ex)
 
 
-desired_speed = rospy.get_param("/desired_speed", 2.0)  # kph
+desired_speed = rospy.get_param("/desired_speed", 1.0)  # kph
 WB = 1.040
 
 
@@ -50,10 +51,20 @@ class RRTStarPath(object):
 
         self.state = state
 
+        self.path = None
+
         self.cx = load.cx
         self.cy = load.cy
         self.cyaw = load.cyaw
         self.target_idx = 0
+
+    def calc_pure_target_idx(self, cx, cy):
+        dx = [self.state.x - icx for icx in cx]
+        dy = [self.state.y - icy for icy in cy]
+        d = np.hypot(dx, dy)
+        target_idx = np.argmin(d)
+
+        return target_idx
 
     def calc_target_idx(self):
         # Search nearest point index
@@ -90,6 +101,35 @@ class RRTStarPath(object):
             cy.append(rrt_path[i][1])
 
         return cx, cy
+
+    def publishMarker(self, obstacles, publisher):
+        msg = MarkerArray()
+
+        for obstacle in obstacles:
+            marker = Marker()
+            marker.header.frame_id = "map"
+            marker.header.stamp = rospy.Time.now()
+            marker.lifetime = rospy.Duration(0.2)
+            marker.ns = str(obstacle[0])
+
+            marker.type = marker.SPHERE
+            marker.action = marker.ADD
+
+            marker.scale.x = obstacle[2] / 2
+            marker.scale.y = obstacle[2] / 2
+            marker.scale.z = 0.1
+
+            marker.color.a = 0.5
+            marker.color.r = 1.0
+
+            marker.pose.position.x = obstacle[0]
+            marker.pose.position.y = obstacle[1]
+            marker.pose.position.z = 0.0
+            marker.pose.orientation.w = 1.0
+
+            msg.markers.append(marker)
+
+        publisher.publish(msg)
 
     def publishPath(self, publisher, rrt_path):
         path = Path()
@@ -132,49 +172,59 @@ if __name__ == '__main__':
         "/rrt_star_path", Path, queue_size=1)
     cmd_pub = rospy.Publisher("/rrt_star_cmd",
                               stanleyMsg, queue_size=1)
+    obstacle_pub = rospy.Publisher(
+        "obstacles", MarkerArray, queue_size=1)
 
     obstacle_list = [
-        (10.0, 10.0, 1.0)
+        (-13.4, -17.1, 1.5),
+        (-21.0, -25.5, 1.5),
+        (-38.5, -36.1, 1.5),
     ]
 
     target_idx = 1
 
-    r = rospy.Rate(10.0)
+    r = rospy.Rate(20.0)
     while not rospy.is_shutdown():
 
         state.updateRear()
 
         rrt_star = RRTStar(
             start=[state.x, state.y],
-            goal=rrt_star_path.getTempGoal(gap=70),
-            rand_area=[[state.x - 5, state.x + 5],
-                       [state.y - 5, state.y + 5]],
+            goal=rrt_star_path.getTempGoal(gap=100),
+            rand_area=[[state.x - 10, state.x + 10],
+                       [state.y - 10, state.y + 10]],
             obstacle_list=obstacle_list,
-            expand_dis=3,
-            max_iter=300
+            expand_dis=2.0,
+            max_iter=700
         )
 
         path = rrt_star.planning()
 
-        if path is None:
-            print("CAN NOT FIND PATH")
-        else:
+        if path is not None:
             path = rrt_star_path.reversePath(path)
+            rrt_star_path.path = path
 
-            # middle = int(len(path) / 2)
+        else:
+            path = rrt_star_path.path
 
-            goal = path[-1]
+        cx, cy = rrt_star_path.dividePath(path)
 
-            steer = pure_pursuit_control(state, goal)
+        target_idx = rrt_star_path.calc_pure_target_idx(cx, cy)
 
-            cmd_msg.speed = desired_speed
-            cmd_msg.steer = -steer
-            cmd_msg.brake = 1
+        goal = path[target_idx + 1]
 
-            cmd_pub.publish(cmd_msg)
+        steer = pure_pursuit_control(state, goal)
 
-            print(cmd_msg)
+        cmd_msg.speed = desired_speed
+        cmd_msg.steer = -steer * 2.0
+        cmd_msg.brake = 1
 
-            rrt_star_path.publishPath(publisher=path_pub, rrt_path=path)
+        cmd_pub.publish(cmd_msg)
+
+        rrt_star_path.publishPath(
+            publisher=path_pub, rrt_path=rrt_star_path.path)
+
+        rrt_star_path.publishMarker(
+            publisher=obstacle_pub, obstacles=obstacle_list)
 
         r.sleep()

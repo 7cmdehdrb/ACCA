@@ -77,7 +77,7 @@ class GlobalStanley(object):
         self.cmd_pub.publish(self.cmd_msg)
         self.load.pathPublish(pub=self.path_pub)
 
-        print(self.cmd_msg)
+        # print(self.cmd_msg)
 
 
 def checkGoal(last_idx, current_idx):
