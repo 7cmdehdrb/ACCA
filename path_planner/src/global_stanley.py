@@ -41,7 +41,7 @@ class PathFinder(object):
 
 
 class GlobalStanley(object):
-    def __init__(self, state, cmd_publisher):
+    def __init__(self, state, cmd_msg, cmd_publisher):
         super(GlobalStanley, self).__init__()
 
         self.state = state
@@ -49,9 +49,9 @@ class GlobalStanley(object):
         self.load = LoadPose()
         self.path = PathFinder(load=self.load)
 
-        self.cmd_msg = stanleyMsg()
-
+        self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_publisher
+
         self.path_pub = rospy.Publisher(
             "/cublic_global_path", Path, queue_size=1)
 
@@ -103,9 +103,12 @@ if __name__ == "__main__":
     state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
     cmd_pub = rospy.Publisher("/stanley_cmd", stanleyMsg, queue_size=1)
 
+    cmd_msg = stanleyMsg()
+
     rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
-    global_stanley = GlobalStanley(state=state, cmd_publisher=cmd_pub)
+    global_stanley = GlobalStanley(
+        state=state, cmd_msg=cmd_msg, cmd_publisher=cmd_pub)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():
