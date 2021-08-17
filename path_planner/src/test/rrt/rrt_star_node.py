@@ -44,12 +44,15 @@ class RRTStarState(State):
 
 
 class RRTStarPath(object):
-    def __init__(self, state):
+    def __init__(self, state, cmd_msg, cmd_publisher):
         super(RRTStarPath, self).__init__()
 
         load = LoadPose()
 
         self.state = state
+
+        self.cmd_msg = cmd_msg
+        self.cmd_pub = cmd_publisher
 
         self.path = None
 
@@ -170,8 +173,10 @@ if __name__ == '__main__':
 
     path_pub = rospy.Publisher(
         "/rrt_star_path", Path, queue_size=1)
+
     cmd_pub = rospy.Publisher("/rrt_star_cmd",
                               stanleyMsg, queue_size=1)
+
     obstacle_pub = rospy.Publisher(
         "obstacles", MarkerArray, queue_size=1)
 
