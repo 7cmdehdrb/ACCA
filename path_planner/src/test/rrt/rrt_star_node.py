@@ -23,6 +23,7 @@ except Exception as ex:
 
 
 desired_speed = rospy.get_param("/desired_speed", 1.0)  # kph
+k_gain = rospy.get_param("/k_gain", 2.0)
 WB = 1.040
 
 
@@ -51,15 +52,24 @@ class RRTStarPath(object):
 
         self.state = state
 
+        self.obstacle_list = []
+
         self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_publisher
+
+        self.path_pub = rospy.Publisher(
+            "/rrt_star_path", Path, queue_size=1)
+
+        self.obstacle_pub = rospy.Publisher(
+            "obstacles", MarkerArray, queue_size=1)
 
         self.path = None
 
         self.cx = load.cx
         self.cy = load.cy
         self.cyaw = load.cyaw
-        self.target_idx = 0
+
+        self.target_idx = 1
 
     def calc_pure_target_idx(self, cx, cy):
         dx = [self.state.x - icx for icx in cx]
@@ -160,45 +170,31 @@ class RRTStarPath(object):
 
         publisher.publish(path)
 
+    def obstacleCallback(self, msg, radius=1.0):
+        data = msg
 
-if __name__ == '__main__':
-    rospy.init_node("rrt_star_planning")
+        obstacles = data.poses
 
-    state = RRTStarState(x=0.0, y=0.0, yaw=0.0, v=0.0)
-    rrt_star_path = RRTStarPath(state=state)
+        result = []
 
-    cmd_msg = stanleyMsg()
+        for obstacle in obstacles:
+            x = obstacle.position.x
+            y = obstacle.position.y
+            r = radius
 
-    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
+            result.append((x, y, r))
 
-    path_pub = rospy.Publisher(
-        "/rrt_star_path", Path, queue_size=1)
+        self.obstacle_list = result
 
-    cmd_pub = rospy.Publisher("/rrt_star_cmd",
-                              stanleyMsg, queue_size=1)
-
-    obstacle_pub = rospy.Publisher(
-        "obstacles", MarkerArray, queue_size=1)
-
-    obstacle_list = [
-        (-13.4, -17.1, 1.5),
-        (-21.0, -25.5, 1.5),
-        (-38.5, -36.1, 1.5),
-    ]
-
-    target_idx = 1
-
-    r = rospy.Rate(20.0)
-    while not rospy.is_shutdown():
-
-        state.updateRear()
+    def main(self):
+        self.state.updateRear()
 
         rrt_star = RRTStar(
-            start=[state.x, state.y],
-            goal=rrt_star_path.getTempGoal(gap=100),
-            rand_area=[[state.x - 10, state.x + 10],
-                       [state.y - 10, state.y + 10]],
-            obstacle_list=obstacle_list,
+            start=[self.state.x, self.state.y],
+            goal=self.getTempGoal(gap=100),
+            rand_area=[[self.state.x - 10, self.state.x + 10],
+                       [self.state.y - 10, self.state.y + 10]],
+            obstacle_list=self.obstacle_list,
             expand_dis=2.0,
             max_iter=700
         )
@@ -206,30 +202,50 @@ if __name__ == '__main__':
         path = rrt_star.planning()
 
         if path is not None:
-            path = rrt_star_path.reversePath(path)
-            rrt_star_path.path = path
+            path = self.reversePath(path)
+            self.path = path
 
         else:
-            path = rrt_star_path.path
+            path = self.path
 
-        cx, cy = rrt_star_path.dividePath(path)
+        cx, cy = self.dividePath(path)
 
-        target_idx = rrt_star_path.calc_pure_target_idx(cx, cy)
+        self.target_idx = self.calc_pure_target_idx(cx, cy)
 
-        goal = path[target_idx + 1]
+        goal = path[self.target_idx + 1]
 
         steer = pure_pursuit_control(state, goal)
 
-        cmd_msg.speed = desired_speed
-        cmd_msg.steer = -steer * 2.0
-        cmd_msg.brake = 1
+        self.cmd_msg.speed = desired_speed
+        self.cmd_msg.steer = -steer * k_gain
+        self.cmd_msg.brake = 1
 
-        cmd_pub.publish(cmd_msg)
+        self.cmd_pub.publish(self.cmd_msg)
 
-        rrt_star_path.publishPath(
-            publisher=path_pub, rrt_path=rrt_star_path.path)
+        self.publishPath(
+            publisher=self.path_pub, rrt_path=self.path)
 
-        rrt_star_path.publishMarker(
-            publisher=obstacle_pub, obstacles=obstacle_list)
+        self.publishMarker(
+            publisher=self.obstacle_pub, obstacles=self.obstacle_list)
 
+
+if __name__ == '__main__':
+    rospy.init_node("rrt_star_planning")
+
+    cmd_msg = stanleyMsg()
+    cmd_pub = rospy.Publisher("/rrt_star_cmd",
+                              stanleyMsg, queue_size=1)
+
+    state = RRTStarState(x=0.0, y=0.0, yaw=0.0, v=0.0)
+    rrt_star_path = RRTStarPath(
+        state=state, cmd_msg=cmd_msg, cmd_publisher=cmd_pub)
+
+    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
+
+    rospy.Subscriber("/transformed_obstacles", PoseArray,
+                     rrt_star_path.obstacleCallback)
+
+    r = rospy.Rate(20.0)
+    while not rospy.is_shutdown():
+        rrt_star_path.main()
         r.sleep()
