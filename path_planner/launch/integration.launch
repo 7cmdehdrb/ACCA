@@ -1,6 +1,5 @@
 <launch>
 
-    
     <!-- Sensors -->
     
     <!-- IMU -->
@@ -10,8 +9,16 @@
     
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
-    <!-- <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" /> -->
-    
+    <node pkg="lms1xx" type="LMS1xx_node" name="lms1xx" output="screen">
+        <param name="sensor_param" value="param_value" />
+    </node>
+
+    <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+        <rosparam command="load" file="$(find laser_filters)/my_laser_config.yaml" />
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="laser_tf_publisher" args="0.57 0.0 0.30 0 0.0 0.0 base_link laser 10" />
+
     <!-- Sensors end -->
     
     <!-- Odometry -->
@@ -22,9 +29,13 @@
 
     
     <!-- Path Publish --> 
-    <param name="c_gain" type="double" value="1.8" />
+    <param name="c_gain" type="double" value="1.2" />
     <param name="desired_speed" type="double" value="8.0" />
     <node name="stanley_method" pkg="path_planner" type="global_stanley.py" output="screen" />
+
+    <!-- Obstacle -->
+    <node pkg="cone_tracker" type="cone.py" name="cone" output="screen"/>
+    <node pkg="cone_tracker" type="transform_laser_to_odom.py" name="transform_laser_to_odom"/>    
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">

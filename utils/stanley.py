@@ -31,6 +31,7 @@ class Stanley(object):
         theta_e = self.normalize_angle(cyaw[current_target_idx] - state.yaw)
 
         # theta_d corrects the cross track error
+
         theta_d = np.arctan2(self.k * error_front_axle, state.v)
         # Steering control
         delta = theta_e + theta_d

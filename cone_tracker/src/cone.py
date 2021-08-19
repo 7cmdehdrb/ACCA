@@ -125,7 +125,7 @@ class Laser(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node("lms_test")
+    rospy.init_node("cone")
 
     laser = Laser()
 

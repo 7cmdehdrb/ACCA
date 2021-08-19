@@ -10,6 +10,7 @@ from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import Twist, PoseStamped, PoseArray, Pose
 from visualization_msgs.msg import MarkerArray, Marker
 from path_planner.msg import stanleyMsg
+from cone_tracker.msg import obstacleTF
 from loadPose import LoadPose
 from rrt_star import RRTStar
 
@@ -47,6 +48,9 @@ class RRTStarState(State):
 class RRTStarPath(object):
     def __init__(self, state, cmd_msg, cmd_publisher):
         super(RRTStarPath, self).__init__()
+
+        rospy.Subscriber("/transformed_obstacles", PoseArray,
+                         self.obstacleCallback)
 
         load = LoadPose()
 
@@ -214,19 +218,21 @@ class RRTStarPath(object):
 
         goal = path[self.target_idx + 1]
 
-        steer = pure_pursuit_control(state, goal)
+        steer = pure_pursuit_control(self.state, goal)
 
         self.cmd_msg.speed = desired_speed
         self.cmd_msg.steer = -steer * k_gain
         self.cmd_msg.brake = 1
+
+        print(self.cmd_msg)
 
         self.cmd_pub.publish(self.cmd_msg)
 
         self.publishPath(
             publisher=self.path_pub, rrt_path=self.path)
 
-        self.publishMarker(
-            publisher=self.obstacle_pub, obstacles=self.obstacle_list)
+        # self.publishMarker(
+        #     publisher=self.obstacle_pub, obstacles=self.obstacle_list)
 
 
 if __name__ == '__main__':
@@ -241,9 +247,6 @@ if __name__ == '__main__':
         state=state, cmd_msg=cmd_msg, cmd_publisher=cmd_pub)
 
     rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
-
-    rospy.Subscriber("/transformed_obstacles", PoseArray,
-                     rrt_star_path.obstacleCallback)
 
     r = rospy.Rate(20.0)
     while not rospy.is_shutdown():

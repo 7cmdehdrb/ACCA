@@ -67,17 +67,17 @@ class GlobalStanley(object):
         self.target_idx = target_idx
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
-        speed, brake = checkGoal(
-            last_idx=self.last_idx, current_idx=self.target_idx)
+        # speed, brake = checkGoal(
+        #     last_idx=self.last_idx, current_idx=self.target_idx)
 
-        self.cmd_msg.speed = speed
+        self.cmd_msg.speed = desired_speed
         self.cmd_msg.steer = -di
-        self.cmd_msg.brake = brake
+        self.cmd_msg.brake = 1
 
         self.cmd_pub.publish(self.cmd_msg)
         self.load.pathPublish(pub=self.path_pub)
 
-        # print(self.cmd_msg)
+        print(self.cmd_msg)
 
 
 def checkGoal(last_idx, current_idx):

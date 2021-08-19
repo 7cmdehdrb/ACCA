@@ -51,7 +51,7 @@ class OdometryPath(State):
 
         try:
             cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(
-                x=self.xs, y=self.ys, ds=0.1
+                x=self.xs, y=self.ys, ds=0.02
             )
         except Exception as ex:
             return

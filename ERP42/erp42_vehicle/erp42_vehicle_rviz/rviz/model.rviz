@@ -503,6 +503,18 @@ Visualization Manager:
       Topic: /rrt_star_path
       Unreliable: false
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /hdl_areas
+      Name: MarkerArray
+      Namespaces:
+        1: true
+        2: true
+        3: true
+        4: true
+        5: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 200; 200; 200
@@ -531,7 +543,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 119.05747985839844
+      Distance: 94.38734436035156
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
