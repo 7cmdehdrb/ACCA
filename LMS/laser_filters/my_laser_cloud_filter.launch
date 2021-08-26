@@ -1,10 +1,5 @@
 <launch>
-  <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node">
-    <remap from="/scan" to="lms_scan" />
-  </node>
-  
   <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">4
-    <remap from="/scan" to="lms_scan" />
     <rosparam command="load" file="$(find laser_filters)/my_laser_config.yaml" />
   </node>
 </launch>

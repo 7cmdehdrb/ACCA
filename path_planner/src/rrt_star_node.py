@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 
-import rospy
 import sys
+import rospy
 import tf
 import math as m
 import numpy as np
@@ -20,11 +20,12 @@ try:
     import cubic_spline_planner
     from pure_pursuit import pure_pursuit_control
 except Exception as ex:
+    print("RRT STAR IMPORT ERROR")
     print(ex)
 
 
 desired_speed = rospy.get_param("/desired_speed", 1.0)  # kph
-k_gain = rospy.get_param("/k_gain", 2.0)
+k_gain = rospy.get_param("/k_gain", 10.0)
 WB = 1.040
 
 
@@ -56,7 +57,14 @@ class RRTStarPath(object):
 
         self.state = state
 
-        self.obstacle_list = []
+        self.obstacle_list = [
+            (-21.181470871, -23.3099250793, 0.7),
+            (-21.490026474, -28.2259368896, 0.7),
+            (-18.6150913239, -25.3708724976, 0.7),
+            (-20.4998989105, -23.7515945435, 0.7),
+            (-16.8922271729, -26.5479869843, 2.5),
+            (-22.5903053284, -21.7309799194, 3.0)
+        ]
 
         self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_publisher
@@ -132,12 +140,12 @@ class RRTStarPath(object):
             marker.type = marker.SPHERE
             marker.action = marker.ADD
 
-            marker.scale.x = obstacle[2] / 2
-            marker.scale.y = obstacle[2] / 2
+            marker.scale.x = obstacle[2] * 2
+            marker.scale.y = obstacle[2] * 2
             marker.scale.z = 0.1
 
             marker.color.a = 0.5
-            marker.color.r = 1.0
+            marker.color.b = 1.0
 
             marker.pose.position.x = obstacle[0]
             marker.pose.position.y = obstacle[1]
@@ -199,8 +207,8 @@ class RRTStarPath(object):
             rand_area=[[self.state.x - 10, self.state.x + 10],
                        [self.state.y - 10, self.state.y + 10]],
             obstacle_list=self.obstacle_list,
-            expand_dis=2.0,
-            max_iter=700
+            expand_dis=1.0,
+            max_iter=1000
         )
 
         path = rrt_star.planning()
@@ -212,27 +220,35 @@ class RRTStarPath(object):
         else:
             path = self.path
 
-        cx, cy = self.dividePath(path)
+        # cx, cy = self.dividePath(path)
 
-        self.target_idx = self.calc_pure_target_idx(cx, cy)
+        # self.target_idx = self.calc_pure_target_idx(cx, cy)
 
-        goal = path[self.target_idx + 1]
+        # goal = path[self.target_idx + 1]
+
+        idx = int(len(self.path) / 3.0)
+
+        goal = self.path[idx]
 
         steer = pure_pursuit_control(self.state, goal)
+
+        print(goal[0], goal[1])
+        print(self.state.x, self.state.y)
+        print("")
 
         self.cmd_msg.speed = desired_speed
         self.cmd_msg.steer = -steer * k_gain
         self.cmd_msg.brake = 1
 
-        print(self.cmd_msg)
+        # print(self.cmd_msg)
 
         self.cmd_pub.publish(self.cmd_msg)
 
         self.publishPath(
             publisher=self.path_pub, rrt_path=self.path)
 
-        # self.publishMarker(
-        #     publisher=self.obstacle_pub, obstacles=self.obstacle_list)
+        self.publishMarker(
+            publisher=self.obstacle_pub, obstacles=self.obstacle_list)
 
 
 if __name__ == '__main__':

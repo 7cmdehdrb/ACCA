@@ -3,7 +3,7 @@
 import rospy
 import numpy as np
 from sensor_msgs.msg import LaserScan
-from cone_tracker.msg import obstacleTF
+from path_planner.msg import WTF
 
 
 class Laser(object):
@@ -14,7 +14,7 @@ class Laser(object):
         self.part_index = []
         self.fin = []
 
-        rospy.Subscriber("/scan_filtered", LaserScan, laser.laserCallback)
+        rospy.Subscriber("/scan_filtered", LaserScan, self.laserCallback)
 
         self.part_pub = publisher
 
@@ -31,13 +31,13 @@ class Laser(object):
         for i in range(len(self.ranges)):
             TF = self.ranges[i]
             if TF != 0:
-                if i >= 0 and i < 90:
+                if i >= 0 and i < 135:
                     partitionA = 1
-                if i >= 90 and i < 180:
+                if i >= 135 and i < 180:
                     partitionB = 1
-                if i >= 180 and i < 270:
+                if i >= 180 and i < 225:
                     partitionC = 1
-                if i >= 270 and i < 361:
+                if i >= 225 and i < 361:
                     partitionD = 1
         self.part_fin = [partitionA, partitionB, partitionC, partitionD]
 
@@ -75,7 +75,7 @@ class Laser(object):
         self.fin = [a, b, c, d]
 
     def pubResults(self, publisher):
-        partTF = obstacleTF()
+        partTF = WTF()
 
         try:
             partTF.side_right = self.fin[0]
@@ -93,7 +93,7 @@ class Laser(object):
         self.xylistMake()
         if len(self.part_index) == 5:
             self.thresholding()
-            self.pubResults(publisher=part_pub)
+            self.pubResults(publisher=self.part_pub)
             # print(self.fin)
             del self.part_index[0]
 
@@ -101,7 +101,7 @@ class Laser(object):
 if __name__ == "__main__":
     rospy.init_node("check_obstacles")
 
-    pub = rospy.Publisher("ob_TF", obstacleTF, queue_size=1)
+    pub = rospy.Publisher("ob_TF", WTF, queue_size=1)
 
     laser = Laser(publisher=pub)
 

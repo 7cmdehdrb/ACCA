@@ -13,6 +13,7 @@ def pure_pursuit_control(state, goal):
     Lf = np.hypot(goal[0] - state.x, goal[1] - state.y)
 
     if Lf == 0.0:
+        print("ERROR!!")
         return 0.0
 
     tx = goal[0]

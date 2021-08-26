@@ -47,7 +47,9 @@ class OdometryPath(State):
     def publishPath(self, publisher):
         msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = "map"
-        msg.poses = []
+        # msg.poses = []
+
+        temp_poses = []
 
         try:
             cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(
@@ -70,7 +72,9 @@ class OdometryPath(State):
             pose.orientation.z = quat[2]
             pose.orientation.w = quat[3]
 
-            msg.poses.append(pose)
+            temp_poses.append(pose)
+
+        msg.poses = temp_poses
 
         publisher.publish(msg)
 

@@ -17,7 +17,7 @@ except Exception as ex:
 
 
 class TransformLaser(TransformNode):
-    def __init__(self, parent="odom", child="laser"):
+    def __init__(self, parent="map", child="laser"):
         super(TransformLaser, self).__init__(parent=parent, child=child)
 
         self.subscribedPoseArray = PoseArray()
@@ -61,7 +61,7 @@ class TransformLaser(TransformNode):
 if __name__ == "__main__":
     rospy.init_node("transform_laser_to_odom")
 
-    # t.sleep(5.0)
+    t.sleep(5.0)
 
     transformNode = TransformLaser()
 

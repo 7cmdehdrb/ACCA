@@ -174,7 +174,7 @@ class control():
             self.DATA[5] = 2    # GEAR
             self.DATA[6] = int(SPEED // 256)
             self.DATA[7] = int(SPEED % 256)
-            self.DATA[10] = 1   # BREAK
+            self.DATA[10] = BRAKE   # BREAK
             self.DATA[11] = self.ALIVE
 
             self.ser.write((self.DATA))
@@ -224,8 +224,8 @@ if __name__ == "__main__":
         '/erp42_encoder', encoderMsg, queue_size=1)
 
     """ Subscriber"""
-    rospy.Subscriber("/stanley_cmd", stanleyMsg, mycar.cmd_vel_callback)
-    rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
+    rospy.Subscriber("/Control_msg", stanleyMsg, mycar.cmd_vel_callback)
+    # rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
     rate = rospy.Rate(50.0)
     while not rospy.is_shutdown():

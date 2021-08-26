@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
+import sys
 import rospy
-from cone_tracker.msg import obstacleTF
+from path_planner.msg import WTF
 
 try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
@@ -15,16 +16,16 @@ class Dynamic(object):
         super(Dynamic, self).__init__()
         self.state = state
 
-        self.obs = obstacleTF()
+        self.obs = WTF()
 
     def dynamicCallback(self, msg):
         self.obs = msg
 
     def main(self):
         if (self.obs.front_left == 1) or (self.obs.front_right == 1):
-            state.estop = True
+            self.state.EStop = True
         else:
-            state.estop = False
+            self.state.EStop = False
 
 
 if __name__ == "__main__":
@@ -33,7 +34,7 @@ if __name__ == "__main__":
     dobs = Dynamic()
     state = State()
 
-    rospy.Subscriber("/ob_TF", obstacleTF, dobs.dynamicCallback)
+    rospy.Subscriber("/ob_TF", WTF, dobs.dynamicCallback)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():

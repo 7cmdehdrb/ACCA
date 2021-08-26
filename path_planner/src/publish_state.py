@@ -79,7 +79,7 @@ class PublishState(State):
             marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
             marker.lifetime = rospy.Duration(0.2)
-            marker.ns = str(area.getIdx)
+            marker.ns = str(area.getIdx) + str(area.x)
 
             marker.type = marker.SPHERE
             marker.action = marker.ADD
@@ -89,7 +89,9 @@ class PublishState(State):
             marker.scale.z = 0.1
 
             marker.color.a = 0.5
-            marker.color.r = 1.0
+            marker.color.r = 1.0 if int(area.getIdx) == 1 else 0.0
+            marker.color.g = 1.0 if int(area.getIdx) == 2 else 0.0
+            marker.color.b = 1.0 if int(area.getIdx) == 3 else 0.0
 
             marker.pose.position.x = area.x
             marker.pose.position.y = area.y

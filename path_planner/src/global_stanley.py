@@ -17,12 +17,8 @@ try:
     from stanley import Stanley
     from state import State
 except Exception as ex:
-    try:
-        sys.path.insert(0, "ADD ABSOLUTE PATH HERE")
-        from stanley import Stanley
-        from state import State
-    except Exception as ex:
-        print(ex)
+    print("GLOBAL STANLEY IMPORT ERROR")
+    print(ex)
 
 
 desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
@@ -67,12 +63,12 @@ class GlobalStanley(object):
         self.target_idx = target_idx
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
-        # speed, brake = checkGoal(
-        #     last_idx=self.last_idx, current_idx=self.target_idx)
+        speed, brake = checkGoal(
+            last_idx=self.last_idx, current_idx=self.target_idx)
 
-        self.cmd_msg.speed = desired_speed
+        self.cmd_msg.speed = speed
         self.cmd_msg.steer = -di
-        self.cmd_msg.brake = 1
+        self.cmd_msg.brake = brake
 
         self.cmd_pub.publish(self.cmd_msg)
         self.load.pathPublish(pub=self.path_pub)
@@ -101,11 +97,11 @@ if __name__ == "__main__":
     rospy.init_node("global_stanley")
 
     state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
-    cmd_pub = rospy.Publisher("/stanley_cmd", stanleyMsg, queue_size=1)
+    cmd_pub = rospy.Publisher("/Control_msg", stanleyMsg, queue_size=1)
 
     cmd_msg = stanleyMsg()
 
-    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
+    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
 
     global_stanley = GlobalStanley(
         state=state, cmd_msg=cmd_msg, cmd_publisher=cmd_pub)

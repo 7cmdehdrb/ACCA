@@ -94,7 +94,7 @@ class FakeOdometry(erp42):
         steer = np.clip(data.steer, -m.radians(30.0), m.radians(30.0))
         brake = data.brake
 
-        print(speed, m.degrees(steer), brake)
+        # print(speed, m.degrees(steer), brake)
 
         self.v = speed
         self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
@@ -113,10 +113,10 @@ if __name__ == "__main__":
     # rospy.Subscriber("/stanley_cmd", Twist, fake_odom.cmd_callback)
     # rospy.Subscriber("/dwa_stanley_cmd", Twist, fake_odom.cmd_callback2)
     # rospy.Subscriber("/stanley_cmd", stanleyMsg, fake_odom.cmd_callback3)
-    # rospy.Subscriber("/rrt_star_cmd",
-    #                  stanleyMsg, fake_odom.cmd_callback4)
-    rospy.Subscriber("/Control_msg",
+    rospy.Subscriber("/rrt_star_cmd",
                      stanleyMsg, fake_odom.cmd_callback4)
+    # rospy.Subscriber("/Control_msg",
+    #                  stanleyMsg, fake_odom.cmd_callback4)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():

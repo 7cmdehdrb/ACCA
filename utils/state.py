@@ -7,6 +7,7 @@ import tf
 import math as m
 import numpy as np
 from nav_msgs.msg import Odometry
+from odometry.msg import encoderMsg
 
 
 class State(object):
@@ -22,6 +23,8 @@ class State(object):
         """Instantiate the object."""
         super(State, self).__init__()
         self.data = Odometry()
+
+        rospy.Subscriber("/erp42_encoder", encoderMsg, self.encoderCallback)
 
         self.currentTime = rospy.Time.now()
         self.lastTime = rospy.Time.now()
@@ -73,3 +76,6 @@ class State(object):
         self.last_y = self.y
         self.last_yaw = self.yaw
         self.lastTime = rospy.Time.now()
+
+    def encoderCallback(self, msg):
+        self.v = msg.speed

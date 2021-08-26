@@ -50,7 +50,9 @@ class GetPose(object):
     def posePublish(self):
         msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = "map"
-        msg.poses = []
+        # msg.poses = []
+
+        temp_poses = []
 
         # use planner, create cx, cy, cyaw
 
@@ -78,7 +80,9 @@ class GetPose(object):
             pose.orientation.z = quat[2]
             pose.orientation.w = quat[3]
 
-            msg.poses.append(pose)
+            temp_poses.append(pose)
+
+        msg.poses = temp_poses
 
         path_pub.publish(msg)
 

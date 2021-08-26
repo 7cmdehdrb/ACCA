@@ -2,14 +2,20 @@
 
 import rospy
 import numpy as np
+from std_msgs.msg import Float32
 
 
 class Stanley(object):
     def __init__(self):
         super(Stanley, self).__init__()
 
-        self.k = rospy.get_param("/c_gain", 30.0)  # control gain
+        self.k = rospy.get_param("/c_gain", 0.5)  # control gain
         self.L = 1.040  # [m] Wheel base of vehicle
+
+        self.ctr_publisher = rospy.Publisher(
+            "stanley_ctr", Float32, queue_size=1)
+        self.hdr_publisher = rospy.Publisher(
+            "stanley_hdr", Float32, queue_size=1)
 
     def stanley_control(self, state, cx, cy, cyaw, last_target_idx):
         """
@@ -35,6 +41,9 @@ class Stanley(object):
         theta_d = np.arctan2(self.k * error_front_axle, state.v)
         # Steering control
         delta = theta_e + theta_d
+
+        self.ctr_publisher.publish(theta_e)
+        self.hdr_publisher.publish(theta_d)
 
         return delta, current_target_idx
 

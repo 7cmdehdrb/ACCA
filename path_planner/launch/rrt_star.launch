@@ -1,6 +1,5 @@
 <launch>
 
-    
     <!-- Sensors -->
     
     <!-- IMU -->
@@ -18,12 +17,12 @@
     <!-- <param name="erp_port" type="str" value="/dev/ttyUSB0" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" output="screen" />
     <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
-    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" /> -->
+    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     
     <!-- Path Publish --> 
     <param name="c_gain" type="double" value="100.0" />
-    <param name="desired_speed" type="double" value="0.5" />
+    <param name="desired_speed" type="double" value="1.0" />
     <node name="stanley_method" pkg="path_planner" type="global_stanley.py" output="screen" />
 
     <!-- Localization -->
@@ -35,7 +34,7 @@
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
 
     <!-- Test -->
-    <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 -0.0 0.0 -0.0 0.0 0.0 map odom 10" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 -0.0 0.0 -0.0 0.0 0.0 map odom 10" /> -->
     <!-- -2.676659107208252,-3.7524757385253906,-2.29648101519 -->
 
 

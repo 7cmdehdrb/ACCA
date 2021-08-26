@@ -3,30 +3,47 @@
 import sys
 import rospy
 import math as m
-from std_msgs.msg import Float32, Int32
-from nav_msgs.msg import Odometry
-from path_planner.msg import stanleyMsg
-from cone_tracker.msg import obstacleTF
-from sensor_msgs.msg import Image
-# import cv2
 import time
+from std_msgs.msg import Float32, Int32
+from path_planner.msg import stanleyMsg, WTF
+from sensor_msgs.msg import Image
+from nav_msgs.msg import Odometry
 
 try:
-    # sys.path.append("/home/acca/catkin_ws/src/ACCA/path_planner/src")
-    sys.path.append("/home/acca/catkin_ws/src/path_planner/src")
-    # sys.path.append("/home/acca/catkin_ws/src/ACCA/utils")
-    sys.path.append("/home/acca/catkin_ws/src/utils")
-    # sys.path.append("/home/acca/catkin_ws/src/CAM/pinet/scripts")
-    sys.path.append("/home/acca/catkin_ws/src/cone_tracker/src")
-
-    from state import State
+    sys.path.insert(0, "/home/acca/catkin_ws/src/path_planner/src")
     from global_stanley import GlobalStanley
     from rrt_star_node import RRTStarPath
-    from estopTF import Dynamic
-    # from Lane_Detection import LaneDetection
+except ImportError as ie:
+    print("PATH PLANNER IMPORT ERROR")
+    print(ie)
+    sys.exit()
 
-except Exception as ex:
-    print(ex)
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    from state import State
+except ImportError as ie:
+    print("UTIL IMPORT ERROR")
+    print(ie)
+    sys.exit()
+
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/cone_tracker/src")
+    from estopTF import Dynamic
+except ImportError as ie:
+    print("CONE TRACKER IMPORT ERROR")
+    print(ie)
+    sys.exit()
+
+
+# import cv2
+
+
+# try:
+
+#     # from Lane_Detection import LaneDetection
+
+# except Exception as ex:
+#     print(ex)
 
 #################################Library##############################################
 
@@ -37,7 +54,7 @@ class RRTStarState(State):
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
         super(RRTStarState, self).__init__(x=x, y=y, yaw=yaw, v=v)
 
-        self.estop = False
+        self.EStop = False
 
         self.rear_x = 0.0
         self.rear_y = 0.0
@@ -68,7 +85,7 @@ class Machine():
         # self.Lane_Detection = LaneDetection(
         #     cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
-        self.Mode = 2
+        self.Mode = -1
 
     def stateCallback(self, msg):
         # self.Mode = msg.data
@@ -91,13 +108,13 @@ if __name__ == '__main__':
     #                  machine.Lane_Detection.img_callback)
 
     rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
-    rospy.Subscriber("/fake_odom", Odometry, machine.state.odometryCallback)
-    rospy.Subscriber("/ob_TF", obstacleTF, machine.estop_node.dynamicCallback)
+    rospy.Subscriber("/odom", Odometry, machine.state.odometryCallback)
+    rospy.Subscriber("/ob_TF", WTF, machine.estop_node.dynamicCallback)
 
     # time.sleep(1)
     # error_pub = rospy.Publisher("/Error", lane_error, queue_size=1)
 
-    rate = rospy.Rate(20.0)
+    rate = rospy.Rate(30.0)
     while not rospy.is_shutdown():
         # rospy.loginfo(machine.Mode)
 
@@ -111,7 +128,11 @@ if __name__ == '__main__':
         # cv2.destroyAllWindows()
 
         # Global Path Mode
-        if machine.Mode == 1:
+
+        print(machine.cmd_msg)
+        # print(machine.Mode)
+
+        if machine.Mode == -1:
             machine.global_stanley.main()
 
         # Local Path Mode
@@ -122,7 +143,7 @@ if __name__ == '__main__':
         if machine.Mode == 3:
             machine.estop_node.main()
 
-            if machine.EStop is True:
+            if machine.state.EStop is True:
                 machine.doEStop()
             else:
                 machine.global_stanley.main()
