@@ -9,14 +9,14 @@ from nav_msgs.msg import Path
 
 
 class LoadPose(object):
-    def __init__(self):
+    def __init__(self, file_name="path.csv"):
         super(LoadPose, self).__init__()
 
         self.cx = []
         self.cy = []
         self.cyaw = []
 
-        self.file_name = rospy.get_param("/global_path", "path.csv")
+        self.file_name = file_name
 
         self.readCSV()
 

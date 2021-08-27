@@ -31,6 +31,13 @@ class PathFinder(object):
 
         self.path = Path()
 
+        self.load = load
+
+        self.cx = load.cx
+        self.cy = load.cy
+        self.cyaw = load.cyaw
+
+    def update(self, load):
         self.cx = load.cx
         self.cy = load.cy
         self.cyaw = load.cyaw
@@ -42,7 +49,7 @@ class GlobalStanley(object):
 
         self.state = state
         self.stanley = Stanley()
-        self.load = LoadPose()
+        self.load = LoadPose(file_name="path.csv")
         self.path = PathFinder(load=self.load)
 
         self.cmd_msg = cmd_msg
@@ -54,6 +61,12 @@ class GlobalStanley(object):
         self.last_idx = len(self.path.cx) - 1
         self.target_idx, _ = self.stanley.calc_target_index(
             self.state, self.path.cx, self.path.cy)
+
+    # def update(self):
+    #     self.path.update(self.path_selector.getPath)
+    #     self.target_idx, _ = self.stanley.calc_target_index(
+    #         self.state, self.path.cx, self.path.cy
+    #     )
 
     def main(self):
         target_idx = self.target_idx
@@ -71,7 +84,8 @@ class GlobalStanley(object):
         self.cmd_msg.brake = brake
 
         self.cmd_pub.publish(self.cmd_msg)
-        self.load.pathPublish(pub=self.path_pub)
+        self.path.load.pathPublish(pub=self.path_pub)
+        # self.load.pathPublish(pub=self.path_pub)
 
         print(self.cmd_msg)
 
