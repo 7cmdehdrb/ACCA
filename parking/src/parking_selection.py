@@ -15,7 +15,7 @@ L = 2.02
 W = 1.12
 RATIO = 1.7
 
-mode = rospy.get_param("/save_parking", False)
+mode = rospy.get_param("/save_parking", True)
 
 
 def checkIsInParking(obstacle, box):
@@ -256,12 +256,12 @@ if __name__ == "__main__":
     park_pub = rospy.Publisher("parking", UInt8MultiArray, queue_size=1)
     marker_pub = rospy.Publisher("parking_area", MarkerArray, queue_size=1)
 
-    # rospy.Subscriber("adaptive_clustering/poses", PoseArray, caryn.CarCallback)
+    rospy.Subscriber("adaptive_clustering/poses", PoseArray, caryn.CarCallback)
 
     # TEST
-    rospy.Subscriber("/move_base_simple/goal", PoseStamped,
-                     callback=caryn.obstacleTestCallback)
-    obstacle_pub = rospy.Publisher("/obstacle_test", PoseArray, queue_size=1)
+    # rospy.Subscriber("/move_base_simple/goal", PoseStamped,
+    #                  callback=caryn.obstacleTestCallback)
+    # obstacle_pub = rospy.Publisher("/obstacle_test", PoseArray, queue_size=1)
 
     if mode is True:
         rospy.loginfo("RUNNING SAVE MODE")
