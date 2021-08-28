@@ -7,6 +7,15 @@ import csv
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
+"""
+
+Export module
+
+Read csv which is located in /path_planner/saved_path/(FILE NAME) and
+Insert data into self.cx, self.cy, self.cyaw
+
+"""
+
 
 class LoadPose(object):
     def __init__(self, file_name="path.csv"):

@@ -6,8 +6,16 @@ import math
 import tf
 from time import sleep
 from genpy.message import SerializationError
-from geometry_msgs.msg import PoseStamped, Pose
+from geometry_msgs.msg import PoseArray, Pose
 from sensor_msgs.msg import LaserScan
+
+
+"""
+
+Subscribe 'scan_filtered' and
+Publish 'obstacles' 
+
+"""
 
 
 class Laser(object):
@@ -47,7 +55,7 @@ class Laser(object):
                 self.block = []
 
         if len(self.block) == 1:
-            self.block_index.append([self.block[0], len(self.ranges)])
+            self.block_index.append([self.block[0], len(self.ranges)-1])
 
         # print(self.block_index, self.ranges)
 
@@ -58,16 +66,12 @@ class Laser(object):
             self.alp.append(x)
             self.bet.append(y)
 
-        if len(self.block_index) == 0:
+        self.Cent_po()
 
-            self.meanx = 0.0
-            self.meany = 0.5
+        for i in range(len(self.tot_x)):
+            print(self.tot_x[i], self.tot_y[i])
 
-        else:
-            self.Cent_po()
-            self.mean()
-
-        self.cmeanx = -self.meanx
+        print()
 
         """END"""
 
@@ -81,8 +85,8 @@ class Laser(object):
             cen_x = 0
             cen_y = 0
             for j in range(a, b+1, 1):
-                cen_x += self.alp[j]
-                cen_y += self.bet[j]
+                cen_x = cen_x + self.alp[j]
+                cen_y = cen_y + self.bet[j]
             self.tot_x.append(cen_x/(b-a+1))
             self.tot_y.append(cen_y/(b-a+1))
 
@@ -97,39 +101,40 @@ class Laser(object):
         self.meanx = a/len(self.tot_x)
         self.meany = b/len(self.tot_y)
 
-        print(self.meany, self.cmeanx)
+        # print(self.meany, self.cmeanx)
 
     def pubResults(self, publisher):
-        cone_pose = PoseStamped()
+        cone_pose = PoseArray()
 
+        cone_pose.header.stamp = rospy.Time.now()
+        cone_pose.header.frame_id = "laser"
+        cone_pose.poses = []
         try:
-
-            cone_pose.header.stamp = rospy.Time.now()
-            cone_pose.header.frame_id = "laser"
-
-            cone_pose.pose.position.x = self.meany
-            cone_pose.pose.position.y = self.cmeanx
-            cone_pose.pose.position.z = 0.0
-
-            # print(self.meany, self.cmeanx)
-
-            cone_pose.pose.orientation.x = 0.0
-            cone_pose.pose.orientation.y = 0.0
-            cone_pose.pose.orientation.z = 0.0
-            cone_pose.pose.orientation.w = 1.0
+            for i in range(len(self.tot_x)):
+                p = Pose()
+                p.position.x = self.tot_y[i]
+                p.position.y = self.tot_x[i] * -1
+                p.position.z = 0.0
+                p.orientation.x = 0.0
+                p.orientation.y = 0.0
+                p.orientation.z = 0.0
+                p.orientation.w = 1.0
+                cone_pose.poses.append(p)
 
             publisher.publish(cone_pose)
 
+        except IndexError:
+            pass
         except Exception as ex:
             print(ex)
 
 
 if __name__ == "__main__":
-    rospy.init_node("cone")
+    rospy.init_node("obstacle_detection")
 
     laser = Laser()
 
-    cone_pub = rospy.Publisher("cone_position", PoseStamped, queue_size=1)
+    cone_pub = rospy.Publisher("obstacles", PoseArray, queue_size=1)
     rospy.Subscriber("/scan_filtered", LaserScan, laser.laserCallback)
 
     r = rospy.Rate(50.0)

@@ -19,6 +19,30 @@ except Exception as ex:
     print(ex)
 
 
+"""
+
+Global path generator with RVIZ
+Use '2D Nav Goal' to select waypoint
+
+#####################################
+HOW TO SAVE
+#####################################
+$ rostopic pub /save_path std_msgs/Empty -1
+
+This command will save path data on /path_planner/saved_path/path.csv
+(If path.csv file already exists, the path data will be overrided)
+
+#####################################
+HOW TO MODIFY PATH
+#####################################
+$ rostopic pub /delete_path std_msgs/Empty -1
+
+This command will delete latest waypoint
+After use this command, please wait for 5 seconds
+
+"""
+
+
 class GetPose(object):
     def __init__(self):
         super(GetPose, self).__init__()

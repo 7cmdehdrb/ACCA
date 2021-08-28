@@ -9,6 +9,23 @@ import numpy as np
 from nav_msgs.msg import Odometry
 from odometry.msg import encoderMsg
 
+"""
+
+Export module. State class
+Define vihicle's state
+{
+    x_position,
+    y_position,
+    heading_angle(yaw),
+    velocity,
+    x_velocity,
+    y_velocity
+}
+
+USE odometryCallback to automatically update your vihicle's state
+
+"""
+
 
 class State(object):
     """

@@ -21,6 +21,25 @@ except Exception as ex:
     print(ex)
 
 
+"""
+
+Global path generator with Odometry
+
+Run this file and control your vehicle in manual mode, according to your DESIRED PATH
+This node will automatically create global path
+
+#####################################
+HOW TO SAVE
+#####################################
+$ rostopic pub /save_path std_msgs/Empty -1
+
+This command will save path data on /path_planner/saved_path/(YOUR PARAM FILE NAME. Default: odometry_path.csv)
+(If file already exists, the path data will be overrided)
+
+
+"""
+
+
 save_file_name = rospy.get_param("/save_file_name", "odometry_path.csv")
 
 

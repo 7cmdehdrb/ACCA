@@ -25,6 +25,17 @@ except Exception as ex:
     except Exception as ex:
         print(ex)
 
+"""
+
+State publisher for STATE MACHINE
+This node reads /path_planner/saved_path/area.csv
+
+The CSV format is 'x_center_position, y_center_position, radius, ID'
+
+IDs are depends on STATE MACHINE
+
+"""
+
 
 class Area(object):
     def __init__(self, x, y, r, idx):

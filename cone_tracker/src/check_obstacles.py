@@ -3,7 +3,15 @@
 import rospy
 import numpy as np
 from sensor_msgs.msg import LaserScan
-from path_planner.msg import WTF
+from path_planner.msg import obTF
+
+
+"""
+
+Subscribe 'scan_filtered' and
+Publish 'ob_TF'
+
+"""
 
 
 class Laser(object):
@@ -75,7 +83,7 @@ class Laser(object):
         self.fin = [a, b, c, d]
 
     def pubResults(self, publisher):
-        partTF = WTF()
+        partTF = obTF()
 
         try:
             partTF.side_right = self.fin[0]
@@ -101,7 +109,7 @@ class Laser(object):
 if __name__ == "__main__":
     rospy.init_node("check_obstacles")
 
-    pub = rospy.Publisher("ob_TF", WTF, queue_size=1)
+    pub = rospy.Publisher("ob_TF", obTF, queue_size=1)
 
     laser = Laser(publisher=pub)
 

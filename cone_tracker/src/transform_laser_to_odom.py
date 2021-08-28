@@ -16,6 +16,14 @@ except Exception as ex:
     print(ex)
 
 
+"""
+
+Subscribe 'obstacles' and 
+Transform into 'transformed_obstacles'
+
+"""
+
+
 class TransformLaser(TransformNode):
     def __init__(self, parent="map", child="laser"):
         super(TransformLaser, self).__init__(parent=parent, child=child)
@@ -65,7 +73,7 @@ if __name__ == "__main__":
 
     transformNode = TransformLaser()
 
-    rospy.Subscriber("cone_position", PoseArray,
+    rospy.Subscriber("obstacles", PoseArray,
                      callback=transformNode.poseArrayCallback)
 
     poseArrayPub = rospy.Publisher(

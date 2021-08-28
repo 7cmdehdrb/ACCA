@@ -21,6 +21,13 @@ except Exception as ex:
     print(ex)
 
 
+"""
+
+Export module for global path and stanley control
+
+"""
+
+
 desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
 max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
 
@@ -61,12 +68,6 @@ class GlobalStanley(object):
         self.last_idx = len(self.path.cx) - 1
         self.target_idx, _ = self.stanley.calc_target_index(
             self.state, self.path.cx, self.path.cy)
-
-    # def update(self):
-    #     self.path.update(self.path_selector.getPath)
-    #     self.target_idx, _ = self.stanley.calc_target_index(
-    #         self.state, self.path.cx, self.path.cy
-    #     )
 
     def main(self):
         target_idx = self.target_idx

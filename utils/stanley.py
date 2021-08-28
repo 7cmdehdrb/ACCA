@@ -5,6 +5,15 @@ import numpy as np
 from std_msgs.msg import Float32
 
 
+"""
+
+Export module. Stanley Control Class.
+Input: (state(class: State), [cx], [cy], [cyaw], last_target_idx)
+Output: steer
+
+"""
+
+
 class Stanley(object):
     def __init__(self):
         super(Stanley, self).__init__()

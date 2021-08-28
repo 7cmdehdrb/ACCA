@@ -54,7 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   stanleyMsg.msg
-  WTF.msg
+  obTF.msg
 )
 
 ## Generate services in the 'srv' folder

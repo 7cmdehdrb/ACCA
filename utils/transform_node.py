@@ -5,6 +5,15 @@ import tf
 import math as m
 
 
+"""
+
+Export module.
+
+This class will subscribe TF message and save tf matrix into self.trans, self.rot
+
+"""
+
+
 class TransformNode(object):
     def __init__(self, parent, child):
         super(TransformNode, self).__init__()

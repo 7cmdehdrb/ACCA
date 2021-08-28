@@ -2,7 +2,7 @@
 
 import sys
 import rospy
-from path_planner.msg import WTF
+from path_planner.msg import obTF
 
 try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
@@ -11,12 +11,20 @@ except Exception as ex:
     print(ex)
 
 
+"""
+
+Export module.
+Subscribe 'ob_TF' and control state.EStop
+
+"""
+
+
 class Dynamic(object):
     def __init__(self, state):
         super(Dynamic, self).__init__()
         self.state = state
 
-        self.obs = WTF()
+        self.obs = obTF()
 
     def dynamicCallback(self, msg):
         self.obs = msg
@@ -34,7 +42,7 @@ if __name__ == "__main__":
     dobs = Dynamic()
     state = State()
 
-    rospy.Subscriber("/ob_TF", WTF, dobs.dynamicCallback)
+    rospy.Subscriber("/ob_TF", obTF, dobs.dynamicCallback)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():

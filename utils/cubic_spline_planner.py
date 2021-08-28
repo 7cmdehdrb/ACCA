@@ -5,6 +5,15 @@ import math
 import numpy as np
 import bisect
 
+"""
+
+calc_spline_course function.
+
+Input values: ([x_positions], [y_positions], ds)
+Output values: ([cx], [cy], [cyaw], [ck], [s])
+
+"""
+
 
 class Spline:
     """
