@@ -18,8 +18,18 @@ except Exception as ex:
     print(ex)
 
 
+"""
+
+Subscribe 'parking' and select path and
+Publish 'Control_msg'
+
+Subscriber is located in 'PathSelector' class
+
+"""
+
+
 desired_speed = rospy.get_param("/parking_speed", 3.0)
-max_steer = rospy.get_param("/max_steer". 30.0)
+max_steer = rospy.get_param("/max_steer", 30.0)
 
 
 class PathFinder(object):
@@ -54,6 +64,7 @@ class Parking(object):
             self.path_selector.getPath)  # class : LoadPose
 
         self.lastInx = len(self.main_path.cx) - 1
+
         self.target_idx, _ = self.stanley.calc_target_index(
             self.state, self.main_path.cx, self.main_path.cy
         )
@@ -83,7 +94,7 @@ class Parking(object):
         target_idx = self.target_idx
 
         di, target_idx = self.stanley.stanley_control(
-            self.state, self.path.cx, self.path.cy, self.path.cyaw, target_idx)
+            self.state, self.main_path.cx, self.main_path.cy, self.main_path.cyaw, target_idx)
 
         self.target_idx = target_idx
 

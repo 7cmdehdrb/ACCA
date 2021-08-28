@@ -9,13 +9,13 @@ import numpy as np
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import Twist
 from path_planner.msg import stanleyMsg
-from loadPose import LoadPose
 
 
 try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
     from stanley import Stanley
     from state import State
+    from loadPose import LoadPose
 except Exception as ex:
     print("GLOBAL STANLEY IMPORT ERROR")
     print(ex)

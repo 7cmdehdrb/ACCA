@@ -1,0 +1,39 @@
+<launch>
+
+    <!-- Sensors -->
+    
+    <!-- IMU -->
+    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+        <arg name="port" value="/dev/ttyUSB1" />
+    </include>
+    
+    <!-- LiDAR -->
+    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+    <!-- PLEASE ADD adaptive_clustering/poses topic to run this file -->
+    
+    <!-- Sensors end -->
+    
+    <!-- Odometry -->
+    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
+    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
+    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
+    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" /> -->
+
+    <!-- Parking --> 
+    <node name="parking_selection" pkg="parking" type="parking_selection.py" output="screen" />
+    <node name="parking" pkg="parking" type="parking.py" output="screen" />
+
+    <!-- Localization -->
+    <include file="$(find hdl_localization)/launch/hdl_localization.launch">
+        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+    </include>
+
+    <!-- Model -->
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+
+    <!-- Test -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 -0.0 0.0 -0.0 0.0 0.0 map odom 10" />
+    <!-- -2.676659107208252,-3.7524757385253906,-2.29648101519 -->
+
+
+</launch>

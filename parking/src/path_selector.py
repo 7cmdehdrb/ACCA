@@ -2,8 +2,16 @@
 
 import sys
 import rospy
-from loadPose import LoadPose
+import time as t
 from std_msgs.msg import UInt8MultiArray
+
+
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    from loadPose import LoadPose
+except ImportError as ie:
+    print(ie)
+    print("UTILS IMPORT ERROR")
 
 
 class PathSelector(object):
@@ -13,17 +21,24 @@ class PathSelector(object):
         rospy.Subscriber("/parking", UInt8MultiArray,
                          self.parkingCallback)
 
+        self.flag = False
         self.__idx = 0
 
+        self.len = -1
         self.pathArray = []
         self.main_path = None
 
-        for i in range(4):
+        while ((self.flag is not True) and (not rospy.is_shutdown())):
+            rospy.loginfo("WAIT FOR PARKING TOPIC...")
+            t.sleep(0.1)
+
+        for i in range(self.len):
             try:
                 f = "parking_path" + str(i) + ".csv"
                 self.pathArray.append(LoadPose(file_name=f))
             except IOError as ioe:
-                self.pathArray.append(LoadPose(file_name="no_path.csv"))
+                self.pathArrsave_file_nameay.append(
+                    LoadPose(file_name="no_path.csv"))
                 print("IO ERROR ON CSV FILE")
 
     @property
@@ -41,6 +56,10 @@ class PathSelector(object):
 
     def parkingCallback(self, msg):
         data = msg.data
+
+        if self.flag is False and len(data) != 0:
+            self.len = len(data)
+            self.flag = True
 
         for i in range(len(data)):
             if data[i] == 1:

@@ -21,6 +21,9 @@ except Exception as ex:
     print(ex)
 
 
+save_file_name = rospy.get_param("/save_file_name", "odometry_path.csv")
+
+
 class OdometryPath(State):
     def __init__(self, x, y, yaw, v):
         super(OdometryPath, self).__init__(x=x, y=y, yaw=yaw, v=v)
@@ -83,7 +86,7 @@ class OdometryPath(State):
         rospy.loginfo("TRYING TO SAVE PATH...")
 
         output_file_path = rospkg.RosPack().get_path(
-            'path_planner')+"/saved_path/odometry_path.csv"
+            'path_planner')+"/saved_path/" + save_file_name
 
         with open(output_file_path, 'w') as csvfile:
             for pose in msg.poses:

@@ -11,11 +11,19 @@ from std_msgs.msg import UInt8MultiArray, Empty
 from geometry_msgs.msg import PoseArray, Pose, Polygon, Point32, PoseStamped
 from visualization_msgs.msg import Marker, MarkerArray
 
+"""
+
+Subscribe 'adaptive_clustering/poses' topic and
+Publish 'parking' topic to determine path
+
+"""
+
+
 L = 2.02
 W = 1.12
 RATIO = 1.7
 
-mode = rospy.get_param("/save_parking", True)
+mode = rospy.get_param("/save_parking", False)
 
 
 def checkIsInParking(obstacle, box):
@@ -249,7 +257,7 @@ class CarYN(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node("parking_space")
+    rospy.init_node("parking_selection")
 
     caryn = CarYN()
 
@@ -258,21 +266,23 @@ if __name__ == "__main__":
 
     rospy.Subscriber("adaptive_clustering/poses", PoseArray, caryn.CarCallback)
 
-    # TEST
+    """ TEST """
+
     # rospy.Subscriber("/move_base_simple/goal", PoseStamped,
     #                  callback=caryn.obstacleTestCallback)
     # obstacle_pub = rospy.Publisher("/obstacle_test", PoseArray, queue_size=1)
 
+    """ TEST END """
+
     if mode is True:
         rospy.loginfo("RUNNING SAVE MODE")
-
         rospy.Subscriber("/move_base_simple/goal", PoseStamped,
                          callback=caryn.parkingPositionCallback)
         th = threading.Thread(target=caryn.saveParking)
         th.start()
+
     else:
         rospy.loginfo("RUNNING LOAD MODE")
-
         caryn.loadParking()
 
     r = rospy.Rate(5.0)
@@ -282,8 +292,9 @@ if __name__ == "__main__":
         data.data = caryn.checkingParking()
 
         caryn.publishMarker(publisher=marker_pub)
-        caryn.publishObstacle(publisher=obstacle_pub)
         park_pub.publish(data)
+
+        # caryn.publishObstacle(publisher=obstacle_pub) # TEST
 
         print(data.data)
 
