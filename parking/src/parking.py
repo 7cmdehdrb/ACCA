@@ -28,7 +28,7 @@ Subscriber is located in 'PathSelector' class
 """
 
 
-desired_speed = rospy.get_param("/parking_speed", 3.0)
+desired_speed = rospy.get_param("/parking_speed", 0.5)
 max_steer = rospy.get_param("/max_steer", 30.0)
 
 
@@ -75,12 +75,36 @@ class Parking(object):
             self.cmd_msg.steer = 0.0
             self.cmd_msg.brake = 100
 
+            self.state.parkingFlag = False
+
         else:
             self.cmd_msg.speed = speed
             self.cmd_msg.steer = -di
             self.cmd_msg.brake = 1
 
+    def goBack(self, speed):
+        rate = rospy.Rate(30.0)
+
+        while True:
+            distance = np.hypot(
+                self.main_path.cx[self.lastInx] - self.state.x, self.main_path.cy[self.lastInx] - self.state.y)
+
+            self.cmd_msg.speed = -speed
+            self.cmd_msg.steer = 0.0
+            self.cmd_msg.brake = 1
+
+            self.cmd_pub.publish(self.cmd_msg)
+
+            if distance > 10.0:
+                break
+
+            rate.sleep()
+
+        self.state.backwardFlag = False
+
     def checkMainPath(self):
+        print(self.pathIdx)
+
         if self.pathIdx != self.path_selector.getIdx:
             self.pathIdx = self.path_selector.getIdx
             self.main_path.update(load=self.path_selector.getPath)
@@ -112,6 +136,8 @@ if __name__ == "__main__":
     rospy.init_node("parking")
 
     state = State(x=0.0, y=0.0, v=0.0, yaw=0.0)
+    state.parkingFlag = True
+    state.backwardFlag = True
 
     cmd_msg = stanleyMsg()
     cmd_pub = rospy.Publisher("/Control_msg", stanleyMsg, queue_size=1)

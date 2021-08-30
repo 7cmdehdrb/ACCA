@@ -53,6 +53,10 @@ class Machine():
         self.cmd_msg = stanleyMsg()
 
         self.state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
+
+        self.state.parkingFlag = True
+        self.state.backwardFlag = True
+
         self.global_stanley = GlobalStanley(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
         self.estop_node = Dynamic(state=self.state)
@@ -60,7 +64,8 @@ class Machine():
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
         self.Mode = -1
-        self.parkingFlag = True
+
+        self.parkingCnt = 0
 
     def stateCallback(self, msg):
         self.Mode = msg.data
@@ -80,12 +85,12 @@ if __name__ == '__main__':
     machine = Machine()
 
     rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
-    rospy.Subscriber("/odom", Odometry, machine.state.odometryCallback)
+    rospy.Subscriber("/fake_odom", Odometry, machine.state.odometryCallback)
     rospy.Subscriber("/ob_TF", obTF, machine.estop_node.dynamicCallback)
 
     rate = rospy.Rate(30.0)
     while not rospy.is_shutdown():
-        print(machine.Mode)
+        # print(machine.Mode)
 
         if machine.Mode == -1:
             machine.global_stanley.main()
@@ -101,9 +106,20 @@ if __name__ == '__main__':
 
         # Parking Mode
         if machine.Mode == 4:
-            if machine.parkingFlag is True:
+            if machine.state.parkingFlag is True:
                 machine.parking_node.main()
+
             else:
+
+                while machine.parkingCnt < 30.0 * 10:
+                    machine.parking_node.main()
+                    machine.parkingCnt += 1
+                    rate.sleep()
+
+                if machine.state.backwardFlag is True:
+                    print("BACK BACK BACK")
+                    machine.parking_node.goBack(speed=0.5)
+
                 machine.global_stanley.main()
 
         rate.sleep()

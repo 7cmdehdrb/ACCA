@@ -360,7 +360,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /rrt_star_path
+      Topic: /parking_path
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -369,7 +369,7 @@ Visualization Manager:
       Axes Radius: 0.009999999776482582
       Class: rviz/PoseArray
       Color: 255; 25; 0
-      Enabled: false
+      Enabled: true
       Head Length: 0.07000000029802322
       Head Radius: 0.029999999329447746
       Name: PoseArray
@@ -378,7 +378,7 @@ Visualization Manager:
       Shape: Arrow (Flat)
       Topic: /create_global_path
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Arrow Length: 0.30000001192092896
       Axes Length: 0.30000001192092896
@@ -400,16 +400,19 @@ Visualization Manager:
       Marker Topic: /hdl_areas
       Name: MarkerArray
       Namespaces:
-        {}
+        2-3.83310127258: true
+        3-60.1927947998: true
+        4-16.7506122589: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /obstacles
+      Marker Topic: /parking_area
       Name: MarkerArray
       Namespaces:
-        -20.35: true
-        -37.3: true
+        0: true
+        1: true
+        2: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -440,25 +443,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 75.05548095703125
+      Distance: 53.16535568237305
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -11.901524543762207
-        Y: -1.1852316856384277
-        Z: -21.904306411743164
+        X: -15.600859642028809
+        Y: -20.27460289001465
+        Z: -19.349292755126953
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4197964668273926
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.8509057760238647
+      Yaw: 0.7959058284759521
     Saved: ~
 Window Geometry:
   Displays:

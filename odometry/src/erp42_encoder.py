@@ -149,7 +149,9 @@ class control():
             speed(KPH), steer(Deg), Brake(1~200), Gear(2: drive)
         """
 
-        SPEED = SPEED * 10
+        GEAR = 2 if SPEED >= 0.0 else 0
+
+        SPEED = abs(SPEED) * 10
         if SPEED > 200:
             SPEED = 200
         elif SPEED < 0:
@@ -171,7 +173,7 @@ class control():
                 self.DATA[8] = int(255 - STEER // 256)
                 self.DATA[9] = int(255 - STEER % 256)
 
-            self.DATA[5] = 2    # GEAR
+            self.DATA[5] = GEAR    # GEAR
             self.DATA[6] = int(SPEED // 256)
             self.DATA[7] = int(SPEED % 256)
             self.DATA[10] = BRAKE   # BREAK

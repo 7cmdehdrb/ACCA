@@ -43,6 +43,9 @@ After use this command, please wait for 5 seconds
 """
 
 
+file_name = "parking_path2.csv"
+
+
 class GetPose(object):
     def __init__(self):
         super(GetPose, self).__init__()
@@ -115,7 +118,7 @@ class GetPose(object):
         rospy.loginfo("TRYING TO SAVE PATH...")
 
         output_file_path = rospkg.RosPack().get_path(
-            'path_planner')+"/saved_path/path.csv"
+            'path_planner')+"/saved_path/" + file_name
 
         with open(output_file_path, 'w') as csvfile:
             for pose in msg.poses:

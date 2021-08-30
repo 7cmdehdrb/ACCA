@@ -147,7 +147,7 @@ class CarYN(object):
 
         for box in self.boxes:
             marker = Marker()
-            marker.header.frame_id = "base_link"
+            marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
             marker.lifetime = rospy.Duration(0.2)
             marker.ns = str(idx)

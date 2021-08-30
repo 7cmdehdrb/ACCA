@@ -79,8 +79,8 @@ class Stanley(object):
         :return: (int, float)
         """
         # Calc front axle position
-        fx = state.x + self.L * np.cos(state.yaw)
-        fy = state.y + self.L * np.sin(state.yaw)
+        fx = state.x + self.L * np.cos(state.yaw) / 2.0
+        fy = state.y + self.L * np.sin(state.yaw) / 2.0
 
         # Search nearest point index
         dx = [fx - icx for icx in cx]
