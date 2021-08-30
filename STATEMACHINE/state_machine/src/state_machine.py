@@ -34,6 +34,15 @@ except ImportError as ie:
     sys.exit()
 
 
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/parking/src")
+    from parking import Parking
+except ImportError as ie:
+    print("PARKING IMPORT ERROR")
+    print(ie)
+    sys.exit()
+
+
 WB = 1.040
 
 
@@ -47,8 +56,11 @@ class Machine():
         self.global_stanley = GlobalStanley(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
         self.estop_node = Dynamic(state=self.state)
+        self.parking_node = Parking(
+            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
         self.Mode = -1
+        self.parkingFlag = True
 
     def stateCallback(self, msg):
         self.Mode = msg.data
@@ -84,6 +96,13 @@ if __name__ == '__main__':
 
             if machine.state.EStop is True:
                 machine.doEStop()
+            else:
+                machine.global_stanley.main()
+
+        # Parking Mode
+        if machine.Mode == 4:
+            if machine.parkingFlag is True:
+                machine.parking_node.main()
             else:
                 machine.global_stanley.main()
 
