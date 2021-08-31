@@ -40,6 +40,9 @@ class StaticObstacles(object):
         self.state = state
         self.tf_node = tf_node
 
+        self.start_point = None
+        self.last_goal = None
+
         self.doPublishing = True
 
         self.path_pub = rospy.Publisher(
@@ -54,7 +57,7 @@ class StaticObstacles(object):
             if distance < min_dis:
                 min_dis = distance
 
-        if min_dis > 1.0:
+        if min_dis > 0.1:
             return True
 
         return False
@@ -80,7 +83,6 @@ class StaticObstacles(object):
 
                 if self.checkObstacle(new_obstacle) is True:
                     self.map.obstacles.append(new_obstacle)
-                    print(len(self.map.obstacles))
 
         except Exception as ex:
             pass
@@ -102,15 +104,16 @@ class StaticObstacles(object):
             ])
 
             dot = np.dot(obstacle_VEC, path_VEC)
-            cross = np.cross(obstacle_VEC, path_VEC)
 
             # If obstacle is located in FRONT
-            if dot >= 0.0:
+            if dot > 0.0:
                 distance = np.hypot(obstacle.x - self.state.x,
                                     obstacle.y - self.state.y)
 
                 if distance < min_dis:
                     min_dis = distance
+
+                    cross = np.cross(obstacle_VEC, path_VEC)
 
                     nearest_obstacle = obstacle
                     is_right = True if cross >= 0.0 else False
@@ -192,8 +195,6 @@ class StaticObstacles(object):
 
         self.path_pub.publish(msg)
 
-        print("HELLO?")
-
 
 if __name__ == "__main__":
     rospy.init_node("static_obstacles")
@@ -204,11 +205,22 @@ if __name__ == "__main__":
 
     static_ob = StaticObstacles(map=map, state=state, tf_node=tf_node)
 
+    test_pub = rospy.Publisher("test_goal", PoseStamped, queue_size=1)
+
     rospy.Subscriber("/obstacles", PoseArray, static_ob.obstaclesCallback)
     rospy.Subscriber("/odometry/imu", Odometry,
                      callback=state.odometryCallback)
 
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
-        static_ob.createPath()
+        goal_point = static_ob.createGoalPoint()
+
+        # TEST
+
+        if goal_point is None:
+            print("NO GOAL POINT. PLEASE USE GLOBAL PATH")
+        else:
+            test_pub.publish(goal_point)
+            print(goal_point.pose.position.x, goal_point.pose.position.y)
+
         r.sleep()
