@@ -9,13 +9,6 @@ import math as m
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 
 
-try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
-    from transform_node import TransformNode
-except Exception as ex:
-    print(ex)
-
-
 class Obstacles(object):
     def __init__(self, x, y):
 
@@ -87,7 +80,7 @@ if __name__ == "__main__":
 
     tf_node = tf.TransformListener()
 
-    ob_pub = rospy.Publisher("/dongjin_test", PoseArray, queue_size=1)
+    ob_pub = rospy.Publisher("/track", PoseArray, queue_size=1)
 
     rospy.Subscriber("/cone_position", PoseArray, dj.obstaclesCallback)
 
