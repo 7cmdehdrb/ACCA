@@ -9,16 +9,17 @@ import math as m
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 
 
-class Obstacles(object):
-    def __init__(self, x, y):
+try:
+    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    from util_class import Obstacle
+except Exception as ex:
+    print("UTIL CLASS IMPORT ERROR")
+    print(ex)
 
-        self.x = x
-        self.y = y
 
-
-class DongjinTest(object):
+class TransformObstacles(object):
     def __init__(self):
-        super(DongjinTest, self).__init__()
+        super(TransformObstacles, self).__init__()
 
         self.obstacles = []
 
@@ -38,7 +39,7 @@ class DongjinTest(object):
 
                 new_obstacle = tf_node.transformPose("odom", new_obstacle)
 
-                new_obstacle = Obstacles(
+                new_obstacle = Obstacle(
                     x=new_obstacle.pose.position.x, y=new_obstacle.pose.position.y)
 
                 temp.append(new_obstacle)
@@ -74,17 +75,17 @@ class DongjinTest(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node("dongjin_test")
+    rospy.init_node("transform_obstacles")
 
-    dj = DongjinTest()
+    tf_ob = TransformObstacles()
 
     tf_node = tf.TransformListener()
 
     ob_pub = rospy.Publisher("/track", PoseArray, queue_size=1)
 
-    rospy.Subscriber("/cone_position", PoseArray, dj.obstaclesCallback)
+    rospy.Subscriber("/obstacles", PoseArray, tf_ob.obstaclesCallback)
 
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
-        dj.publishObstacles(publisher=ob_pub)
+        tf_ob.publishObstacles(publisher=ob_pub)
         r.sleep()
