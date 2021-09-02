@@ -44,19 +44,14 @@ class PathFinder(object):
         self.cy = load.cy
         self.cyaw = load.cyaw
 
-    def update(self, load):
-        self.cx = load.cx
-        self.cy = load.cy
-        self.cyaw = load.cyaw
-
 
 class GlobalStanley(object):
-    def __init__(self, state, cmd_msg, cmd_publisher):
+    def __init__(self, state, cmd_msg, cmd_publisher, main_path_file="path.csv"):
         super(GlobalStanley, self).__init__()
 
         self.state = state
         self.stanley = Stanley()
-        self.load = LoadPose(file_name="path.csv")
+        self.load = LoadPose(file_name=main_path_file)
         self.path = PathFinder(load=self.load)
 
         self.cmd_msg = cmd_msg

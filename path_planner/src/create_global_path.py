@@ -43,7 +43,7 @@ After use this command, please wait for 5 seconds
 """
 
 
-file_name = "parking_path2.csv"
+file_name = rospy.get_param("/save_file_name", "static_path.csv")
 
 
 class GetPose(object):

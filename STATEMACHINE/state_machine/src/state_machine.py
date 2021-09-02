@@ -2,6 +2,7 @@
 
 import sys
 import rospy
+import tf
 import math as m
 import time
 from std_msgs.msg import Float32, Int32
@@ -28,6 +29,7 @@ except ImportError as ie:
 try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/cone_tracker/src")
     from estopTF import Dynamic
+    from static_obstacles import StaticObstacles
 except ImportError as ie:
     print("CONE TRACKER IMPORT ERROR")
     print(ie)
@@ -44,6 +46,7 @@ except ImportError as ie:
 
 
 WB = 1.040
+PARKING_WAIT_TIME = 10
 
 
 class Machine():
@@ -54,12 +57,16 @@ class Machine():
 
         self.state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
 
+        self.tf_node = tf.TransformListener()
+
         self.state.parkingFlag = True
         self.state.backwardFlag = True
 
-        self.global_stanley = GlobalStanley(
-            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
+        self.global_stanley_node = GlobalStanley(
+            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, main_path_file="static_path.csv")
         self.estop_node = Dynamic(state=self.state)
+        self.static_ob_node = StaticObstacles(
+            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, start_point=[-14.0730895996, -16.6290416718])
         self.parking_node = Parking(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
@@ -73,7 +80,7 @@ class Machine():
 
     def doEStop(self):
         self.cmd_msg.speed = 0.0
-        self.cmd_msg.brake = 200
+        self.cmd_msg.brake = createGoalPoint200
 
         self.cmd_pub.publish(self.cmd_msg)
 
@@ -93,7 +100,27 @@ if __name__ == '__main__':
         # print(machine.Mode)
 
         if machine.Mode == -1:
-            machine.global_stanley.main()
+            machine.global_stanley_node.main()
+
+        # Static Obstacle Mode
+        if machine.Mode == 2:
+            machine.static_ob_node.start_point = [
+                machine.state.x, machine.state.y]
+
+            while not rospy.is_shutdown():
+
+                find_goal = machine.static_ob_node.main()
+
+                if find_goal is not True:
+                    print("NO PATH!")
+                    machine.global_stanley_node.main()
+
+                # PLEASE ADD PP CONTROL
+
+                if machine.Mode != 2:
+                    break
+
+                rate.sleep()
 
         # Dynamic Obstacle Mode
         if machine.Mode == 3:
@@ -102,7 +129,7 @@ if __name__ == '__main__':
             if machine.state.EStop is True:
                 machine.doEStop()
             else:
-                machine.global_stanley.main()
+                machine.global_stanley_node.main()
 
         # Parking Mode
         if machine.Mode == 4:
@@ -111,7 +138,7 @@ if __name__ == '__main__':
 
             else:
 
-                while machine.parkingCnt < 30.0 * 10:
+                while machine.parkingCnt < 30.0 * PARKING_WAIT_TIME:
                     machine.parking_node.main()
                     machine.parkingCnt += 1
                     rate.sleep()
@@ -120,6 +147,6 @@ if __name__ == '__main__':
                     print("BACK BACK BACK")
                     machine.parking_node.goBack(speed=0.5)
 
-                machine.global_stanley.main()
+                machine.global_stanley_node.main()
 
         rate.sleep()

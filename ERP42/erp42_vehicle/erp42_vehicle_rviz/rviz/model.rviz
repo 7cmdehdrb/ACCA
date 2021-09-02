@@ -9,6 +9,7 @@ Panels:
         - /TF1/Tree1
         - /LaserScan1
         - /Odometry1/Shape1
+        - /Path3
       Splitter Ratio: 0.6997166872024536
     Tree Height: 796
   - Class: rviz/Selection
@@ -149,6 +150,8 @@ Visualization Manager:
           Value: false
         imu_link:
           Value: false
+        laser:
+          Value: true
         map:
           Value: true
         odom:
@@ -181,6 +184,8 @@ Visualization Manager:
               front_steer_link:
                 {}
               imu_link:
+                {}
+              laser:
                 {}
               rear_left_wheel_link:
                 {}
@@ -400,9 +405,9 @@ Visualization Manager:
       Marker Topic: /hdl_areas
       Name: MarkerArray
       Namespaces:
+        2-20.4386920929: true
         2-3.83310127258: true
         3-60.1927947998: true
-        4-16.7506122589: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -414,6 +419,29 @@ Visualization Manager:
         1: true
         2: true
       Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 239; 41; 41
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /static_obstacle_path
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -443,16 +471,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 53.16535568237305
+      Distance: 53.8606071472168
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -15.600859642028809
-        Y: -20.27460289001465
-        Z: -19.349292755126953
+        X: -19.65495491027832
+        Y: -23.02653694152832
+        Z: -19.344493865966797
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

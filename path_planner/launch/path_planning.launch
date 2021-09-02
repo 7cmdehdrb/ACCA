@@ -12,6 +12,7 @@
     <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     <!-- Path Planner -->
+    <param name="save_file_name" type="str" value="static_path.csv"></param>
     <node name="create_global_path" pkg="path_planner" type="create_global_path.py" output="screen" />
 
     <!-- Localization -->

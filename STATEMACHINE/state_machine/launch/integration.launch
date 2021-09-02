@@ -11,31 +11,36 @@
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
     <!-- <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
     <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include> -->
-
+    <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
+        
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <!-- <param name="erp_port" type="str" value="/dev/ttyUSB1" />
-    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" output="screen" /> -->
+    <param name="erp_port" type="str" value="/dev/ttyUSB1" />
+    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
     <!-- <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
-    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
+    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
     
-    <!-- Path Publish --> 
-    <param name="c_gain" type="double" value="100.0" />
-    <param name="desired_speed" type="double" value="1.0" />
-
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
         <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
     </include>
 
+    <!-- Param --> 
+    <param name="c_gain" type="double" value="100.0" />
+    <param name="desired_speed" type="double" value="1.0" />
+    <!-- <param name="lane_yaw" type="double" value="0.0" /> -->
+    <param name="distance_gap" type="double" value="3.0" />
+
+
     <!-- Obstacles -->
-    <!-- <node name="obstacle_detection" pkg="cone_tracker" type="obstacle_detection.py" />
-    <node name="transform_laser_to_odom" pkg="cone_tracker" type="transform_laser_to_odom.py" />
+    <!-- /scan_filtered => /obstacles -->
+    <node name="obstacle_detection" pkg="cone_tracker" type="obstacle_detection.py" />
+    <!-- /scan_filtered => /ob_TF -->
     <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" />
-    <node name="estop" pkg="cone_tracker" type="estopTF.py" /> -->
 
     <!-- Parking -->
+    <node name="parking_selection" pkg="parking" type="parking_selection.py" />
 
     <!-- State Machine -->
     <node name="publish_state" pkg="path_planner" type="publish_state.py" />
@@ -47,7 +52,6 @@
     <!-- Test -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="map_pub" args="2.67 -3.75 0.0 -2.29 0.0 0.0 map odom 10" /> -->
     <node pkg="tf" type="static_transform_publisher" name="map_pub" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 10" />
-    <!-- <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" /> -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 base_link laser 100" /> -->
     <!-- -2.676659107208252,-3.7524757385253906,-2.29648101519 -->
 

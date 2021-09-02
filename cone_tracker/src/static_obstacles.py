@@ -8,6 +8,7 @@ import numpy as np
 import math as m
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 from nav_msgs.msg import Odometry, Path
+from path_planner.msg import stanleyMsg
 
 
 try:
@@ -15,13 +16,22 @@ try:
     from state import State
     from util_class import Obstacle, Map
     from cubic_spline_planner import calc_spline_course
+    from stanley import Stanley
 except Exception as ex:
     print("UTIL CLASS IMPORT ERROR")
     print(ex)
 
 
-LANE_YAW = rospy.get_param("/LANE_YAW", 0.0)
-DISTANCE_GAP = rospy.get_param("/DISTANCE_GAP", 1.0)
+_, _, YAW = tf.transformations.euler_from_quaternion([0.0, 0.0, 0.911379184375, -0.411567712883,
+                                                      ])
+
+LANE_YAW = rospy.get_param("/lane_yaw", YAW)
+DISTANCE_GAP = rospy.get_param("/distance_gap", 1.0)
+
+desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
+max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
+
+WB = 1.040
 
 
 class StaticObstacles(object):
@@ -33,20 +43,50 @@ class StaticObstacles(object):
 
     """
 
-    def __init__(self, map, state, tf_node):
+    def __init__(self, state, cmd_msg, cmd_publisher, start_point=[0.0, 0.0]):
         super(StaticObstacles, self).__init__()
 
-        self.map = map
-        self.state = state
-        self.tf_node = tf_node
-
-        self.start_point = None
-        self.last_goal = None
-
-        self.doPublishing = True
+        rospy.Subscriber("/obstacles", PoseArray,
+                         self.obstaclesCallback)
 
         self.path_pub = rospy.Publisher(
             "static_obstacle_path", Path, queue_size=1)
+
+        self.cmd_msg = cmd_msg
+        self.cmd_pub = cmd_publisher
+
+        self.stanley = Stanley()
+
+        self.target_idx = 0
+
+        self.map = Map()
+
+        """ TEST """
+
+        self.map.obstacles = [
+            Obstacle(
+                -16.2311134338,
+                -22.16563797
+            ),
+            Obstacle(
+                -22.0402412415,
+                -23.5935821533
+            )
+        ]
+
+        self.state = state
+        self.tf_node = tf.TransformListener()
+
+        self.start_point = start_point
+        self.new_start_point = self.start_point
+        self.last_goal = None
+
+        self.cx = []
+        self.cy = []
+        self.cyaw = []
+        self.last_idx = -1
+
+        self.doPublishing = True
 
     def checkObstacle(self, new_ob):
         min_dis = float("inf")
@@ -76,7 +116,7 @@ class StaticObstacles(object):
 
                 new_obstacle.pose = pose
 
-                new_obstacle = self.tf_node.transformPose("odom", new_obstacle)
+                new_obstacle = self.tf_node.transformPose("map", new_obstacle)
 
                 new_obstacle = Obstacle(
                     x=new_obstacle.pose.position.x, y=new_obstacle.pose.position.y)
@@ -93,20 +133,32 @@ class StaticObstacles(object):
 
         min_dis = float("inf")
 
+        car_VEC = np.array([
+            m.cos(self.state.yaw), m.sin(self.state.yaw)
+        ])
+
         path_VEC = np.array([
             m.cos(LANE_YAW), m.sin(LANE_YAW)
         ])
 
         for obstacle in self.map.obstacles:
 
+            rear_x = self.state.x + ((WB) * m.cos(self.state.yaw))
+            rear_y = self.state.y + ((WB) * m.sin(self.state.yaw))
+
             obstacle_VEC = np.array([
-                obstacle.x - self.state.x, obstacle.y - self.state.y
+                obstacle.x -
+                self.start_point[0], obstacle.y - self.start_point[1]
             ])
 
-            dot = np.dot(obstacle_VEC, path_VEC)
+            dot_VEC = np.array([
+                obstacle.x - rear_x, obstacle.y - rear_y
+            ])
+
+            dot = np.dot(dot_VEC, car_VEC)
 
             # If obstacle is located in FRONT
-            if dot > 0.0:
+            if dot >= 0.0:
                 distance = np.hypot(obstacle.x - self.state.x,
                                     obstacle.y - self.state.y)
 
@@ -139,37 +191,32 @@ class StaticObstacles(object):
         if nearest_obstacle is None:
             return None
 
-        odom_obstacle = self.addFrame("odom", nearest_obstacle)
+        r = 1.0 if is_right is True else -1.0
 
-        laser_obstacle = self.tf_node.transformPose("laser", odom_obstacle)
+        map_obstacle = self.addFrame("map", nearest_obstacle)
 
-        if is_right is True:
-            laser_obstacle.pose.position.x - DISTANCE_GAP
-        else:
-            laser_obstacle.pose.position.x + DISTANCE_GAP
+        map_obstacle.pose.position.x += (m.cos(LANE_YAW +
+                                               m.radians(90.0)) * DISTANCE_GAP) * r
+        map_obstacle.pose.position.y += (m.sin(LANE_YAW +
+                                               m.radians(90.0)) * DISTANCE_GAP) * r
 
-        return self.tf_node.transformPose("odom", laser_obstacle)
+        return map_obstacle
 
-    def createPath(self):
-        goal_point = self.createGoalPoint()
-
+    def createPath(self, goal_point):
         if goal_point is not None:
-            xs = [self.state.x, goal_point.pose.position.x]
-            ys = [self.state.y, goal_point.pose.position.y]
+            xs = [self.new_start_point[0], goal_point.pose.position.x]
+            ys = [self.new_start_point[1], goal_point.pose.position.y]
 
             cx, cy, cyaw, _, _ = calc_spline_course(x=xs, y=ys, ds=0.1)
 
-            if self.doPublishing is True:
-                self.publishPath(cx, cy, cyaw)
-
             return cx, cy, cyaw
 
-        return None
+        return None, None, None
 
     def publishPath(self, cx, cy, cyaw):
         msg = Path()
 
-        msg.header.frame_id = "odom"
+        msg.header.frame_id = "map"
         msg.header.stamp = rospy.Time.now()
 
         msg.poses = []
@@ -177,7 +224,7 @@ class StaticObstacles(object):
         for i in range(len(cx)):
             pose = PoseStamped()
 
-            pose.header.frame_id = "odom"
+            pose.header.frame_id = "map"
             pose.header.stamp = rospy.Time.now()
 
             pose.pose.position.x = cx[i]
@@ -195,21 +242,68 @@ class StaticObstacles(object):
 
         self.path_pub.publish(msg)
 
+    def main(self):
+        goal_point = self.createGoalPoint()
+
+        if goal_point is None:
+            self.target_idx = 0
+            return False
+
+        if goal_point != self.last_goal:
+            self.target_idx = 0
+            self.new_start_point = [self.state.x, self.state.y]
+
+        self.last_goal = goal_point
+
+        cx, cy, cyaw = self.createPath(goal_point)
+
+        self.cx = cx
+        self.cy = cy
+        self.cyaw = cyaw
+        self.last_idx = len(cx) - 1
+
+        target_idx = self.target_idx
+        di, target_idx = self.stanley.stanley_control(
+            self.state, self.cx, self.cy, self.cyaw, target_idx
+        )
+        self.target_idx = target_idx
+
+        print(str(self.target_idx) + " / " + str(self.last_idx))
+
+        if self.target_idx == self.last_idx:
+            self.new_start_point = [self.state.x, self.state.y]
+            self.target_idx = 0
+            return False
+
+        di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
+
+        self.cmd_msg.speed = desired_speed * 0.8
+        self.cmd_msg.steer = -di
+        self.cmd_msg.brake = 1
+
+        self.cmd_pub.publish(self.cmd_msg)
+
+        if self.doPublishing is True:
+            self.publishPath(self.cx, self.cy, self.cyaw)
+
+        return True
+
 
 if __name__ == "__main__":
     rospy.init_node("static_obstacles")
 
-    map = Map()
     state = State(0.0, 0.0, 0.0, 0.0)
+    cmd_msg = stanleyMsg()
+
     tf_node = tf.TransformListener()
 
-    static_ob = StaticObstacles(map=map, state=state, tf_node=tf_node)
-
-    test_pub = rospy.Publisher("test_goal", PoseStamped, queue_size=1)
-
-    rospy.Subscriber("/obstacles", PoseArray, static_ob.obstaclesCallback)
     rospy.Subscriber("/odometry/imu", Odometry,
                      callback=state.odometryCallback)
+
+    cmd_pub = rospy.Publisher("/Control_msg", stanleyMsg, queue_size=1)
+
+    static_ob = StaticObstacles(
+        state=state, cmd_msg=cmd_msg, cmd_publisher=cmd_pub, tf_node=tf_node)
 
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
