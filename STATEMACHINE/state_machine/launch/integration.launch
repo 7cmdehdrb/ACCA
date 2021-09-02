@@ -3,14 +3,14 @@
     <!-- Sensors -->
     
     <!-- IMU -->
-    <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
         <arg name="port" value="/dev/ttyUSB0" />
-    </include> -->
+    </include>
     
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
-    <!-- <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
-    <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include> -->
+    <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
+    <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include>
     <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
         
     <!-- Sensors end -->
@@ -18,7 +18,7 @@
     <!-- Odometry -->
     <param name="erp_port" type="str" value="/dev/ttyUSB1" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
-    <!-- <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
+    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
     
     <!-- Localization -->
@@ -27,8 +27,8 @@
     </include>
 
     <!-- Param --> 
-    <param name="c_gain" type="double" value="100.0" />
-    <param name="desired_speed" type="double" value="1.0" />
+    <param name="c_gain" type="double" value="0.5" />
+    <param name="desired_speed" type="double" value="5.0" />
     <!-- <param name="lane_yaw" type="double" value="0.0" /> -->
     <param name="distance_gap" type="double" value="3.0" />
 
@@ -51,7 +51,7 @@
 
     <!-- Test -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="map_pub" args="2.67 -3.75 0.0 -2.29 0.0 0.0 map odom 10" /> -->
-    <node pkg="tf" type="static_transform_publisher" name="map_pub" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 10" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_pub" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 10" /> -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 base_link laser 100" /> -->
     <!-- -2.676659107208252,-3.7524757385253906,-2.29648101519 -->
 

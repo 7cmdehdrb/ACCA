@@ -64,14 +64,15 @@ class StaticObstacles(object):
         """ TEST """
 
         self.map.obstacles = [
-            Obstacle(
-                -16.2311134338,
-                -22.16563797
-            ),
-            Obstacle(
-                -22.0402412415,
-                -23.5935821533
-            )
+            # TEST
+            # Obstacle(
+            #     -16.2311134338,
+            #     -22.16563797
+            # ),
+            # Obstacle(
+            #     -22.0402412415,
+            #     -23.5935821533
+            # )
         ]
 
         self.state = state
@@ -246,10 +247,12 @@ class StaticObstacles(object):
         goal_point = self.createGoalPoint()
 
         if goal_point is None:
+            print("NO GOAL POINT")
             self.target_idx = 0
             return False
 
         if goal_point != self.last_goal:
+            print("DETECT NEW GOAL POINT")
             self.target_idx = 0
             self.new_start_point = [self.state.x, self.state.y]
 
@@ -268,7 +271,7 @@ class StaticObstacles(object):
         )
         self.target_idx = target_idx
 
-        print(str(self.target_idx) + " / " + str(self.last_idx))
+        # print(str(self.target_idx) + " / " + str(self.last_idx))
 
         if self.target_idx == self.last_idx:
             self.new_start_point = [self.state.x, self.state.y]

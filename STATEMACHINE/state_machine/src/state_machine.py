@@ -92,10 +92,20 @@ if __name__ == '__main__':
     machine = Machine()
 
     rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
-    rospy.Subscriber("/fake_odom", Odometry, machine.state.odometryCallback)
+    rospy.Subscriber("/odom", Odometry, machine.state.odometryCallback)
     rospy.Subscriber("/ob_TF", obTF, machine.estop_node.dynamicCallback)
 
     rate = rospy.Rate(30.0)
+
+    while not rospy.is_shutdown():
+
+        if machine.state.x == 0.0 and machine.state.y == 0.0 and machine.state.yaw == 0.0 and machine.state.v == 0.0:
+            pass
+        else:
+            break
+
+        rate.sleep()
+
     while not rospy.is_shutdown():
         # print(machine.Mode)
 
@@ -112,7 +122,7 @@ if __name__ == '__main__':
                 find_goal = machine.static_ob_node.main()
 
                 if find_goal is not True:
-                    print("NO PATH!")
+                    # print("NO PATH!")
                     machine.global_stanley_node.main()
 
                 # PLEASE ADD PP CONTROL

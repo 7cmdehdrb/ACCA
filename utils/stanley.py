@@ -14,6 +14,9 @@ Output: steer
 """
 
 
+HDR_RATIO = rospy.get_param("/hdr_ratio", 0.8)
+
+
 class Stanley(object):
     def __init__(self):
         super(Stanley, self).__init__()
@@ -43,7 +46,8 @@ class Stanley(object):
             current_target_idx = last_target_idx
 
         # theta_e corrects the heading error
-        theta_e = self.normalize_angle(cyaw[current_target_idx] - state.yaw)
+        theta_e = (self.normalize_angle(
+            cyaw[current_target_idx] - state.yaw)) * HDR_RATIO
 
         # theta_d corrects the cross track error
 
