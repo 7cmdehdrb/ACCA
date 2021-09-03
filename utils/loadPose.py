@@ -42,6 +42,7 @@ class LoadPose(object):
                 self.cyaw.append(float(row[2]))
 
         rospy.loginfo("LOADING FINISHED")
+        # print(len(self.cx))
 
     def pathPublish(self, pub):
         msg = Path()

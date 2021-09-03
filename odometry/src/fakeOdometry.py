@@ -72,7 +72,7 @@ class FakeOdometry(erp42):
         steer = np.clip(data.steer, -m.radians(30.0), m.radians(30.0))
         brake = data.brake
 
-        # print(speed, m.degrees(steer), brake)
+        print(speed, m.degrees(steer), brake)
 
         self.v = speed
         self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
@@ -81,9 +81,9 @@ class FakeOdometry(erp42):
 if __name__ == "__main__":
     rospy.init_node("fake_odometry")
 
-    fake_odom = FakeOdometry(x=-7.487, y=-5.565, yaw=-2.182, v=0.0)
-
-    # fake_odom = FakeOdometry(x=-0.0, y=-0.0, yaw=-2.33, v=0.1)
+    # fake_odom = FakeOdometry(x=-7.487, y=-5.565, yaw=-2.182, v=0.0)
+    fake_odom = FakeOdometry(x=-2.26557731628418,
+                             y=-2.988885879516602, yaw=-2.33088598842, v=0.0)
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()

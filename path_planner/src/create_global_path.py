@@ -16,7 +16,12 @@ try:
     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
     import cubic_spline_planner
 except Exception as ex:
-    print(ex)
+    try:
+        sys.path.insert(0, "/home/hojin/catkin_ws/src/utils")
+        import cubic_spline_planner
+    except Exception as ex:
+        print(ex)
+        sys.exit()
 
 
 """
