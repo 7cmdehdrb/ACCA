@@ -3,7 +3,7 @@
 import sys
 import rospy
 import time as t
-from std_msgs.msg import UInt8MultiArray
+from std_msgs.msg import Int32MultiArray
 
 
 try:
@@ -18,11 +18,11 @@ class PathSelector(object):
     def __init__(self):
         super(PathSelector, self).__init__()
 
-        rospy.Subscriber("/parking", UInt8MultiArray,
+        rospy.Subscriber("/parking", Int32MultiArray,
                          self.parkingCallback)
 
         self.flag = False
-        self.__idx = 0
+        self.idx = 0
 
         self.len = -1
         self.pathArray = []
@@ -41,27 +41,29 @@ class PathSelector(object):
                     LoadPose(file_name="no_path.csv"))
                 print("IO ERROR ON CSV FILE")
 
-    @property
     def getIdx(self):
-        return self.__idx
+        return self.idx
 
-    @property
     def setIdx(self, idx):
-        self.__idx = idx
-        return self.__idx
+        self.idx = idx
+        return self.idx
 
     @property
     def getPath(self):
-        return self.pathArray[self.getIdx]
+        return self.pathArray[self.getIdx()]
 
     def parkingCallback(self, msg):
-        data = msg.data
 
-        if self.flag is False and len(data) != 0:
-            self.len = len(data)
+        temp = msg.data
+
+        if self.flag is False and len(temp) != 0:
+            self.len = len(temp)
             self.flag = True
+            return
 
-        for i in range(len(data)):
-            if data[i] == 1:
+        for i in range(len(temp)):
+            if temp[i] == 0:
                 self.setIdx(i)
                 break
+
+        # print(self.getIdx)

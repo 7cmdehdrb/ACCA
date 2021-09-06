@@ -12,6 +12,7 @@
     <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
     <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include>
     <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
+    <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include>
         
     <!-- Sensors end -->
     
@@ -27,15 +28,18 @@
     </include>
 
     <!-- Param --> 
-    <param name="c_gain" type="double" value="0.5" />
-    <param name="desired_speed" type="double" value="5.0" />
-    <!-- <param name="lane_yaw" type="double" value="0.0" /> -->
-    <param name="distance_gap" type="double" value="3.0" />
-
+    <param name="c_gain" type="double" value="0.1" />
+    <param name="hdr_ratio" type="double" value="0.75" />
+    <param name="desired_speed" type="double" value="2.0" />
+    <param name="parking_speed" type="double" value="1.0" />
+    <param name="distance_gap" type="double" value="1.5" />
+    <param name="save_parking" type="bool" value="false" />
+    
 
     <!-- Obstacles -->
     <!-- /scan_filtered => /obstacles -->
-    <node name="obstacle_detection" pkg="cone_tracker" type="obstacle_detection.py" />
+    <!-- <node name="obstacle_detection" pkg="cone_tracker" type="obstacle_detection.py" /> -->
+    <node name="dbscan" pkg="cone_tracker" type="dbscan.py" />
     <!-- /scan_filtered => /ob_TF -->
     <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" />
 

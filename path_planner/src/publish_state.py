@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     read_csv(state)
 
-    rospy.Subscriber("/fake_odom", Odometry, callback=state.odometryCallback)
+    rospy.Subscriber("/odom", Odometry, callback=state.odometryCallback)
 
     hdl_state_publisher = rospy.Publisher("hdl_state", Int32, queue_size=1)
 

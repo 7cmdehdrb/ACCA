@@ -164,6 +164,8 @@ if __name__ == "__main__":
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
 
+        # print("??")
+
         dbscan.cvtRange()
 
         dbscan.run()
@@ -195,5 +197,8 @@ if __name__ == "__main__":
                     obstacle.poses.append(pose)
 
             pub.publish(obstacle)
+
+        else:
+            print("NO OB")
 
         r.sleep()

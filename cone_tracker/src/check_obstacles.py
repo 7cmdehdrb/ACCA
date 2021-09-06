@@ -39,13 +39,13 @@ class Laser(object):
         for i in range(len(self.ranges)):
             TF = self.ranges[i]
             if TF != 0:
-                if i >= 0 and i < 135:
+                if i >= 0 and i < 180 - (15 * 2):
                     partitionA = 1
-                if i >= 135 and i < 180:
+                if i >= 180 - (15 * 2) and i < 180:
                     partitionB = 1
-                if i >= 180 and i < 225:
+                if i >= 180 and i < 180 + (15 * 2):
                     partitionC = 1
-                if i >= 225 and i < 361:
+                if i >= 180 + (15 * 2) and i < 361:
                     partitionD = 1
         self.part_fin = [partitionA, partitionB, partitionC, partitionD]
 

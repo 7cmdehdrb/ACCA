@@ -11,7 +11,7 @@ from sensor_msgs.msg import Image
 from nav_msgs.msg import Odometry
 
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/path_planner/src")
+    sys.path.append("/home/acca/catkin_ws/src/path_planner/src")
     from global_stanley import GlobalStanley
 except ImportError as ie:
     print("PATH PLANNER IMPORT ERROR")
@@ -19,7 +19,7 @@ except ImportError as ie:
     sys.exit()
 
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.append("/home/acca/catkin_ws/src/utils/")
     from state import State
 except ImportError as ie:
     print("UTIL IMPORT ERROR")
@@ -27,7 +27,7 @@ except ImportError as ie:
     sys.exit()
 
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/cone_tracker/src")
+    sys.path.append("/home/acca/catkin_ws/src/cone_tracker/src")
     from estopTF import Dynamic
     from static_obstacles import StaticObstacles
 except ImportError as ie:
@@ -63,7 +63,7 @@ class Machine():
         self.state.backwardFlag = True
 
         self.global_stanley_node = GlobalStanley(
-            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, main_path_file="static_path.csv")
+            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, main_path_file="path.csv")
         self.estop_node = Dynamic(state=self.state)
         self.static_ob_node = StaticObstacles(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, start_point=[-14.0730895996, -16.6290416718])
@@ -80,7 +80,7 @@ class Machine():
 
     def doEStop(self):
         self.cmd_msg.speed = 0.0
-        self.cmd_msg.brake = createGoalPoint200
+        self.cmd_msg.brake = 200
 
         self.cmd_pub.publish(self.cmd_msg)
 
@@ -121,6 +121,8 @@ if __name__ == '__main__':
 
                 find_goal = machine.static_ob_node.main()
 
+                print(machine.static_ob_node.map.obstacles)
+
                 if find_goal is not True:
                     # print("NO PATH!")
                     machine.global_stanley_node.main()
@@ -144,18 +146,22 @@ if __name__ == '__main__':
         # Parking Mode
         if machine.Mode == 4:
             if machine.state.parkingFlag is True:
-                machine.parking_node.main()
+                machine.parking_node.main2()
 
             else:
 
-                while machine.parkingCnt < 30.0 * PARKING_WAIT_TIME:
-                    machine.parking_node.main()
+                while machine.parkingCnt < 30.0 * PARKING_WAIT_TIME and not rospy.is_shutdown():
                     machine.parkingCnt += 1
                     rate.sleep()
 
                 if machine.state.backwardFlag is True:
                     print("BACK BACK BACK")
                     machine.parking_node.goBack(speed=0.5)
+
+                    while machine.parkingCnt < 30.0 * (PARKING_WAIT_TIME + 3) and not rospy.is_shutdown():
+                        machine.doEStop()
+                        machine.parkingCnt += 1
+                        rate.sleep()
 
                 machine.global_stanley_node.main()
 

@@ -144,8 +144,8 @@ class StaticObstacles(object):
 
         for obstacle in self.map.obstacles:
 
-            rear_x = self.state.x + ((WB) * m.cos(self.state.yaw))
-            rear_y = self.state.y + ((WB) * m.sin(self.state.yaw))
+            rear_y = self.state.y + ((WB / 2) * m.sin(self.state.yaw))
+            rear_x = self.state.x + ((WB / 2) * m.cos(self.state.yaw))
 
             obstacle_VEC = np.array([
                 obstacle.x -
