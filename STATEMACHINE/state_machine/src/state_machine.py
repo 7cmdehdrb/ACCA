@@ -10,8 +10,18 @@ from path_planner.msg import stanleyMsg, obTF
 from sensor_msgs.msg import Image
 from nav_msgs.msg import Odometry
 
+
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+
+BACKWARD_SPEED = rospy.get_param("/backward_speed", 1.0)
+
+WB = 1.040
+PARKING_WAIT_TIME = 10
+
+
 try:
-    sys.path.append("/home/acca/catkin_ws/src/path_planner/src")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/path_planner/src")
     from global_stanley import GlobalStanley
 except ImportError as ie:
     print("PATH PLANNER IMPORT ERROR")
@@ -19,7 +29,7 @@ except ImportError as ie:
     sys.exit()
 
 try:
-    sys.path.append("/home/acca/catkin_ws/src/utils/")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils/")
     from state import State
 except ImportError as ie:
     print("UTIL IMPORT ERROR")
@@ -27,7 +37,7 @@ except ImportError as ie:
     sys.exit()
 
 try:
-    sys.path.append("/home/acca/catkin_ws/src/cone_tracker/src")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/cone_tracker/src")
     from estopTF import Dynamic
     from static_obstacles import StaticObstacles
 except ImportError as ie:
@@ -37,16 +47,12 @@ except ImportError as ie:
 
 
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/parking/src")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/parking/src")
     from parking import Parking
 except ImportError as ie:
     print("PARKING IMPORT ERROR")
     print(ie)
     sys.exit()
-
-
-WB = 1.040
-PARKING_WAIT_TIME = 10
 
 
 class Machine():
@@ -92,7 +98,7 @@ if __name__ == '__main__':
     machine = Machine()
 
     rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
-    rospy.Subscriber("/odom", Odometry, machine.state.odometryCallback)
+    rospy.Subscriber(ODOMETRY_TOPIC, Odometry, machine.state.odometryCallback)
     rospy.Subscriber("/ob_TF", obTF, machine.estop_node.dynamicCallback)
 
     rate = rospy.Rate(30.0)
@@ -156,7 +162,7 @@ if __name__ == '__main__':
 
                 if machine.state.backwardFlag is True:
                     print("BACK BACK BACK")
-                    machine.parking_node.goBack(speed=0.5)
+                    machine.parking_node.goBack(speed=BACKWARD_SPEED)
 
                     while machine.parkingCnt < 30.0 * (PARKING_WAIT_TIME + 3) and not rospy.is_shutdown():
                         machine.doEStop()

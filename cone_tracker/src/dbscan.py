@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-import enum
-from operator import pos
-from sensor_msgs.msg import LaserScan
-import math
 import rospy
+import math
 import numpy as np
-import matplotlib.pyplot as plt
-from geometry_msgs.msg import PointStamped, PoseArray, Pose, PoseStamped
 import tf
+import enum
+from geometry_msgs.msg import PointStamped, PoseArray, Pose, PoseStamped
 from nav_msgs.msg import Path
+from sensor_msgs.msg import LaserScan
+from operator import pos
 
 
 class DBSCAN(object):
@@ -126,29 +125,6 @@ class DBSCAN(object):
             # print((np.sqrt(pow((group[0][:,0]-(np.mean(cluster[idx][0],axis=0)[0])),2)+pow((group[0][:,1]-(np.mean(cluster[idx][0],axis=0)[1])),2))))
             self.centerpts.append(np.mean(cluster[idx][0], axis=0).tolist())
         return self.centerpts
-
-    def plot(self, cluster):
-        self.sort()
-
-        fig, ax = plt.subplots()
-        for idx, group in enumerate(cluster):
-
-            ax.plot(group[0][:, 0],
-                    group[0][:, 1],
-                    marker='o',
-                    linestyle='',
-                    label='Cluster {}'.format(idx))
-
-            if not idx == 0:
-                ax.plot(np.mean(cluster[idx][0], axis=0)[0],
-                        np.mean(cluster[idx][0], axis=0)[1],
-                        marker='x')
-
-        ax.legend(fontsize=10, loc='lower left')
-        plt.title('Scatter Plot of Clustering results', fontsize=15)
-        plt.xlabel('X', fontsize=14)
-        plt.ylabel('Y', fontsize=14)
-        plt.show()
 
 
 if __name__ == "__main__":

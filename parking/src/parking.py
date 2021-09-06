@@ -8,9 +8,16 @@ from path_selector import PathSelector
 from path_planner.msg import stanleyMsg
 from nav_msgs.msg import Odometry, Path
 
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+
+desired_speed = rospy.get_param("/parking_speed", 0.5)
+max_steer = rospy.get_param("/max_steer", 30.0)
+
+backward_distance = rospy.get_param("/backward_distance", 8.0)
 
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from stanley import Stanley
     from state import State
     from pure_pursuit import PurePursuit
@@ -27,10 +34,6 @@ Publish 'Control_msg'
 Subscriber is located in 'PathSelector' class
 
 """
-
-
-desired_speed = rospy.get_param("/parking_speed", 0.5)
-max_steer = rospy.get_param("/max_steer", 30.0)
 
 
 class PathFinder(object):
@@ -109,13 +112,13 @@ class Parking(object):
             distance = np.hypot(
                 self.main_path.cx[self.last_idx] - self.state.x, self.main_path.cy[self.last_idx] - self.state.y)
 
-            self.cmd_msg.speed = -speed
+            self.cmd_msg.speed = speed * -1.0
             self.cmd_msg.steer = 0.0
             self.cmd_msg.brake = 1
 
             self.cmd_pub.publish(self.cmd_msg)
 
-            if distance > 8.0:
+            if distance > backward_distance:
                 break
 
             rate.sleep()
@@ -190,7 +193,7 @@ if __name__ == "__main__":
     cmd_msg = stanleyMsg()
     cmd_pub = rospy.Publisher("/Control_msg", stanleyMsg, queue_size=1)
 
-    rospy.Subscriber("/odom", Odometry, callback=state.odometryCallback)
+    rospy.Subscriber(ODOMETRY_TOPIC, Odometry, callback=state.odometryCallback)
 
     parking = Parking(state=state, cmd_msg=cmd_msg, cmd_publisher=cmd_pub)
 

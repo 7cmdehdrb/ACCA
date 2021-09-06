@@ -13,8 +13,14 @@ from geometry_msgs.msg import Pose, PoseArray, PoseStamped
 from std_msgs.msg import Empty
 
 
+save_file_name = rospy.get_param("/save_file_name", "odometry_path.csv")
+
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from state import State
     import cubic_spline_planner
 except Exception as ex:
@@ -38,9 +44,6 @@ This command will save path data on /path_planner/saved_path/(YOUR PARAM FILE NA
 
 
 """
-
-
-save_file_name = rospy.get_param("/save_file_name", "odometry_path.csv")
 
 
 class OdometryPath(State):
@@ -135,7 +138,7 @@ if __name__ == "__main__":
 
     path_pub = rospy.Publisher("create_global_path", PoseArray, queue_size=1)
 
-    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
+    rospy.Subscriber(ODOMETRY_TOPIC, Odometry, state.odometryCallback)
 
     th = threading.Thread(target=state.savePoseArray)
     th.start()

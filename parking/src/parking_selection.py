@@ -293,8 +293,8 @@ if __name__ == "__main__":
 
     """ TEST """
 
-    # rospy.Subscriber("/move_base_simple/goal", PoseStamped,
-    #                  callback=caryn.obstacleTestCallback)
+    rospy.Subscriber("/move_base_simple/goal", PoseStamped,
+                     callback=caryn.obstacleTestCallback)
     # obstacle_pub = rospy.Publisher("/obstacle_test", PoseArray, queue_size=1)
 
     """ TEST END """

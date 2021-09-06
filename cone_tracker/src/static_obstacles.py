@@ -11,8 +11,22 @@ from nav_msgs.msg import Odometry, Path
 from path_planner.msg import stanleyMsg
 
 
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+
+
+_, _, YAW = tf.transformations.euler_from_quaternion([0.0, 0.0, 0.911379184375, -0.411567712883,
+                                                      ])
+
+LANE_YAW = YAW
+DISTANCE_GAP = rospy.get_param("/distance_gap", 1.0)
+
+desired_speed = rospy.get_param("/static_obstacles_speed", 5.0)  # KPH
+max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
+
+WB = 1.040
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from state import State
     from util_class import Obstacle, Map
     from cubic_spline_planner import calc_spline_course
@@ -20,18 +34,6 @@ try:
 except Exception as ex:
     print("UTIL CLASS IMPORT ERROR")
     print(ex)
-
-
-_, _, YAW = tf.transformations.euler_from_quaternion([0.0, 0.0, 0.911379184375, -0.411567712883,
-                                                      ])
-
-LANE_YAW = rospy.get_param("/lane_yaw", YAW)
-DISTANCE_GAP = rospy.get_param("/distance_gap", 1.0)
-
-desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
-max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
-
-WB = 1.040
 
 
 class StaticObstacles(object):

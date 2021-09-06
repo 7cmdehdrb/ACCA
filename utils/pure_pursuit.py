@@ -85,7 +85,7 @@ class PurePursuit(object):
         self.servo_bias = 0.0  # [rad] 0.03
 
         self.v = 3.0
-        self.K = 1.0
+        self.K = rospy.get_param("k_gain", 1.0)
         self.L = 1.040
 
         self.Lr = self.v * self.K - self.L

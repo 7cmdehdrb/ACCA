@@ -11,8 +11,17 @@ from geometry_msgs.msg import Twist
 from path_planner.msg import stanleyMsg
 
 
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+
+desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
+max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
+
+global_path_file = rospy.get_param("/global_path_file", "path.csv")
+
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from stanley import Stanley
     from state import State
     from loadPose import LoadPose
@@ -26,10 +35,6 @@ except Exception as ex:
 Export module for global path and stanley control
 
 """
-
-
-desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
-max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
 
 
 class PathFinder(object):
@@ -46,7 +51,7 @@ class PathFinder(object):
 
 
 class GlobalStanley(object):
-    def __init__(self, state, cmd_msg, cmd_publisher, main_path_file="path.csv"):
+    def __init__(self, state, cmd_msg, cmd_publisher, main_path_file=global_path_file):
         super(GlobalStanley, self).__init__()
 
         self.state = state
@@ -111,7 +116,7 @@ if __name__ == "__main__":
 
     cmd_msg = stanleyMsg()
 
-    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
+    rospy.Subscriber(ODOMETRY_TOPIC, Odometry, state.odometryCallback)
 
     global_stanley = GlobalStanley(
         state=state, cmd_msg=cmd_msg, cmd_publisher=cmd_pub)

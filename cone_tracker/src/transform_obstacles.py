@@ -9,8 +9,11 @@ import math as m
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 
 
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from util_class import Obstacle
 except Exception as ex:
     print("UTIL CLASS IMPORT ERROR")

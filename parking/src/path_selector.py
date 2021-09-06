@@ -5,9 +5,11 @@ import rospy
 import time as t
 from std_msgs.msg import Int32MultiArray
 
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+
 
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from loadPose import LoadPose
 except ImportError as ie:
     print(ie)

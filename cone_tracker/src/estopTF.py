@@ -4,8 +4,12 @@ import sys
 import rospy
 from path_planner.msg import obTF
 
+
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from state import State
 except Exception as ex:
     print(ex)

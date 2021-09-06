@@ -12,8 +12,15 @@ import time as t
 from std_msgs.msg import Empty
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 
+
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+
+file_name = rospy.get_param("/save_file_name", "static_path.csv")
+
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     import cubic_spline_planner
 except Exception as ex:
     print(ex)
@@ -41,9 +48,6 @@ This command will delete latest waypoint
 After use this command, please wait for 5 seconds
 
 """
-
-
-file_name = rospy.get_param("/save_file_name", "static_path.csv")
 
 
 class GetPose(object):

@@ -15,15 +15,15 @@ from std_msgs.msg import Empty, Int32
 from visualization_msgs.msg import MarkerArray, Marker
 
 
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from state import State
 except Exception as ex:
-    try:
-        sys.path.insert(0, "ADD PATH HERE")
-        from state import State
-    except Exception as ex:
-        print(ex)
+    print("UTILS IMPORT ERROR")
+    print(ex)
 
 """
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     read_csv(state)
 
-    rospy.Subscriber("/odom", Odometry, callback=state.odometryCallback)
+    rospy.Subscriber(ODOMETRY_TOPIC, Odometry, callback=state.odometryCallback)
 
     hdl_state_publisher = rospy.Publisher("hdl_state", Int32, queue_size=1)
 
