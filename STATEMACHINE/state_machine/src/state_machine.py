@@ -72,16 +72,20 @@ class Machine():
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, main_path_file="path.csv")
         self.estop_node = Dynamic(state=self.state)
         self.static_ob_node = StaticObstacles(
-            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, start_point=[-14.0730895996, -16.6290416718])
+            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, start_point=[-50.3627853394, -25.078962326])
         self.parking_node = Parking(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
-        self.Mode = -1
+        self.Mode = 0
 
         self.parkingCnt = 0
 
     def stateCallback(self, msg):
-        self.Mode = msg.data
+        data = msg.data
+
+        if data != -1:
+            self.Mode = data
+
         # pass
 
     def doEStop(self):
@@ -115,7 +119,11 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         # print(machine.Mode)
 
-        if machine.Mode == -1:
+        if machine.Mode == 0:
+            # WILL USE LANE KEEPING
+            machine.global_stanley_node.main()
+
+        if machine.Mode == 1:
             machine.global_stanley_node.main()
 
         # Static Obstacle Mode
@@ -127,13 +135,9 @@ if __name__ == '__main__':
 
                 find_goal = machine.static_ob_node.main()
 
-                print(machine.static_ob_node.map.obstacles)
-
                 if find_goal is not True:
                     # print("NO PATH!")
                     machine.global_stanley_node.main()
-
-                # PLEASE ADD PP CONTROL
 
                 if machine.Mode != 2:
                     break
@@ -169,6 +173,7 @@ if __name__ == '__main__':
                         machine.parkingCnt += 1
                         rate.sleep()
 
-                machine.global_stanley_node.main()
+                machine.Mode = 1
+                # machine.global_stanley_node.main()
 
         rate.sleep()

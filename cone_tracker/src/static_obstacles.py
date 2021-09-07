@@ -14,7 +14,7 @@ from path_planner.msg import stanleyMsg
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 
 
-_, _, YAW = tf.transformations.euler_from_quaternion([0.0, 0.0, 0.911379184375, -0.411567712883,
+_, _, YAW = tf.transformations.euler_from_quaternion([0.0, 0.0, 0.921844102877, 0.387560898429,
                                                       ])
 
 LANE_YAW = YAW

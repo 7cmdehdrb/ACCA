@@ -8,6 +8,7 @@ import tf
 import csv
 import math as m
 import numpy as np
+import time as t
 import threading
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose, PoseArray, PoseStamped
@@ -17,6 +18,8 @@ from visualization_msgs.msg import MarkerArray, Marker
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+save_area = rospy.get_param("/save_area", True)
+
 
 try:
     sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
@@ -69,6 +72,8 @@ class PublishState(State):
     def __init__(self, x, y, yaw, v):
         super(PublishState, self).__init__(x=x, y=y, yaw=yaw, v=v)
 
+        self.deleteFlag = True
+
         self.areas = []
 
     def checkAreas(self):
@@ -100,9 +105,12 @@ class PublishState(State):
             marker.scale.z = 0.1
 
             marker.color.a = 0.5
-            marker.color.r = 1.0 if int(area.getIdx) == 1 else 0.0
-            marker.color.g = 1.0 if int(area.getIdx) == 2 else 0.0
-            marker.color.b = 1.0 if int(area.getIdx) == 3 else 0.0
+            marker.color.r = 1.0 if int(area.getIdx) == 0 or int(
+                area.getIdx) == 3 else 0.0
+            marker.color.g = 1.0 if int(area.getIdx) == 1 or int(
+                area.getIdx) == 3 or int(area.getIdx) == 4 else 0.0
+            marker.color.b = 1.0 if int(area.getIdx) == 2 or int(
+                area.getIdx) == 4 else 0.0
 
             marker.pose.position.x = area.x
             marker.pose.position.y = area.y
@@ -112,6 +120,60 @@ class PublishState(State):
             msg.markers.append(marker)
 
         publisher.publish(msg)
+
+    def poseCallback(self, msg):
+        x = msg.pose.position.x
+        y = msg.pose.position.y
+
+        new_area = Area(
+            x=float(x), y=float(y), r=7.0, idx=1
+        )
+
+        self.areas.append(new_area)
+
+    def saveAreas(self):
+        data = rospy.wait_for_message("/save_area", Empty)
+        rospy.loginfo("TRYING TO SAVE PATH...")
+
+        output_file_path = rospkg.RosPack().get_path(
+            'path_planner') + "/saved_path/area.csv"
+
+        with open(output_file_path, 'w') as csvfile:
+            for area in self.areas:
+                x = area.x
+                y = area.y
+                r = area.r
+                idx = area.getIdx
+
+                text = ""
+                text += str(x)
+                text += ","
+                text += str(y)
+                text += ","
+                text += str(r)
+                text += ","
+                text += str(idx)
+                text += "\n"
+
+                csvfile.write(text)
+
+        rospy.loginfo("SAVING FINISHED")
+
+    def deleteOne(self):
+        while not rospy.is_shutdown():
+            if self.deleteFlag is True:
+                rospy.wait_for_message("/delete_area", Empty)
+                rospy.loginfo("DELETE LATEST POINT... PLZ WAIT")
+
+                self.areas.pop()
+
+                self.deleteFlag = False
+
+                t.sleep(5.0)
+
+                self.deleteFlag = True
+
+                rospy.loginfo("SUCCESS")
 
 
 def read_csv(state):
@@ -134,12 +196,21 @@ if __name__ == "__main__":
 
     state = PublishState(x=0.0, y=0.0, yaw=0.0, v=0.0)
 
-    read_csv(state)
+    if save_area is False:
+        read_csv(state)
+        rospy.Subscriber(ODOMETRY_TOPIC, Odometry,
+                         callback=state.odometryCallback)
 
-    rospy.Subscriber(ODOMETRY_TOPIC, Odometry, callback=state.odometryCallback)
+    else:
+        rospy.Subscriber("/move_base_simple/goal", PoseStamped,
+                         callback=state.poseCallback)
+
+        th1 = threading.Thread(target=state.saveAreas)
+        th2 = threading.Thread(target=state.deleteOne)
+        th1.start()
+        th2.start()
 
     hdl_state_publisher = rospy.Publisher("hdl_state", Int32, queue_size=1)
-
     hdl_area_publisher = rospy.Publisher(
         "hdl_areas", MarkerArray, queue_size=1)
 

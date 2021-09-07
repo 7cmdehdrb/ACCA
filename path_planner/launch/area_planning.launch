@@ -2,8 +2,15 @@
 
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
     <param name="odometry_topic" type="str" value="/fake_odom" />
-    <param name="save_file_name" type="str" value="parking_path1.csv"></param>
-    
+    <param name="save_area" type="bool" value="false" />
+
+    <!-- 
+        0: LANE
+        1: GLOBAL
+        2: STATIC
+        3: DYNAMIC
+        4: PARKING
+     -->
 
     <!-- Sensors -->
 
@@ -14,10 +21,10 @@
     <!-- Sensors end -->
         
     <!-- Odometry -->
-    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
+    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" />
 
     <!-- Path Planner -->
-    <node name="create_global_path" pkg="path_planner" type="create_global_path.py" output="screen" />
+    <!-- <node name="publish_state" pkg="path_planner" type="publish_state.py" output="screen" /> -->
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
