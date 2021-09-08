@@ -17,6 +17,8 @@ ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
 max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
 
+initial_idx = rospy.get_param("/initial_idx", 0)
+
 global_path_file = rospy.get_param("/global_path_file", "path.csv")
 
 
@@ -59,6 +61,8 @@ class GlobalStanley(object):
         self.load = LoadPose(file_name=main_path_file)
         self.path = PathFinder(load=self.load)
 
+        self.pubFlag = True
+
         self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_publisher
 
@@ -67,7 +71,7 @@ class GlobalStanley(object):
 
         self.last_idx = len(self.path.cx) - 1
         self.target_idx, _ = self.stanley.calc_target_index(
-            self.state, self.path.cx, self.path.cy)
+            self.state, self.path.cx[initial_idx:100], self.path.cy[initial_idx:100])
 
     def main(self):
         target_idx = self.target_idx
@@ -85,8 +89,11 @@ class GlobalStanley(object):
         self.cmd_msg.brake = brake
 
         self.cmd_pub.publish(self.cmd_msg)
-        self.path.load.pathPublish(pub=self.path_pub)
-        # self.load.pathPublish(pub=self.path_pub)
+
+        if self.pubFlag is True:
+            # self.path.load.pathPublish(pub=self.path_pub)
+            self.load.pathPublish(pub=self.path_pub)
+            self.pubFlag = False
 
         print(self.cmd_msg)
 

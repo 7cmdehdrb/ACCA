@@ -21,6 +21,8 @@ class Stanley(object):
     def __init__(self):
         super(Stanley, self).__init__()
 
+        self.doPublish = False
+
         self.k = rospy.get_param("/c_gain", 0.5)  # control gain
         self.L = 1.040  # [m] Wheel base of vehicle
 
@@ -55,8 +57,10 @@ class Stanley(object):
         # Steering control
         delta = theta_e + theta_d
 
-        self.ctr_publisher.publish(theta_e)
-        self.hdr_publisher.publish(theta_d)
+        if self.doPublish is True:
+
+            self.ctr_publisher.publish(theta_e)
+            self.hdr_publisher.publish(theta_d)
 
         return delta, current_target_idx
 

@@ -13,6 +13,7 @@ from nav_msgs.msg import Odometry
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+GLOBAL_PATH_FILE = rospy.get_param("/global_path_file", "path.csv")
 
 BACKWARD_SPEED = rospy.get_param("/backward_speed", 1.0)
 
@@ -69,7 +70,7 @@ class Machine():
         self.state.backwardFlag = True
 
         self.global_stanley_node = GlobalStanley(
-            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, main_path_file="path.csv")
+            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, main_path_file=GLOBAL_PATH_FILE)
         self.estop_node = Dynamic(state=self.state)
         self.static_ob_node = StaticObstacles(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, start_point=[-50.3627853394, -25.078962326])
@@ -156,7 +157,7 @@ if __name__ == '__main__':
         # Parking Mode
         if machine.Mode == 4:
             if machine.state.parkingFlag is True:
-                machine.parking_node.main2()
+                machine.parking_node.main()
 
             else:
 

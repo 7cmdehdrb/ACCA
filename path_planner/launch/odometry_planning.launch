@@ -16,7 +16,7 @@
     <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     <!-- Path Planner -->
-    <param name="save_file_name" type="str" value="static_and_dynamic.csv" />
+    <param name="save_file_name" type="str" value="parking_path1.csv" />
     <node name="odometry_path_generator" pkg="path_planner" type="odometry_path_generator.py" output="screen" />
 
     <!-- Localization -->

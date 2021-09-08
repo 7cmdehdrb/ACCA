@@ -28,6 +28,7 @@ class PathSelector(object):
 
         self.len = -1
         self.pathArray = []
+        self.result = []
         self.main_path = None
 
         while ((self.flag is not True) and (not rospy.is_shutdown())):
@@ -61,10 +62,18 @@ class PathSelector(object):
         if self.flag is False and len(temp) != 0:
             self.len = len(temp)
             self.flag = True
+
+            for i in range(self.len):
+                self.result.append(0)
+
             return
 
         for i in range(len(temp)):
-            if temp[i] == 0:
+            if temp[i] == 1:
+                self.result[i] = 1
+
+        for i in range(len(self.result)):
+            if self.result[i] == 0:
                 self.setIdx(i)
                 break
 

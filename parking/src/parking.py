@@ -79,7 +79,7 @@ class Parking(object):
         )
 
     def checkGoal(self, speed, di):
-        if self.target_idx >= self.last_idx - 1:
+        if self.target_idx == self.last_idx:
             self.cmd_msg.speed = 0.0
             self.cmd_msg.steer = 0.0
             self.cmd_msg.brake = 100
@@ -148,7 +148,7 @@ class Parking(object):
 
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
-        if self.checkGoal(speed=desired_speed, di=di) is not True:
+        if self.checkGoal2() is not True:
             self.cmd_msg.speed = desired_speed
             self.cmd_msg.steer = -di
             self.cmd_msg.brake = 1

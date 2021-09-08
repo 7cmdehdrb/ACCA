@@ -97,7 +97,7 @@ class PurePursuit(object):
         if Lr > 0:
             self.Lr = Lr
         else:
-            self.Lr = 0.5
+            self.Lr = 2.0
 
     def closest_path_point(self):  # 2 finding the closest path point
         i = 0  # index
