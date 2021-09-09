@@ -11,6 +11,9 @@ from sensor_msgs.msg import LaserScan
 from operator import pos
 
 
+DB_DEG = rospy.get_param("dbscan_deg", 30.0)
+
+
 class DBSCAN(object):
     def __init__(self, epsilon, minpts):
         self.epsilon = epsilon
@@ -25,7 +28,7 @@ class DBSCAN(object):
         self.scan_data = msg.ranges
 
     def cvtRange(self):
-        DEG = 90.0
+        DEG = DB_DEG
 
         if len(self.scan_data) == 0:
             pass

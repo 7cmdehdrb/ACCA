@@ -6,6 +6,7 @@
     <param name="odometry_topic" type="str" value="/fake_odom" />
     <param name="global_path_file" type="str" value="odometry1.csv" />
     <!-- Stanley Control Params -->
+    <param name="initial_idx" type="int" value="0" />
     <param name="c_gain" type="double" value="1000.0" />
     <param name="hdr_ratio" type="double" value="0.70" />
     <!-- Pure Pursuit Params -->
@@ -55,9 +56,10 @@
     <!-- Obstacles -->
     <!-- /scan_filtered => /obstacles -->
     <!-- <node name="obstacle_detection" pkg="cone_tracker" type="obstacle_detection.py" /> -->
-    <!-- <node name="dbscan" pkg="cone_tracker" type="dbscan.py" /> -->
+    <param name="dbscan_deg" type="double" value="90.0" />
+    <node name="dbscan" pkg="cone_tracker" type="dbscan.py" />
     <!-- /scan_filtered => /ob_TF -->
-    <!-- <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" /> -->
+    <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" />
 
     <!-- Parking -->
     <node name="parking_selection" pkg="parking" type="parking_selection.py" />
