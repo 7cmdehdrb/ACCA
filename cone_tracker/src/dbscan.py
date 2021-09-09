@@ -25,7 +25,7 @@ class DBSCAN(object):
         self.scan_data = msg.ranges
 
     def cvtRange(self):
-        DEG = 30.0
+        DEG = 90.0
 
         if len(self.scan_data) == 0:
             pass
