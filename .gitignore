@@ -230,4 +230,7 @@ CATKIN_IGNORE
 *.bag
 *.bag.active
 
+*.txt
+*.pdf
+
 # End of https://www.toptal.com/developers/gitignore/api/c++,python,ros
