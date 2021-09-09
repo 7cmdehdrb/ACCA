@@ -6,19 +6,21 @@
     <param name="odometry_topic" type="str" value="/fake_odom" />
     <param name="global_path_file" type="str" value="odometry1.csv" />
     <!-- Stanley Control Params -->
-    <param name="c_gain" type="double" value="0.5" />
-    <param name="hdr_ratio" type="double" value="0.7" />
+    <param name="c_gain" type="double" value="1000.0" />
+    <param name="hdr_ratio" type="double" value="0.70" />
     <!-- Pure Pursuit Params -->
     <param name="k_gain" type="double" value="-0.5" />
+    <!-- Encoder Params -->
+    <param name="p_gain" type="double" value="0.5" />
     <!-- SPEED Settings -->
     <param name="desired_speed" type="double" value="2.0" />
-    <param name="parking_speed" type="double" value="3.5" />
+    <param name="parking_speed" type="double" value="1.0" />
     <param name="static_obstacles_speed" type="double" value="1.0" />
-    <param name="backward_speed" type="double" value="3.0" />
-    <param name="max_steer" type="double" value="30.0" />
+    <param name="backward_speed" type="double" value="1.0" />
     <!-- Static Obstacle Params -->
     <param name="distance_gap" type="double" value="1.5" />
     <!-- Parking Params -->
+    <param name="max_steer" type="double" value="50.0" />
     <param name="save_parking" type="bool" value="false" />
     <param name="save_area" type="bool" value="false" />
     <param name="backward_distance" type="double" value="8.0" />
@@ -33,8 +35,8 @@
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
     <!-- <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
-    <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include>
-    <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" /> -->
+    <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include> -->
+    <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
     <!-- <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include> -->
         
     <!-- Sensors end -->

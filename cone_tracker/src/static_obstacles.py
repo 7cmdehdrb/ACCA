@@ -9,6 +9,7 @@ import math as m
 from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 from nav_msgs.msg import Odometry, Path
 from path_planner.msg import stanleyMsg
+from visualization_msgs.msg import Marker
 
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
@@ -36,6 +37,76 @@ except Exception as ex:
     print(ex)
 
 
+class Box(object):
+    def __init__(self, x, y, yaw, x_len, y_len):
+        super(Box, self).__init__()
+
+        self.x = x
+        self.y = y
+        self.yaw = yaw
+        self.x_len = x_len
+        self.y_len = y_len
+
+        self.publisher = rospy.Publisher(
+            "static_obstacle_area", Marker, queue_size=1)
+
+    def checkIsInArea(self, obstacle):
+        dist = np.hypot(self.x - obstacle.x, self.y - obstacle.y)
+
+        if dist == 0.0:
+            return True
+
+        area_VEC = np.array([
+            m.cos(self.yaw - m.radians(90.0)), m.sin(self.yaw - m.radians(90.0))
+        ])
+
+        ob_VEC = np.array([
+            obstacle.x - self.x, obstacle.y - self.y
+        ])
+
+        theta = m.acos(np.dot(area_VEC, ob_VEC) / dist)
+
+        x_dist = dist * m.sin(theta)
+        y_dist = dist * m.cos(theta)
+
+        if x_dist <= self.x_len / 2.0 and y_dist <= self.y_len / 2.0:
+            return True
+
+        return False
+
+    def publishBox(self):
+        msg = Marker()
+
+        msg.header.frame_id = "map"
+        msg.header.stamp = rospy.Time.now()
+
+        msg.lifetime = rospy.Duration(0.2)
+        msg.ns = "static_obstacle_area"
+
+        msg.type = msg.CUBE
+        msg.action = msg.ADD
+
+        msg.scale.x = self.x_len
+        msg.scale.y = self.y_len
+        msg.scale.z = 0.1
+
+        msg.color.a = 0.5
+        msg.color.r = 1.0
+
+        quat = tf.transformations.quaternion_from_euler(0.0, 0.0, self.yaw)
+
+        msg.pose.position.x = self.x
+        msg.pose.position.y = self.y
+        msg.pose.position.z = 0.0
+
+        msg.pose.orientation.x = quat[0]
+        msg.pose.orientation.y = quat[1]
+        msg.pose.orientation.z = quat[2]
+        msg.pose.orientation.w = quat[3]
+
+        self.publisher.publish(msg)
+
+
 class StaticObstacles(object):
 
     """
@@ -51,6 +122,26 @@ class StaticObstacles(object):
         rospy.Subscriber("/obstacles", PoseArray,
                          self.obstaclesCallback)
 
+        """ TEST """
+
+        self.areaFlag = False
+        self.areaCnt = 0
+
+        self.box = Box(-62.03153991699219, -13.811725616455078,
+                       3.9201191226628165, 6.224372078176785, 26.243303445626502)
+
+        rospy.Subscriber("/move_base_simple/goal", PoseStamped,
+                         callback=self.obstacleTestCallback)
+
+        if self.areaFlag is True:
+            rospy.Subscriber("/move_base_simple/goal", PoseStamped,
+                             callback=self.createAreaCallback)
+
+        while self.areaFlag is True and not rospy.is_shutdown():
+            continue
+
+        """ TEST END """
+
         self.path_pub = rospy.Publisher(
             "static_obstacle_path", Path, queue_size=1)
 
@@ -63,19 +154,7 @@ class StaticObstacles(object):
 
         self.map = Map()
 
-        """ TEST """
-
-        self.map.obstacles = [
-            # TEST
-            # Obstacle(
-            #     -16.2311134338,
-            #     -22.16563797
-            # ),
-            # Obstacle(
-            #     -22.0402412415,
-            #     -23.5935821533
-            # )
-        ]
+        self.map.obstacles = []
 
         self.state = state
         self.tf_node = tf.TransformListener()
@@ -90,6 +169,54 @@ class StaticObstacles(object):
         self.last_idx = -1
 
         self.doPublishing = True
+
+    def obstacleTestCallback(self, msg):
+
+        x = msg.pose.position.x
+        y = msg.pose.position.y
+
+        new_obstacle = Obstacle(x=x, y=y)
+
+        print("ADD NEW OBSTACLE")
+
+        self.map.obstacles.append(new_obstacle)
+
+    def createAreaCallback(self, msg):
+        # msg = PoseStamped()
+
+        x = msg.pose.position.x
+        y = msg.pose.position.y
+
+        ox = msg.pose.orientation.x
+        oy = msg.pose.orientation.y
+        oz = msg.pose.orientation.z
+        ow = msg.pose.orientation.w
+
+        _, _, yaw = tf.transformations.euler_from_quaternion([ox, oy, oz, ow])
+
+        if self.areaCnt == 0:
+            self.box.x = x
+            self.box.y = y
+            self.box.yaw = yaw + m.radians(90.0)
+
+        if self.areaCnt == 1:
+            distance = np.hypot(x - self.box.x, y - self.box.y)
+            self.box.x_len = distance * 2
+
+        if self.areaCnt == 2:
+            distance = np.hypot(x - self.box.x, y - self.box.y)
+            self.box.y_len = distance * 2
+            self.areaFlag = False
+
+        print(
+            self.box.x,
+            self.box.y,
+            self.box.yaw,
+            self.box.x_len,
+            self.box.y_len,
+        )
+
+        self.areaCnt += 1
 
     def checkObstacle(self, new_ob):
         min_dis = float("inf")
@@ -146,32 +273,30 @@ class StaticObstacles(object):
 
         for obstacle in self.map.obstacles:
 
-            rear_y = self.state.y + ((WB / 2) * m.sin(self.state.yaw))
-            rear_x = self.state.x + ((WB / 2) * m.cos(self.state.yaw))
+            # If obstacle is in area
+            if self.box.checkIsInArea(obstacle) is True:
 
-            obstacle_VEC = np.array([
-                obstacle.x -
-                self.start_point[0], obstacle.y - self.start_point[1]
-            ])
+                rear_y = self.state.y + ((WB / 2) * m.sin(self.state.yaw))
+                rear_x = self.state.x + ((WB / 2) * m.cos(self.state.yaw))
 
-            dot_VEC = np.array([
-                obstacle.x - rear_x, obstacle.y - rear_y
-            ])
+                ob_VEC = np.array([
+                    obstacle.x - rear_x, obstacle.y - rear_y
+                ])
 
-            dot = np.dot(dot_VEC, car_VEC)
+                dot = np.dot(ob_VEC, car_VEC)
 
-            # If obstacle is located in FRONT
-            if dot >= 0.0:
-                distance = np.hypot(obstacle.x - self.state.x,
-                                    obstacle.y - self.state.y)
+                # If obstacle is located in FRONT
+                if dot >= 0.0:
+                    distance = np.hypot(obstacle.x - self.state.x,
+                                        obstacle.y - self.state.y)
 
-                if distance < min_dis:
-                    min_dis = distance
+                    if distance < min_dis:
+                        min_dis = distance
 
-                    cross = np.cross(obstacle_VEC, path_VEC)
+                        cross = np.cross(ob_VEC, path_VEC)
 
-                    nearest_obstacle = obstacle
-                    is_right = True if cross >= 0.0 else False
+                        nearest_obstacle = obstacle
+                        is_right = True if cross >= 0.0 else False
 
         return nearest_obstacle, is_right
 
@@ -248,6 +373,12 @@ class StaticObstacles(object):
     def main(self):
         goal_point = self.createGoalPoint()
 
+        if self.start_point[0] == 0.0 and self.start_point[1] == 0.0:
+            self.new_start_point = [self.state.x, self.state.y]
+
+        if self.doPublishing is True:
+            self.box.publishBox()
+
         if goal_point is None:
             print("NO GOAL POINT")
             self.target_idx = 0
@@ -273,8 +404,6 @@ class StaticObstacles(object):
         )
         self.target_idx = target_idx
 
-        # print(str(self.target_idx) + " / " + str(self.last_idx))
-
         if self.target_idx == self.last_idx:
             self.new_start_point = [self.state.x, self.state.y]
             self.target_idx = 0
@@ -290,6 +419,7 @@ class StaticObstacles(object):
 
         if self.doPublishing is True:
             self.publishPath(self.cx, self.cy, self.cyaw)
+            self.box.publishBox()
 
         return True
 

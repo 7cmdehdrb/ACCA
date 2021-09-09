@@ -17,6 +17,8 @@ wheeltrack = 0.985
 TICK2RAD = 0.06283185307
 wheel_radius = 0.265
 
+p_gain = rospy.get_param("p_gain", 0.0)
+
 
 class control():
     def __init__(self, port_num):
@@ -29,6 +31,8 @@ class control():
         ETX0 = 13
         ETX1 = 10
         ALIVE = 0
+
+        self.doPIControl = True
 
         self.stanley_control = stanleyMsg()
         self.feedbackMsg = encoderMsg()
@@ -143,11 +147,30 @@ class control():
     def cmd_vel_callback(self, msg):
         self.control_msg = msg
 
+    def PIControl(self, currentSpeed, desiredSpeed):
+        p = p_gain
+        err = desiredSpeed - currentSpeed
+
+        res = desiredSpeed + p * err
+
+        if res < 0.0:
+            return 0.0
+
+        return res
+
     def send_data(self, SPEED, STEER, BRAKE, GEAR):
         """
             Function to send serial to ERP42 with
             speed(KPH), steer(Deg), Brake(1~200), Gear(2: drive)
         """
+
+        if self.doPIControl is True:
+
+            current_speed = self.mps2kph(self.feedbackMsg.speed)    # kph
+            desired_speed = SPEED  # kph
+
+            SPEED = self.PIControl(
+                currentSpeed=current_speed, desiredSpeed=desired_speed)
 
         GEAR = 2 if SPEED >= 0.0 else 0
 

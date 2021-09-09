@@ -73,7 +73,7 @@ class Machine():
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, main_path_file=GLOBAL_PATH_FILE)
         self.estop_node = Dynamic(state=self.state)
         self.static_ob_node = StaticObstacles(
-            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub, start_point=[-50.3627853394, -25.078962326])
+            state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
         self.parking_node = Parking(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
@@ -176,5 +176,7 @@ if __name__ == '__main__':
 
                 machine.Mode = 1
                 # machine.global_stanley_node.main()
+
+        # print(machine.cmd_msg)
 
         rate.sleep()

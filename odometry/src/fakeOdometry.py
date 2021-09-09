@@ -10,6 +10,9 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from path_planner.msg import stanleyMsg
 
 
+MAX_STEER = rospy.get_param("/max_steer", 30.0)
+
+
 class FakeOdometry(erp42):
     def __init__(self, x, y, yaw, v):
         super(FakeOdometry, self).__init__(x=x, y=y, yaw=yaw, v=v)
@@ -69,7 +72,8 @@ class FakeOdometry(erp42):
         data = msg
 
         speed = data.speed
-        steer = np.clip(data.steer, -m.radians(30.0), m.radians(30.0))
+        steer = np.clip(data.steer, -m.radians(MAX_STEER),
+                        m.radians(MAX_STEER))
         brake = data.brake
 
         # print(speed, m.degrees(steer), brake)

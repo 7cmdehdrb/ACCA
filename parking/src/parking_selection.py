@@ -35,8 +35,23 @@ mode = rospy.get_param("/save_parking", False)
 
 
 def checkIsInParking(obstacle, box):
-    x_dist = abs(box.x - obstacle.x)
-    y_dist = abs(box.y - obstacle.y)
+    dist = np.hypot(box.x - obstacle.x, box.y - obstacle.y)
+
+    if dist == 0.0:
+        return True
+
+    area_VEC = np.array([
+        m.cos(box.yaw - m.radians(90.0)), m.sin(box.yaw - m.radians(90.0))
+    ])
+
+    ob_VEC = np.array([
+        obstacle.x - box.x, obstacle.y - box.y
+    ])
+
+    theta = m.acos(np.dot(area_VEC, ob_VEC) / dist)
+
+    x_dist = dist * m.sin(theta)
+    y_dist = dist * m.cos(theta)
 
     if x_dist <= box.x_len / 2.0 and y_dist <= box.y_len / 2.0:
         return True

@@ -78,8 +78,21 @@ class Parking(object):
             self.state, self.main_path.cx, self.main_path.cy
         )
 
-    def checkGoal(self, speed, di):
-        if self.target_idx == self.last_idx:
+    def checkGoal(self):
+
+        car_VEC = np.array([
+            m.cos(self.state.yaw),
+            m.sin(self.state.yaw)
+        ])
+
+        goal_VEC = np.array([
+            self.main_path.cx[-1] - self.state.x,
+            self.main_path.cy[-1] - self.state.y
+        ])
+
+        isEND = True if np.dot(car_VEC, goal_VEC) <= 0 else False
+
+        if isEND is True:
             self.cmd_msg.speed = 0.0
             self.cmd_msg.steer = 0.0
             self.cmd_msg.brake = 100
@@ -148,7 +161,7 @@ class Parking(object):
 
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
-        if self.checkGoal2() is not True:
+        if self.checkGoal() is not True:
             self.cmd_msg.speed = desired_speed
             self.cmd_msg.steer = -di
             self.cmd_msg.brake = 1
@@ -156,7 +169,7 @@ class Parking(object):
         self.cmd_pub.publish(self.cmd_msg)
         self.main_path.load.pathPublish(pub=self.path_pub)
 
-        print(self.cmd_msg)
+        # print(self.cmd_msg)
 
     def main2(self):
         if self.checkMainPath() is True:
@@ -172,7 +185,7 @@ class Parking(object):
         di = self.pp.set_steering()
         self.target_idx = self.pp.ind
 
-        if self.checkGoal2() is not True:
+        if self.checkGoal() is not True:
             self.cmd_msg.speed = desired_speed
             self.cmd_msg.steer = di
             self.cmd_msg.brake = 1
@@ -180,7 +193,7 @@ class Parking(object):
         self.cmd_pub.publish(self.cmd_msg)
         self.main_path.load.pathPublish(pub=self.path_pub)
 
-        print(self.cmd_msg)
+        # print(self.cmd_msg)
 
 
 if __name__ == "__main__":
