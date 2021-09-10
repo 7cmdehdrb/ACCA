@@ -38,6 +38,7 @@ def checkIsInParking(obstacle, box):
     dist = np.hypot(box.x - obstacle.x, box.y - obstacle.y)
 
     if dist == 0.0:
+        print("HELLO")
         return True
 
     area_VEC = np.array([
@@ -50,10 +51,11 @@ def checkIsInParking(obstacle, box):
 
     theta = m.acos(np.dot(area_VEC, ob_VEC) / dist)
 
-    x_dist = dist * m.sin(theta)
-    y_dist = dist * m.cos(theta)
+    x_dist = abs(dist * m.sin(theta))
+    y_dist = abs(dist * m.cos(theta))
 
     if x_dist <= box.x_len / 2.0 and y_dist <= box.y_len / 2.0:
+        print(x_dist, y_dist)
         return True
 
     return False

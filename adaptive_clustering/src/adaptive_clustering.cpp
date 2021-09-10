@@ -59,10 +59,10 @@ void stateCallback(const std_msgs::Int32 msg)
 void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr &ros_pc2_in)
 {
 
-  if (mode != 4)
-  {
-    return;
-  }
+  // if (mode != 4)
+  // {
+  //   return;
+  // }
 
   if (print_fps_)
     if (reset)

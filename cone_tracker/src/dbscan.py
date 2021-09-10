@@ -165,7 +165,7 @@ if __name__ == "__main__":
                     pose = Pose()
 
                     pose.position.x = position[i][1]
-                    pose.position.y = position[i][0] * -1
+                    pose.position.y = position[i][0] 
                     pose.position.z = 0
 
                     pose.orientation.x = 0.0

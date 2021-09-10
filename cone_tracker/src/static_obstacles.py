@@ -66,8 +66,8 @@ class Box(object):
 
         theta = m.acos(np.dot(area_VEC, ob_VEC) / dist)
 
-        x_dist = dist * m.sin(theta)
-        y_dist = dist * m.cos(theta)
+        x_dist = abs(dist * m.sin(theta))
+        y_dist = abs(dist * m.cos(theta))
 
         if x_dist <= self.x_len / 2.0 and y_dist <= self.y_len / 2.0:
             return True
@@ -128,7 +128,7 @@ class StaticObstacles(object):
         self.areaCnt = 0
 
         self.box = Box(-62.03153991699219, -13.811725616455078,
-                       3.9201191226628165, 6.224372078176785, 26.243303445626502)
+                       3.9201191226628165, 3.22, 26.043303445626502)
 
         rospy.Subscriber("/move_base_simple/goal", PoseStamped,
                          callback=self.obstacleTestCallback)

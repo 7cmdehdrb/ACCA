@@ -122,7 +122,8 @@ if __name__ == '__main__':
 
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
-            machine.global_stanley_node.main()
+            # machine.global_stanley_node.main()
+            pass
 
         if machine.Mode == 1:
             machine.global_stanley_node.main()
