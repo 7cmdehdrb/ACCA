@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+import sys
 import rospy
 import numpy as np
-import math as m
 import tf
+import math as m
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3, Vector3Stamped
@@ -22,12 +23,12 @@ except ImportError as ie:
     sys.exit()
 
 
-current_time = rospy.Time.now()
-last_time = rospy.Time.now()
+current_time = None
+last_time = None
 
 
 class FusionState(State):
-    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, odom):
+    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, odom=None):
         super(FusionState, self).__init__(x=x, y=y, yaw=yaw, v=v)
 
         self.odometry = odom
@@ -55,6 +56,8 @@ class FusionState(State):
         self.last_y = self.y
         self.last_yaw = self.yaw
 
+        # print(self.x, self.y)
+
         self.odometry.last_time = rospy.Time.now()
 
 
@@ -63,8 +66,9 @@ class FusionOdometry(object):
 
         # Subscriber
 
-        rospy.Subscriber("/erp42_encoder", encoderMsg, callback=)
-        rospy.Subscriber("/imu/data", Imu, callback=)
+        rospy.Subscriber("/erp42_encoder", encoderMsg,
+                         callback=self.encoderCallback)
+        rospy.Subscriber("/imu/data", Imu, callback=self.imuCallback)
 
         # msg
 
@@ -102,13 +106,16 @@ class FusionOdometry(object):
 
 
 if __name__ == "__main__":
-    rospy.init_node("erp42_odometry")
+    rospy.init_node("erp42_fusion_odometry")
+
+    current_time = rospy.Time.now()
+    last_time = rospy.Time.now()
 
     odometry = FusionOdometry()
     state = FusionState(x=0.0, y=0.0, yaw=0.0, v=0.0, odom=odometry)
 
     odom_pub = rospy.Publisher(
-        "/erp42_odometry", Odometry, queue_size=1)
+        "/erp42_fusion_odometry", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
 
     odom = Odometry()
@@ -141,7 +148,7 @@ if __name__ == "__main__":
                 "odom"
             )
 
-        odometry.odom_pub.publish(odom)
+        odom_pub.publish(odom)
 
         last_time = rospy.Time.now()
 
