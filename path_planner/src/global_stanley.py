@@ -14,7 +14,6 @@ from path_planner.msg import stanleyMsg
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 
-desired_speed = rospy.get_param("/desired_speed", 5.0)  # KPH
 max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
 
 initial_idx = rospy.get_param("/initial_idx", 0)
@@ -99,7 +98,7 @@ class GlobalStanley(object):
 
 
 def checkGoal(last_idx, current_idx):
-    global desired_speed
+    SPEED = rospy.get_param("/desired_speed", 5.0)
 
     temp_speed = 0.0
     temp_brake = 1
@@ -109,7 +108,7 @@ def checkGoal(last_idx, current_idx):
         temp_brake = 80
 
     else:
-        temp_speed = desired_speed
+        temp_speed = SPEED
         temp_brake = 1
 
     return temp_speed, temp_brake

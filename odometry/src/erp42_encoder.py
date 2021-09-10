@@ -148,13 +148,16 @@ class control():
         self.control_msg = msg
 
     def PIControl(self, currentSpeed, desiredSpeed):
+        if desiredSpeed < 0:
+            return desiredSpeed
+
         p = p_gain
         err = desiredSpeed - currentSpeed
 
         res = desiredSpeed + p * err
 
-        # if res < 0.0:
-        #     return 0.0
+        if res < 0.0:
+            return 0.0
 
         return res
 

@@ -103,21 +103,6 @@ class Parking(object):
 
         return False
 
-    def checkGoal2(self):
-        distance = np.hypot(
-            self.main_path.cx[-1] - self.state.x, self.main_path.cy[-1] - self.state.y)
-
-        if distance < 0.2:
-            self.cmd_msg.speed = 0.0
-            self.cmd_msg.steer = 0.0
-            self.cmd_msg.brake = 100
-
-            self.state.parkingFlag = False
-
-            return True
-
-        return False
-
     def goBack(self, speed):
         rate = rospy.Rate(30.0)
 
@@ -144,6 +129,7 @@ class Parking(object):
 
         return False
 
+    # Stanley
     def main(self):
         if self.checkMainPath() is True:
             self.pathIdx = self.path_selector.getIdx()
@@ -154,10 +140,19 @@ class Parking(object):
 
         target_idx = self.target_idx
 
-        di, target_idx = self.stanley.stanley_control(
-            self.state, self.main_path.cx, self.main_path.cy, self.main_path.cyaw, target_idx)
+        try:
 
-        self.target_idx = target_idx
+            di, target_idx = self.stanley.stanley_control(
+                self.state, self.main_path.cx, self.main_path.cy, self.main_path.cyaw, target_idx)
+
+            self.target_idx = target_idx
+
+        except ValueError:
+            self.target_idx, _ = self.stanley.calc_target_index(
+                self.state, self.main_path.cx, self.main_path.cy
+            )
+
+            return
 
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
@@ -171,6 +166,7 @@ class Parking(object):
 
         # print(self.cmd_msg)
 
+    # PP
     def main2(self):
         if self.checkMainPath() is True:
             self.pathIdx = self.path_selector.getIdx()

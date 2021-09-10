@@ -5,7 +5,7 @@ import rospy
 import tf
 import math as m
 import time
-from std_msgs.msg import Float32, Int32
+from std_msgs.msg import Float32, Int32, Int32MultiArray
 from path_planner.msg import stanleyMsg, obTF
 from sensor_msgs.msg import Image
 from nav_msgs.msg import Odometry
@@ -15,6 +15,8 @@ ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 GLOBAL_PATH_FILE = rospy.get_param("/global_path_file", "path.csv")
 
+GLOBAL_SPEED = rospy.get_param("/desired_speed", 3.0)
+DYNAMIC_SPEED = rospy.get_param("/dynamic_speed", 1.0)
 BACKWARD_SPEED = rospy.get_param("/backward_speed", 1.0)
 
 WB = 1.040
@@ -24,6 +26,7 @@ PARKING_WAIT_TIME = 10
 try:
     sys.path.insert(0, str(ACCA_FOLDER) + "/path_planner/src")
     from global_stanley import GlobalStanley
+    from selectTraffic import isTrafficLeft, isTrafficStraight
 except ImportError as ie:
     print("PATH PLANNER IMPORT ERROR")
     print(ie)
@@ -78,6 +81,7 @@ class Machine():
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
         self.Mode = 0
+        self.trafficLight = []
 
         self.parkingCnt = 0
 
@@ -87,11 +91,22 @@ class Machine():
         if data != -1:
             self.Mode = data
 
-        # pass
+    def trafficLightCallback(self, msg):
+        data = msg.data
+
+        # 0: STOP 1: STRAIGHT 2: TURN LEFT
+
+        self.trafficLight = data
 
     def doEStop(self):
         self.cmd_msg.speed = 0.0
         self.cmd_msg.brake = 200
+
+        self.cmd_pub.publish(self.cmd_msg)
+
+    def doBrake(self, value):
+        self.cmd_msg.speed = 0.0
+        self.cmd_msg.brake = int(value)
 
         self.cmd_pub.publish(self.cmd_msg)
 
@@ -102,8 +117,10 @@ if __name__ == '__main__':
 
     machine = Machine()
 
-    rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
     rospy.Subscriber(ODOMETRY_TOPIC, Odometry, machine.state.odometryCallback)
+    rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
+    rospy.Subscriber("/traffic_light", Int32MultiArray,
+                     machine.trafficLightCallback)
     rospy.Subscriber("/ob_TF", obTF, machine.estop_node.dynamicCallback)
 
     rate = rospy.Rate(30.0)
@@ -118,7 +135,7 @@ if __name__ == '__main__':
         rate.sleep()
 
     while not rospy.is_shutdown():
-        # print(machine.Mode)
+        rospy.set_param("desired_speed", GLOBAL_SPEED)
 
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
@@ -148,6 +165,7 @@ if __name__ == '__main__':
 
         # Dynamic Obstacle Mode
         if machine.Mode == 3:
+            rospy.set_param("desired_speed", DYNAMIC_SPEED)
             machine.estop_node.main()
 
             if machine.state.EStop is True:
@@ -167,16 +185,35 @@ if __name__ == '__main__':
                     rate.sleep()
 
                 if machine.state.backwardFlag is True:
-                    print("BACK BACK BACK")
+                    print("GO BACK")
                     machine.parking_node.goBack(speed=BACKWARD_SPEED)
 
                     while machine.parkingCnt < 30.0 * (PARKING_WAIT_TIME + 3) and not rospy.is_shutdown():
-                        machine.doEStop()
+                        machine.doBrake(50)
                         machine.parkingCnt += 1
                         rate.sleep()
 
                 machine.Mode = 1
-                # machine.global_stanley_node.main()
+
+        # Straight Traffic Mode
+        if machine.Mode == 5:
+            if isTrafficStraight(machine.trafficLight) is False:
+                machine.doBrake(80)
+            else:
+                machine.global_stanley_node.main()
+
+        # Left Traffic Mode
+        if machine.Mode == 6:
+            if isTrafficLeft(machine.trafficLight) is False:
+                machine.doBrake(80)
+            else:
+                machine.global_stanley_node.main()
+
+        if machine.Mode == 7:
+            pass
+
+        if machine.Mode == 8:
+            pass
 
         # print(machine.cmd_msg)
 
