@@ -14,9 +14,6 @@ Output: steer
 """
 
 
-HDR_RATIO = rospy.get_param("/hdr_ratio", 0.8)
-
-
 class Stanley(object):
     def __init__(self):
         super(Stanley, self).__init__()
@@ -24,12 +21,21 @@ class Stanley(object):
         self.doPublish = False
 
         self.k = rospy.get_param("/c_gain", 0.5)  # control gain
+        self.hdr_ratio = rospy.get_param("/hdr_ratio", 0.8)
         self.L = 1.040  # [m] Wheel base of vehicle
 
         self.ctr_publisher = rospy.Publisher(
             "stanley_ctr", Float32, queue_size=1)
         self.hdr_publisher = rospy.Publisher(
             "stanley_hdr", Float32, queue_size=1)
+
+    def setCGain(self, value):
+        self.k = value
+        return self.k
+
+    def setHdrRatio(self, value):
+        self.hdr_ratio = value
+        return self.hdr_ratio
 
     def stanley_control(self, state, cx, cy, cyaw, last_target_idx):
         """
@@ -49,7 +55,7 @@ class Stanley(object):
 
         # theta_e corrects the heading error
         theta_e = (self.normalize_angle(
-            cyaw[current_target_idx] - state.yaw)) * HDR_RATIO
+            cyaw[current_target_idx] - state.yaw)) * self.hdr_ratio
 
         # theta_d corrects the cross track error
 

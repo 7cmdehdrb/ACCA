@@ -18,6 +18,7 @@ from visualization_msgs.msg import MarkerArray, Marker
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
+SAVE_FILE_NAME = rospy.get_param("/area_file_name", "area.csv")
 save_area = rospy.get_param("/save_area", True)
 
 
@@ -74,6 +75,7 @@ class PublishState(State):
 
         self.deleteFlag = True
 
+        self.selectedIdx = 1
         self.areas = []
 
     def checkAreas(self):
@@ -126,7 +128,7 @@ class PublishState(State):
         y = msg.pose.position.y
 
         new_area = Area(
-            x=float(x), y=float(y), r=7.0, idx=1
+            x=float(x), y=float(y), r=7.0, idx=int(self.selectedIdx)
         )
 
         self.areas.append(new_area)
@@ -136,7 +138,7 @@ class PublishState(State):
         rospy.loginfo("TRYING TO SAVE PATH...")
 
         output_file_path = rospkg.RosPack().get_path(
-            'path_planner') + "/saved_path/area.csv"
+            'path_planner') + "/saved_path/" + str(SAVE_FILE_NAME)
 
         with open(output_file_path, 'w') as csvfile:
             for area in self.areas:
@@ -175,10 +177,18 @@ class PublishState(State):
 
                 rospy.loginfo("SUCCESS")
 
+    def inputIdx(self):
+        while not rospy.is_shutdown():
+            idx = input("IDX: ")
+            try:
+                self.selectedIdx = int(idx)
+            except Exception as ex:
+                print(ex)
+
 
 def read_csv(state):
     output_file_path = rospkg.RosPack().get_path(
-        'path_planner')+"/saved_path/area.csv"
+        'path_planner')+"/saved_path/" + str(SAVE_FILE_NAME)
 
     rospy.loginfo("LOADING CSV FILE...")
     with open(output_file_path, "r") as csvFile:
@@ -207,8 +217,10 @@ if __name__ == "__main__":
 
         th1 = threading.Thread(target=state.saveAreas)
         th2 = threading.Thread(target=state.deleteOne)
+        th3 = threading.Thread(target=state.inputIdx)
         th1.start()
         th2.start()
+        th3.start()
 
     hdl_state_publisher = rospy.Publisher("hdl_state", Int32, queue_size=1)
     hdl_area_publisher = rospy.Publisher(

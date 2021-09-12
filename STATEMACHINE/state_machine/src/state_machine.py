@@ -20,13 +20,13 @@ DYNAMIC_SPEED = rospy.get_param("/dynamic_speed", 1.0)
 BACKWARD_SPEED = rospy.get_param("/backward_speed", 1.0)
 
 WB = 1.040
-PARKING_WAIT_TIME = 10
+PARKING_WAIT_TIME = 5
 
 
 try:
     sys.path.insert(0, str(ACCA_FOLDER) + "/path_planner/src")
     from global_stanley import GlobalStanley
-    from selectTraffic import isTrafficLeft, isTrafficStraight
+    from selectTraffic import isTrafficLeft, isTrafficStraight, TrafficStopLine
 except ImportError as ie:
     print("PATH PLANNER IMPORT ERROR")
     print(ie)
@@ -82,6 +82,7 @@ class Machine():
 
         self.Mode = 0
         self.trafficLight = []
+        self.trafficLine = TrafficStopLine()
 
         self.parkingCnt = 0
 
@@ -135,8 +136,6 @@ if __name__ == '__main__':
         rate.sleep()
 
     while not rospy.is_shutdown():
-        rospy.set_param("desired_speed", GLOBAL_SPEED)
-
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
             # machine.global_stanley_node.main()
@@ -165,13 +164,15 @@ if __name__ == '__main__':
 
         # Dynamic Obstacle Mode
         if machine.Mode == 3:
-            rospy.set_param("desired_speed", DYNAMIC_SPEED)
+            machine.global_stanley_node.setDesiredSpeed(DYNAMIC_SPEED)
             machine.estop_node.main()
 
             if machine.state.EStop is True:
                 machine.doEStop()
             else:
                 machine.global_stanley_node.main()
+
+            machine.global_stanley_node.setDesiredSpeed(GLOBAL_SPEED)
 
         # Parking Mode
         if machine.Mode == 4:
@@ -197,15 +198,18 @@ if __name__ == '__main__':
 
         # Straight Traffic Mode
         if machine.Mode == 5:
-            if isTrafficStraight(machine.trafficLight) is False:
-                machine.doBrake(80)
+            if machine.trafficLine.isEND() is True:
+                if isTrafficStraight(machine.trafficLight) is False:
+                    machine.doBrake(80)
             else:
                 machine.global_stanley_node.main()
 
         # Left Traffic Mode
         if machine.Mode == 6:
-            if isTrafficLeft(machine.trafficLight) is False:
-                machine.doBrake(80)
+            if machine.trafficLine.isEND() is True:
+                if isTrafficLeft(machine.trafficLight) is False:
+                    machine.doBrake(80)
+
             else:
                 machine.global_stanley_node.main()
 

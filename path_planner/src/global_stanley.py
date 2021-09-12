@@ -15,7 +15,6 @@ ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 
 max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
-
 initial_idx = rospy.get_param("/initial_idx", 0)
 
 global_path_file = rospy.get_param("/global_path_file", "path.csv")
@@ -60,6 +59,8 @@ class GlobalStanley(object):
         self.load = LoadPose(file_name=main_path_file)
         self.path = PathFinder(load=self.load)
 
+        self.desired_speed = rospy.get_param("/desired_speed", 5.0)
+
         self.pubFlag = True
 
         self.cmd_msg = cmd_msg
@@ -72,6 +73,10 @@ class GlobalStanley(object):
         self.target_idx, _ = self.stanley.calc_target_index(
             self.state, self.path.cx[initial_idx:100], self.path.cy[initial_idx:100])
 
+    def setDesiredSpeed(self, value):
+        self.desired_speed = value
+        return self.desired_speed
+
     def main(self):
         target_idx = self.target_idx
         di, target_idx = self.stanley.stanley_control(
@@ -80,7 +85,7 @@ class GlobalStanley(object):
         self.target_idx = target_idx
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
-        speed, brake = checkGoal(
+        speed, brake = self.checkGoal(
             last_idx=self.last_idx, current_idx=self.target_idx)
 
         self.cmd_msg.speed = speed
@@ -96,22 +101,19 @@ class GlobalStanley(object):
 
         # print(self.cmd_msg)
 
-
-def checkGoal(last_idx, current_idx):
-    SPEED = rospy.get_param("/desired_speed", 5.0)
-
-    temp_speed = 0.0
-    temp_brake = 1
-
-    if abs(last_idx - current_idx) < 10:
+    def checkGoal(self, last_idx, current_idx):
         temp_speed = 0.0
-        temp_brake = 80
-
-    else:
-        temp_speed = SPEED
         temp_brake = 1
 
-    return temp_speed, temp_brake
+        if abs(last_idx - current_idx) < 10:
+            temp_speed = 0.0
+            temp_brake = 80
+
+        else:
+            temp_speed = self.desired_speed
+            temp_brake = 1
+
+        return temp_speed, temp_brake
 
 
 if __name__ == "__main__":
