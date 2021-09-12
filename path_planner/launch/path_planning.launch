@@ -1,7 +1,7 @@
 <launch>
 
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
-    <param name="odometry_topic" type="str" value="/fake_odom" />
+    <param name="odometry_topic" type="str" value="/odom" />
     <param name="save_file_name" type="str" value="parking_path2.csv"></param>
     
 

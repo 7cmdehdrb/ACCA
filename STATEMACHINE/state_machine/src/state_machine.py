@@ -82,7 +82,7 @@ class Machine():
 
         self.Mode = 0
         self.trafficLight = []
-        self.trafficLine = TrafficStopLine()
+        # self.trafficLine = TrafficStopLine()
 
         self.parkingCnt = 0
 
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
-            # machine.global_stanley_node.main()
+            machine.global_stanley_node.main()
             pass
 
         if machine.Mode == 1:
@@ -198,20 +198,22 @@ if __name__ == '__main__':
 
         # Straight Traffic Mode
         if machine.Mode == 5:
-            if machine.trafficLine.isEND() is True:
-                if isTrafficStraight(machine.trafficLight) is False:
-                    machine.doBrake(80)
-            else:
-                machine.global_stanley_node.main()
+            machine.Mode = 1
+            # if machine.trafficLine.isEND() is True:
+            #     if isTrafficStraight(machine.trafficLight) is False:
+            #         machine.doBrake(80)
+            # else:
+            #     machine.global_stanley_node.main()
 
         # Left Traffic Mode
         if machine.Mode == 6:
-            if machine.trafficLine.isEND() is True:
-                if isTrafficLeft(machine.trafficLight) is False:
-                    machine.doBrake(80)
+            machine.Mode = 1
+            # if machine.trafficLine.isEND() is True:
+            #     if isTrafficLeft(machine.trafficLight) is False:
+            #         machine.doBrake(80)
 
-            else:
-                machine.global_stanley_node.main()
+            # else:
+            #     machine.global_stanley_node.main()
 
         if machine.Mode == 7:
             pass
