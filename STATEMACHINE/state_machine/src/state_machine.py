@@ -15,8 +15,9 @@ ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 GLOBAL_PATH_FILE = rospy.get_param("/global_path_file", "path.csv")
 
-GLOBAL_SPEED = rospy.get_param("/desired_speed", 3.0)
-DYNAMIC_SPEED = rospy.get_param("/dynamic_speed", 1.0)
+GLOBAL_SPEED = 5.0
+# GLOBAL_SPEED = rospy.get_param("/desired_speed", 3.0)
+DYNAMIC_SPEED = rospy.get_param("/hhh", 5.0)
 BACKWARD_SPEED = rospy.get_param("/backward_speed", 1.0)
 
 WB = 1.040

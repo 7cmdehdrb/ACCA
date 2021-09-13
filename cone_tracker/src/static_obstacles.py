@@ -15,7 +15,7 @@ from visualization_msgs.msg import Marker
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 
 
-_, _, YAW = tf.transformations.euler_from_quaternion([0.0, 0.0, 0.921844102877, 0.387560898429,
+_, _, YAW = tf.transformations.euler_from_quaternion([0.0, 0.0, -0.125941386653, 0.992037684329,
                                                       ])
 
 LANE_YAW = YAW

@@ -8,14 +8,14 @@
     <param name="area_file_name" type="str" value="k_area.csv" />
     <!-- Stanley Control Params -->
     <param name="initial_idx" type="int" value="0" />
-    <param name="c_gain" type="double" value="0.15" />
-    <param name="hdr_ratio" type="double" value="0.75" />
+    <param name="c_gain" type="double" value="0.1" />
+    <param name="hdr_ratio" type="double" value="0.60" />
     <!-- Pure Pursuit Params -->
     <param name="k_gain" type="double" value="-0.5" />
     <!-- Encoder Params -->
-    <param name="p_gain" type="double" value="0.0" />
+    <param name="p_gain" type="double" value="0.5" />
     <!-- SPEED Settings -->
-    <param name="desired_speed" type="double" value="8.0" />
+    <param name="desired_speed" type="double" value="14.0" />
     <param name="parking_speed" type="double" value="4.0" />
     <param name="static_obstacles_speed" type="double" value="5.0" />
     <param name="backward_speed" type="double" value="3.0" />

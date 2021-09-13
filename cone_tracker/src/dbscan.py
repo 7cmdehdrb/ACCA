@@ -133,7 +133,7 @@ class DBSCAN(object):
 if __name__ == "__main__":
     rospy.init_node("dbscan")
 
-    dbscan = DBSCAN(0.3, 2)
+    dbscan = DBSCAN(0.5, 2)
 
     rospy.Subscriber("/scan_filtered", LaserScan, dbscan.laserCallback)
     pub = rospy.Publisher("/obstacles", PoseArray, queue_size=1)

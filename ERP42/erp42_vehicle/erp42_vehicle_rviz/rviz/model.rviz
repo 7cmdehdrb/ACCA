@@ -181,9 +181,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 100
+      Max Intensity: 255
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 1
       Name: PointCloud2
       Position Transformer: XYZ
       Queue Size: 10
@@ -366,14 +366,29 @@ Visualization Manager:
       Marker Topic: /hdl_areas
       Name: MarkerArray
       Namespaces:
-        0-45.9809188843: true
-        0-77.0085601807: true
-        1-33.7699508667: true
-        1-6.29459142685: true
-        1-72.9395446777: true
-        2-54.7471427917: true
-        3-19.3436927795: true
-        4-15.6606082916: true
+        0-20.5131721497: true
+        0-34.9569244385: true
+        0-35.961894989: true
+        0-5.67315292358: true
+        0-51.9622802734: true
+        0-65.5181503296: true
+        0-69.3390960693: true
+        0-8.81961154938: true
+        013.42212677: true
+        1-26.0864715576: true
+        1-27.1250534058: true
+        1-28.5379981995: true
+        1-43.287147522: true
+        1-57.0742530823: true
+        1-76.9614334106: true
+        1-90.4773254395: true
+        17.23949050903: true
+        18.85586547852: true
+        2-16.4762439728: true
+        3-84.2235794067: true
+        3-97.9701690674: true
+        5-41.9370346069: true
+        5-92.8083496094: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -387,13 +402,13 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /static_obstacle_area
       Name: Marker
       Namespaces:
-        {}
+        static_obstacle_area: true
       Queue Size: 1
-      Value: false
+      Value: true
     - Alpha: 1
       Arrow Length: 0.30000001192092896
       Axes Length: 0.30000001192092896
@@ -438,16 +453,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 153.9076690673828
+      Distance: 286.6626892089844
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -37.50324249267578
-        Y: 21.107574462890625
-        Z: -13.126861572265625
+        X: -19.50540542602539
+        Y: -17.07628631591797
+        Z: -13.11117172241211
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
