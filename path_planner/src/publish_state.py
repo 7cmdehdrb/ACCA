@@ -34,6 +34,7 @@ except Exception as ex:
 State publisher for STATE MACHINE
 This node reads /path_planner/saved_path/area.csv
 
+
 The CSV format is 'x_center_position, y_center_position, radius, ID'
 
 IDs are depends on STATE MACHINE
