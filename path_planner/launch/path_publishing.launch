@@ -4,9 +4,9 @@
     <!-- Sensors -->
     
     <!-- IMU -->
-    <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
         <arg name="port" value="/dev/ttyUSB1" />
-    </include> -->
+    </include>
     
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
@@ -23,11 +23,11 @@
     
     <!-- Path Publish --> 
     <param name="c_gain" type="double" value="100.0" />
-    <param name="desired_speed" type="double" value="3.0" />
+    <param name="desired_speed" type="double" value="0.5" />
     <node name="stanley_method" pkg="path_planner" type="global_stanley.py" output="screen" />
 
     <!-- Localization -->
-    <include file="$(find hdl_localization)/launch/hdl_localization.launch">
+    <include file="$(find hdl_lossscalization)/launch/hdl_localization.launch">
         <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
     </include>
 

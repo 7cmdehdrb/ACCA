@@ -44,6 +44,7 @@ class Laser(object):
         self.bet = []
         """ Change this part to detect obstacle """
         for i in range(1, len(self.ranges)-1):
+
             if self.ranges[i-1] == 0 and self.ranges[i] != 0:
                 self.block.append(i)
             if self.ranges[i] != 0 and self.ranges[i+1] == 0:

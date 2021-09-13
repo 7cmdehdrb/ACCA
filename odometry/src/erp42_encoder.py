@@ -17,6 +17,8 @@ wheeltrack = 0.985
 TICK2RAD = 0.06283185307
 wheel_radius = 0.265
 
+p_gain = rospy.get_param("p_gain", 0.0)
+
 
 class control():
     def __init__(self, port_num):
@@ -29,6 +31,8 @@ class control():
         ETX0 = 13
         ETX1 = 10
         ALIVE = 0
+
+        self.doPIControl = True
 
         self.stanley_control = stanleyMsg()
         self.feedbackMsg = encoderMsg()
@@ -143,13 +147,37 @@ class control():
     def cmd_vel_callback(self, msg):
         self.control_msg = msg
 
+    def PIControl(self, currentSpeed, desiredSpeed):
+        if desiredSpeed < 0:
+            return desiredSpeed
+
+        p = p_gain
+        err = desiredSpeed - currentSpeed
+
+        res = desiredSpeed + p * err
+
+        if res < 0.0:
+            return 0.0
+
+        return res
+
     def send_data(self, SPEED, STEER, BRAKE, GEAR):
         """
             Function to send serial to ERP42 with
             speed(KPH), steer(Deg), Brake(1~200), Gear(2: drive)
         """
 
-        SPEED = SPEED * 10
+        if self.doPIControl is True:
+
+            current_speed = self.mps2kph(self.feedbackMsg.speed)    # kph
+            desired_speed = SPEED  # kph
+
+            SPEED = self.PIControl(
+                currentSpeed=current_speed, desiredSpeed=desired_speed)
+
+        GEAR = 2 if SPEED >= 0.0 else 0
+
+        SPEED = abs(SPEED) * 10
         if SPEED > 200:
             SPEED = 200
         elif SPEED < 0:
@@ -171,7 +199,7 @@ class control():
                 self.DATA[8] = int(255 - STEER // 256)
                 self.DATA[9] = int(255 - STEER % 256)
 
-            self.DATA[5] = 2    # GEAR
+            self.DATA[5] = GEAR    # GEAR
             self.DATA[6] = int(SPEED // 256)
             self.DATA[7] = int(SPEED % 256)
             self.DATA[10] = BRAKE   # BREAK

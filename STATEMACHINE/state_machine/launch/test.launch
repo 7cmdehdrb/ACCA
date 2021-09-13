@@ -1,0 +1,80 @@
+<launch>
+
+
+    <!-- Param --> 
+    <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
+    <param name="odometry_topic" type="str" value="/fake_odom" />
+    <param name="global_path_file" type="str" value="odometry1.csv" />
+    <!-- Stanley Control Params -->
+    <param name="initial_idx" type="int" value="0" />
+    <param name="c_gain" type="double" value="1000.0" />
+    <param name="hdr_ratio" type="double" value="1.0" />
+    <!-- Pure Pursuit Params -->
+    <param name="k_gain" type="double" value="-0.5" />
+    <!-- Encoder Params -->
+    <param name="p_gain" type="double" value="0.0" />
+    <!-- SPEED Settings -->
+    <param name="desired_speed" type="double" value="2.0" />
+    <param name="parking_speed" type="double" value="1.0" />
+    <param name="static_obstacles_speed" type="double" value="1.0" />
+    <param name="backward_speed" type="double" value="1.0" />
+    <!-- Static Obstacle Params -->
+    <param name="distance_gap" type="double" value="1.5" />
+    <!-- Parking Params -->
+    <param name="max_steer" type="double" value="50.0" />
+    <param name="save_parking" type="bool" value="false" />
+    <param name="save_area" type="bool" value="false" />
+    <param name="backward_distance" type="double" value="7.0" />
+    
+    <!-- Sensors -->
+    
+    <!-- IMU -->
+    <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+        <arg name="port" value="/dev/ttyUSB1" />
+    </include> -->
+    
+    <!-- LiDAR -->
+    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+    <!-- <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
+    <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include> -->
+    <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
+    <!-- <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include> -->
+        
+    <!-- Sensors end -->
+    
+    <!-- Odometry -->
+    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
+    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
+    <!-- <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
+    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
+    
+    <!-- Localization -->
+    <include file="$(find hdl_localization)/launch/hdl_localization.launch">
+        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+    </include>
+
+    <!-- Obstacles -->
+    <!-- /scan_filtered => /obstacles -->
+    <!-- <node name="obstacle_detection" pkg="cone_tracker" type="obstacle_detection.py" /> -->
+    <!-- <param name="dbscan_deg" type="double" value="90.0" />
+    <node name="dbscan" pkg="cone_tracker" type="dbscan.py" /> -->
+    <!-- /scan_filtered => /ob_TF -->
+    <!-- <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" /> -->
+
+    <!-- Parking -->
+    <node name="parking_selection" pkg="parking" type="parking_selection.py" />
+
+    <!-- State Machine -->
+    <node name="publish_state" pkg="path_planner" type="publish_state.py" />
+    <!-- <node name="state_machine" pkg="state_machine" type="state_machine.py" output="screen" /> -->
+
+    <!-- Model -->
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+
+    <!-- Test -->
+    <node pkg="tf" type="static_transform_publisher" name="map_pub" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 10" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_pub" args="2.67 -3.75 0.0 -2.29 0.0 0.0 map odom 10" /> -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1 base_link laser 100" /> -->
+    <!-- -2.676659107208252,-3.7524757385253906,-2.29648101519 -->
+
+</launch>

@@ -3,11 +3,13 @@
 import sys
 import rospy
 import time as t
-from std_msgs.msg import UInt8MultiArray
+from std_msgs.msg import Int32MultiArray
+
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 
 
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from loadPose import LoadPose
 except ImportError as ie:
     print(ie)
@@ -18,14 +20,15 @@ class PathSelector(object):
     def __init__(self):
         super(PathSelector, self).__init__()
 
-        rospy.Subscriber("/parking", UInt8MultiArray,
+        rospy.Subscriber("/parking", Int32MultiArray,
                          self.parkingCallback)
 
         self.flag = False
-        self.__idx = 0
+        self.idx = 0
 
         self.len = -1
         self.pathArray = []
+        self.result = []
         self.main_path = None
 
         while ((self.flag is not True) and (not rospy.is_shutdown())):
@@ -41,27 +44,37 @@ class PathSelector(object):
                     LoadPose(file_name="no_path.csv"))
                 print("IO ERROR ON CSV FILE")
 
-    @property
     def getIdx(self):
-        return self.__idx
+        return self.idx
 
-    @property
     def setIdx(self, idx):
-        self.__idx = idx
-        return self.__idx
+        self.idx = idx
+        return self.idx
 
     @property
     def getPath(self):
-        return self.pathArray[self.getIdx]
+        return self.pathArray[self.getIdx()]
 
     def parkingCallback(self, msg):
-        data = msg.data
 
-        if self.flag is False and len(data) != 0:
-            self.len = len(data)
+        temp = msg.data
+
+        if self.flag is False and len(temp) != 0:
+            self.len = len(temp)
             self.flag = True
 
-        for i in range(len(data)):
-            if data[i] == 1:
+            for i in range(self.len):
+                self.result.append(0)
+
+            return
+
+        for i in range(len(temp)):
+            if temp[i] == 1:
+                self.result[i] = 1
+
+        for i in range(len(self.result)):
+            if self.result[i] == 0:
                 self.setIdx(i)
                 break
+
+        # print(self.getIdx)

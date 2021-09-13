@@ -4,8 +4,12 @@ import sys
 import rospy
 from path_planner.msg import obTF
 
+
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+
+
 try:
-    sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     from state import State
 except Exception as ex:
     print(ex)
@@ -22,6 +26,9 @@ Subscribe 'ob_TF' and control state.EStop
 class Dynamic(object):
     def __init__(self, state):
         super(Dynamic, self).__init__()
+
+        rospy.Subscriber("/ob_TF", obTF, self.dynamicCallback)
+
         self.state = state
 
         self.obs = obTF()
@@ -41,8 +48,6 @@ if __name__ == "__main__":
 
     dobs = Dynamic()
     state = State()
-
-    rospy.Subscriber("/ob_TF", obTF, dobs.dynamicCallback)
 
     r = rospy.Rate(50.0)
     while not rospy.is_shutdown():

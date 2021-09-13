@@ -10,6 +10,9 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 from path_planner.msg import stanleyMsg
 
 
+MAX_STEER = rospy.get_param("/max_steer", 30.0)
+
+
 class FakeOdometry(erp42):
     def __init__(self, x, y, yaw, v):
         super(FakeOdometry, self).__init__(x=x, y=y, yaw=yaw, v=v)
@@ -69,10 +72,11 @@ class FakeOdometry(erp42):
         data = msg
 
         speed = data.speed
-        steer = np.clip(data.steer, -m.radians(30.0), m.radians(30.0))
+        steer = np.clip(data.steer, -m.radians(MAX_STEER),
+                        m.radians(MAX_STEER))
         brake = data.brake
 
-        print(speed, m.degrees(steer), brake)
+        # print(speed, m.degrees(steer), brake)
 
         self.v = speed
         self.yaw += (self.v / 1.040) * m.tan(-steer) * self.dt
@@ -82,8 +86,9 @@ if __name__ == "__main__":
     rospy.init_node("fake_odometry")
 
     # fake_odom = FakeOdometry(x=-7.487, y=-5.565, yaw=-2.182, v=0.0)
-    fake_odom = FakeOdometry(x=-2.26557731628418,
-                             y=-2.988885879516602, yaw=-2.33088598842, v=0.0)
+    # fake_odom = FakeOdometry(x=-0.0, y=-0.0, yaw=-2.33, v=0.1)
+    fake_odom = FakeOdometry(-7.3254506274086735, -
+                             8.26976220919032, -2.33271992886, 0.0)
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()

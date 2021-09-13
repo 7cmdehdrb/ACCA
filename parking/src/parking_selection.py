@@ -7,9 +7,17 @@ import tf
 import math as m
 import numpy as np
 import threading
-from std_msgs.msg import UInt8MultiArray, Empty
+from std_msgs.msg import Int32MultiArray, Empty
 from geometry_msgs.msg import PoseArray, Pose, Polygon, Point32, PoseStamped
 from visualization_msgs.msg import Marker, MarkerArray
+
+# try:
+#     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
+#     from util_class import Obstacle, Map
+# except Exception as ex:
+#     print("UTIL CLASS IMPORT ERROR")
+#     print(ex)
+
 
 """
 
@@ -27,10 +35,27 @@ mode = rospy.get_param("/save_parking", False)
 
 
 def checkIsInParking(obstacle, box):
-    x_dist = abs(box.x - obstacle.x)
-    y_dist = abs(box.y - obstacle.y)
+    dist = np.hypot(box.x - obstacle.x, box.y - obstacle.y)
+
+    if dist == 0.0:
+        print("HELLO")
+        return True
+
+    area_VEC = np.array([
+        m.cos(box.yaw - m.radians(90.0)), m.sin(box.yaw - m.radians(90.0))
+    ])
+
+    ob_VEC = np.array([
+        obstacle.x - box.x, obstacle.y - box.y
+    ])
+
+    theta = m.acos(np.dot(area_VEC, ob_VEC) / dist)
+
+    x_dist = abs(dist * m.sin(theta))
+    y_dist = abs(dist * m.cos(theta))
 
     if x_dist <= box.x_len / 2.0 and y_dist <= box.y_len / 2.0:
+        print(x_dist, y_dist)
         return True
 
     return False
@@ -38,8 +63,6 @@ def checkIsInParking(obstacle, box):
 
 class Obstacle(object):
     def __init__(self, x, y):
-        super(Obstacle, self).__init__()
-
         self.x = x
         self.y = y
 
@@ -71,12 +94,31 @@ class CarYN(object):
         self.obstacles = []
         self.parkspace = []
 
+        self.tf_node = tf.TransformListener()
+
     def CarCallback(self, msg):
         # centpo = msg.poses
         temp_array = []
 
+        centpo = msg.poses
+
         for p in centpo:
-            temp_array.append(Obstacle(x=p.position.x, y=p.position.y))
+            pose = PoseStamped()
+
+            pose.header.frame_id = "velodyne"
+            pose.header.stamp = rospy.Time(0)
+
+            pose.pose.position.x = p.position.x
+            pose.pose.position.y = p.position.y
+
+            pose.pose.orientation.w = 1.0
+
+            map_pose = self.tf_node.transformPose("map", pose)
+
+            new_ob = Obstacle(x=map_pose.pose.position.x,
+                              y=map_pose.pose.position.y)
+
+            temp_array.append(new_ob)
 
         self.obstacles = temp_array
 
@@ -147,7 +189,7 @@ class CarYN(object):
 
         for box in self.boxes:
             marker = Marker()
-            marker.header.frame_id = "base_link"
+            marker.header.frame_id = "map"
             marker.header.stamp = rospy.Time.now()
             marker.lifetime = rospy.Duration(0.2)
             marker.ns = str(idx)
@@ -261,15 +303,15 @@ if __name__ == "__main__":
 
     caryn = CarYN()
 
-    park_pub = rospy.Publisher("parking", UInt8MultiArray, queue_size=1)
+    park_pub = rospy.Publisher("parking", Int32MultiArray, queue_size=1)
     marker_pub = rospy.Publisher("parking_area", MarkerArray, queue_size=1)
 
     rospy.Subscriber("adaptive_clustering/poses", PoseArray, caryn.CarCallback)
 
     """ TEST """
 
-    # rospy.Subscriber("/move_base_simple/goal", PoseStamped,
-    #                  callback=caryn.obstacleTestCallback)
+    rospy.Subscriber("/move_base_simple/goal", PoseStamped,
+                     callback=caryn.obstacleTestCallback)
     # obstacle_pub = rospy.Publisher("/obstacle_test", PoseArray, queue_size=1)
 
     """ TEST END """
@@ -285,10 +327,10 @@ if __name__ == "__main__":
         rospy.loginfo("RUNNING LOAD MODE")
         caryn.loadParking()
 
-    r = rospy.Rate(5.0)
+    r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
 
-        data = UInt8MultiArray()
+        data = Int32MultiArray()
         data.data = caryn.checkingParking()
 
         caryn.publishMarker(publisher=marker_pub)

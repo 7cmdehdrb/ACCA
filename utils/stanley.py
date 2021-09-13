@@ -18,13 +18,24 @@ class Stanley(object):
     def __init__(self):
         super(Stanley, self).__init__()
 
+        self.doPublish = False
+
         self.k = rospy.get_param("/c_gain", 0.5)  # control gain
+        self.hdr_ratio = rospy.get_param("/hdr_ratio", 0.8)
         self.L = 1.040  # [m] Wheel base of vehicle
 
         self.ctr_publisher = rospy.Publisher(
             "stanley_ctr", Float32, queue_size=1)
         self.hdr_publisher = rospy.Publisher(
             "stanley_hdr", Float32, queue_size=1)
+
+    def setCGain(self, value):
+        self.k = value
+        return self.k
+
+    def setHdrRatio(self, value):
+        self.hdr_ratio = value
+        return self.hdr_ratio
 
     def stanley_control(self, state, cx, cy, cyaw, last_target_idx):
         """
@@ -43,7 +54,8 @@ class Stanley(object):
             current_target_idx = last_target_idx
 
         # theta_e corrects the heading error
-        theta_e = self.normalize_angle(cyaw[current_target_idx] - state.yaw)
+        theta_e = (self.normalize_angle(
+            cyaw[current_target_idx] - state.yaw)) * self.hdr_ratio
 
         # theta_d corrects the cross track error
 
@@ -51,8 +63,10 @@ class Stanley(object):
         # Steering control
         delta = theta_e + theta_d
 
-        self.ctr_publisher.publish(theta_e)
-        self.hdr_publisher.publish(theta_d)
+        if self.doPublish is True:
+
+            self.ctr_publisher.publish(theta_e)
+            self.hdr_publisher.publish(theta_d)
 
         return delta, current_target_idx
 
@@ -79,8 +93,8 @@ class Stanley(object):
         :return: (int, float)
         """
         # Calc front axle position
-        fx = state.x + self.L * np.cos(state.yaw)
-        fy = state.y + self.L * np.sin(state.yaw)
+        fx = state.x + self.L * np.cos(state.yaw) / 2.0
+        fy = state.y + self.L * np.sin(state.yaw) / 2.0
 
         # Search nearest point index
         dx = [fx - icx for icx in cx]
