@@ -15,7 +15,7 @@ ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
 ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 
 max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
-initial_idx = rospy.get_param("/initial_idx", 0)
+initial_idx = int(rospy.get_param("/initial_idx", 0))
 
 global_path_file = rospy.get_param("/global_path_file", "path.csv")
 
@@ -71,7 +71,10 @@ class GlobalStanley(object):
 
         self.last_idx = len(self.path.cx) - 1
         self.target_idx, _ = self.stanley.calc_target_index(
-            self.state, self.path.cx[initial_idx:100], self.path.cy[initial_idx:100])
+            self.state, self.path.cx[0:500], self.path.cy[0:500])
+
+        if initial_idx != 0:
+            self.target_idx = initial_idx
 
     def setDesiredSpeed(self, value):
         self.desired_speed = value
