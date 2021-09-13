@@ -83,13 +83,6 @@ class IMUOdometry(object):
         ax = data.vector.x
         ay = data.vector.y
 
-<<<<<<< HEAD
-=======
-        if self.encoderV == 0.0:
-            ax = 0.0
-            ay = 0.0
-
->>>>>>> f6480b12743d080885afbb47fa1dc72a74e33e2f
         self.ax = ax
         self.ay = ay
 
@@ -127,37 +120,38 @@ class IMUOdometry(object):
 
         self.dt = (self.currentTime - self.lastTime).to_sec()
 
-<<<<<<< HEAD
-        # self.dx += self.ax * m.cos(self.yaw) * self.dt
-        # self.dy += self.ax * m.sin(self.yaw) * self.dt
 
-        # if abs(self.ax) < 0.1:
-        #     self.ax = 0.0
+<< << << < HEAD
+# self.dx += self.ax * m.cos(self.yaw) * self.dt
+# self.dy += self.ax * m.sin(self.yaw) * self.dt
 
-        # if self.ay < 0.1:
-        #     self.ay = 0.0
-=======
-        self.x += self.dx * self.dt + 0.5 * \
-            m.cos(self.yaw) * self.ax * (self.dt ** 2)
-        self.y += self.dy * self.dt + 0.5 * \
-            m.sin(self.yaw) * self.ax * (self.dt ** 2)
->>>>>>> f6480b12743d080885afbb47fa1dc72a74e33e2f
+# if abs(self.ax) < 0.1:
+#     self.ax = 0.0
 
-        self.dx += self.ax * m.cos(self.yaw) * self.dt
-        self.dy += self.ax * m.sin(self.yaw) * self.dt
+# if self.ay < 0.1:
+#     self.ay = 0.0
+== == == =
+self.x += self.dx * self.dt + 0.5 * \
+    m.cos(self.yaw) * self.ax * (self.dt ** 2)
+self.y += self.dy * self.dt + 0.5 * \
+    m.sin(self.yaw) * self.ax * (self.dt ** 2)
+>>>>>> > f6480b12743d080885afbb47fa1dc72a74e33e2f
 
-<<<<<<< HEAD
-        # print(self.dx, self.dy)
+self.dx += self.ax * m.cos(self.yaw) * self.dt
+self.dy += self.ax * m.sin(self.yaw) * self.dt
 
-        self.x += self.dx * self.dt + 0.5 * \
-            self.ax * m.cos(self.yaw) * (self.dt ** 2)
-        self.y += self.dy * self.dt + 0.5 * \
-            self.ax * m.sin(self.yaw) * (self.dt ** 2)
+<< << << < HEAD
+# print(self.dx, self.dy)
 
-        # print(self.x, self.y)
-=======
-        print(self.x, self.y)
->>>>>>> f6480b12743d080885afbb47fa1dc72a74e33e2f
+self.x += self.dx * self.dt + 0.5 * \
+    self.ax * m.cos(self.yaw) * (self.dt ** 2)
+self.y += self.dy * self.dt + 0.5 * \
+    self.ax * m.sin(self.yaw) * (self.dt ** 2)
+
+# print(self.x, self.y)
+== == == =
+print(self.x, self.y)
+>>>>>> > f6480b12743d080885afbb47fa1dc72a74e33e2f
 
 
 if __name__ == "__main__":
