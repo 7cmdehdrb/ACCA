@@ -20,9 +20,12 @@ class Stanley(object):
 
         self.doPublish = False
 
+        self.L = 1.040  # [m] Wheel base of vehicle
         self.k = rospy.get_param("/c_gain", 0.5)  # control gain
         self.hdr_ratio = rospy.get_param("/hdr_ratio", 0.8)
-        self.L = 1.040  # [m] Wheel base of vehicle
+
+        self.hdr = 0.0
+        self.ctr = 0.0
 
         self.ctr_publisher = rospy.Publisher(
             "stanley_ctr", Float32, queue_size=1)
@@ -36,6 +39,12 @@ class Stanley(object):
     def setHdrRatio(self, value):
         self.hdr_ratio = value
         return self.hdr_ratio
+
+    def getHDR(self):
+        return self.hdr
+
+    def getCTR(self):
+        return self.ctr
 
     def stanley_control(self, state, cx, cy, cyaw, last_target_idx):
         """
@@ -58,8 +67,12 @@ class Stanley(object):
             cyaw[current_target_idx] - state.yaw)) * self.hdr_ratio
 
         # theta_d corrects the cross track error
-
         theta_d = np.arctan2(self.k * error_front_axle, state.v)
+
+        # Field
+        self.hdr = theta_e
+        self.ctr = theta_d
+
         # Steering control
         delta = theta_e + theta_d
 
