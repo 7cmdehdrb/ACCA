@@ -10,7 +10,7 @@ from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3, Vector3Stamped
 
 
-ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/hojin/catkin_ws/src")
 
 
 try:
@@ -28,7 +28,9 @@ class IMUOdometry(object):
         self.currentTime = rospy.Time.now()
         self.lastTime = rospy.Time.now()
 
-        self.ind = 0.0
+        self.ind = 0
+        self.ave_x = 0.0
+        self.ave_y = 0.0
 
         self.x = 0.0
         self.y = 0.0
@@ -66,43 +68,31 @@ class IMUOdometry(object):
             # self.yaw = self.normalize_angle(yaw)
 
         self.dth = data.angular_velocity.z
+        # print(yaw)
 
     def acc_callback(self, msg):
         data = msg
-        # ax = data.vector.x[i]
-        # ay = data.vector.y[i]
 
-        i = 0  # indedx
-        while (i > 1):
-            sum = 0.0
-            for i in range(len(data.vector.x)):
-                sum = sum + data.vector.x[i]
-            ax = sum / len(data.vector.x)
-
-            if len(i) > 30:
-                self.ind = i
-            i += 1
-        return self.ind
-
-        while (i > 1):
-            sum = 0.0
-            for i in range(len(data.vector.y)):
-                sum = sum + data.vector.y[i]
-            ay = sum / len(data.vector.y)
-
-            if len(i) > 30:
-                self.ind = i
-            i += 1
-        return self.ind
+        ax = data.vector.x
+        ay = data.vector.y
 
         self.ax = ax
         self.ay = ay
 
-        # if abs(ax) < 0.05:
-        #     ax = 0.0
+        self.ind += 1
 
-        # if abs(ay) < 0.05:
-        #     ay = 0.0
+        self.ave_x = self.ave_x * \
+            (float(self.ind - 1.0) / float(self.ind)) + \
+            ax * (1.0 / float(self.ind))
+        self.ave_y = self.ave_y * \
+            (float(self.ind - 1.0) / float(self.ind)) + \
+            ay * (1.0 / float(self.ind))
+
+        print(self.ave_x)
+
+        self.ax -= self.ave_x
+
+        # print(self.ave_x, self.ave_y)
 
     def normalize_angle(self, angle):
         """
@@ -126,18 +116,23 @@ class IMUOdometry(object):
         # self.dx += self.ax * m.cos(self.yaw) * self.dt
         # self.dy += self.ax * m.sin(self.yaw) * self.dt
 
-        if self.ax < 0.1:
-            self.ax = 0.0
-        if self.ay < 0.1:
-            self.ay = 0.0
+        # if abs(self.ax) < 0.1:
+        #     self.ax = 0.0
 
-        self.dy *= self.ax * self.dt
-        self.dx *= self.ax * self.dt
+        # if self.ay < 0.1:
+        #     self.ay = 0.0
 
-        self.x += self.dx*self.dt + 0.5*self.ax*(self.dt**2)
-        self.y += self.dy*self.dt + 0.5*self.ay*(self.dt**2)
+        self.dx += self.ax * m.cos(self.yaw) * self.dt
+        self.dy += self.ax * m.sin(self.yaw) * self.dt
 
-        print(self.x, self.y)
+        # print(self.dx, self.dy)
+
+        self.x += self.dx * self.dt + 0.5 * \
+            self.ax * m.cos(self.yaw) * (self.dt ** 2)
+        self.y += self.dy * self.dt + 0.5 * \
+            self.ax * m.sin(self.yaw) * (self.dt ** 2)
+
+        # print(self.x, self.y)
 
 
 if __name__ == "__main__":
@@ -160,7 +155,6 @@ if __name__ == "__main__":
 
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
-
         """ Odometry """
 
         my_odom.update()
