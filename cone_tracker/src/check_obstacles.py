@@ -21,6 +21,7 @@ class Laser(object):
         self.part_fin = []
         self.part_index = []
         self.fin = []
+        self.distanceRange = 3.0
 
         rospy.Subscriber("/scan_filtered", LaserScan, self.laserCallback)
 
@@ -38,7 +39,7 @@ class Laser(object):
 
         for i in range(len(self.ranges)):
             TF = self.ranges[i]
-            if TF != 0:
+            if TF != 0 and not TF >= self.distanceRange:
                 if i >= 0 and i < 180 - (15 * 2):
                     partitionA = 1
                 if i >= 180 - (15 * 2) and i < 180:

@@ -80,17 +80,17 @@ class Machine():
         self.parking_node = Parking(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
-        self.Mode = 0
+        self.Mode = 2
         self.trafficLight = []
-        self.trafficLine = TrafficStopLine()
+        self.trafficLine = TrafficStopLine(state=self.state)
 
         self.parkingCnt = 0
 
     def stateCallback(self, msg):
         data = msg.data
 
-        if data != -1:
-            self.Mode = data
+        # if data != -1:
+        #     self.Mode = data
 
     def trafficLightCallback(self, msg):
         data = msg.data
@@ -136,6 +136,9 @@ if __name__ == '__main__':
         rate.sleep()
 
     while not rospy.is_shutdown():
+
+        print(machine.Mode)
+
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
             # machine.global_stanley_node.main()
@@ -196,22 +199,22 @@ if __name__ == '__main__':
 
                 machine.Mode = 1
 
-        # Straight Traffic Mode
-        if machine.Mode == 5:
-            if machine.trafficLine.isEND() is True:
-                if isTrafficStraight(machine.trafficLight) is False:
-                    machine.doBrake(80)
-            else:
-                machine.global_stanley_node.main()
+        # # Straight Traffic Mode
+        # if machine.Mode == 5:
+        #     if machine.trafficLine.isEND() is True:
+        #         if isTrafficStraight(machine.trafficLight) is False:
+        #             machine.doBrake(80)
+        #     else:
+        #         machine.global_stanley_node.main()
 
-        # Left Traffic Mode
-        if machine.Mode == 6:
-            if machine.trafficLine.isEND() is True:
-                if isTrafficLeft(machine.trafficLight) is False:
-                    machine.doBrake(80)
+        # # Left Traffic Mode
+        # if machine.Mode == 6:
+        #     if machine.trafficLine.isEND() is True:
+        #         if isTrafficLeft(machine.trafficLight) is False:
+        #             machine.doBrake(80)
 
-            else:
-                machine.global_stanley_node.main()
+        #     else:
+        #         machine.global_stanley_node.main()
 
         if machine.Mode == 7:
             pass

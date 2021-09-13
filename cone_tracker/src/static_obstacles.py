@@ -127,8 +127,8 @@ class StaticObstacles(object):
         self.areaFlag = False
         self.areaCnt = 0
 
-        self.box = Box(-62.03153991699219, -13.811725616455078,
-                       3.9201191226628165, 3.22, 26.043303445626502)
+        self.box = Box(-5.4544358253479, -103.28044128417969,
+                       4.4404087821629386, 3.3172813542081476, 28.436379040076638)
 
         rospy.Subscriber("/move_base_simple/goal", PoseStamped,
                          callback=self.obstacleTestCallback)
@@ -380,7 +380,7 @@ class StaticObstacles(object):
             self.box.publishBox()
 
         if goal_point is None:
-            print("NO GOAL POINT")
+            # print("NO GOAL POINT")
             self.target_idx = 0
             return False
 

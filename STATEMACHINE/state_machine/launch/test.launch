@@ -5,6 +5,7 @@
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
     <param name="odometry_topic" type="str" value="/fake_odom" />
     <param name="global_path_file" type="str" value="odometry1.csv" />
+    <param name="area_file_name" type="str" value="k_area.csv" />
     <!-- Stanley Control Params -->
     <param name="initial_idx" type="int" value="0" />
     <param name="c_gain" type="double" value="1000.0" />
@@ -46,11 +47,11 @@
     <param name="erp_port" type="str" value="/dev/ttyUSB0" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
     <!-- <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
-    <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
+    <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" />
     
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
-        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+        <arg name="map_file" value="$(find hdl_localization)/data/KCityMap.pcd" /> 
     </include>
 
     <!-- Obstacles -->
