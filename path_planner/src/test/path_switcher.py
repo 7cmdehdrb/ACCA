@@ -67,7 +67,7 @@ class PathSwitcher(object):
 
         """ TEST """
 
-        self.doTest()
+        # self.doTest()
 
     def appendPath(self, path):
         self.paths.append(path)
@@ -124,6 +124,8 @@ class PathSwitcher(object):
                     self.state, self.current_path.cx, self.current_path.cy
                 )
 
+                self.current_path.pathPublish(pub=self.path_pub)
+
                 self.is_doing_switching = True
 
         except ValueError:
@@ -152,6 +154,7 @@ class PathSwitcher(object):
             print(hdr, ctr)
 
             if abs(hdr) < self.errTolerance_HDR and abs(ctr) < self.errTolerance_CTR:
+                self.changeTime = rospy.Time.now()
                 self.is_doing_switching = False
 
         else:
@@ -191,7 +194,6 @@ class PathSwitcher(object):
         self.cmd_msg.brake = self.brake
 
         self.cmd_pub.publish(self.cmd_msg)
-        self.current_path.pathPublish(pub=self.path_pub)
 
 
 if __name__ == "__main__":
