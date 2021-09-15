@@ -77,7 +77,7 @@ class FusionOdometry(object):
 
         # param
 
-        self.doTransform = True
+        self.doTransform = False
 
         # Value
 
