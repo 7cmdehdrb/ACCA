@@ -39,7 +39,9 @@ class control():
         self.control_msg = stanleyMsg()
 
         self.feedback_encoder = 0
-        self.i_err = 0
+        self.i_err = rospy.get_param("i_err", 0.0)
+        self.p_gain = rospy.get_param("p_gain", 0.0)
+
         """
             Encoder variable
         """
@@ -73,6 +75,7 @@ class control():
 
     def receive_data(self):
         line = []
+
         while not exitThread:
             try:
                 for i in self.ser.read():
@@ -148,17 +151,20 @@ class control():
         self.control_msg = msg
 
     def PIControl(self, currentSpeed, desiredSpeed, brake):
-        if desiredSpeed < 0:
+        if desiredSpeed < 0.0:
             return desiredSpeed
 
-        p = 4.0
+        if brake != 1:
+            return desiredSpeed, brake
+
+        p = self.p_gain
 
         err = desiredSpeed - currentSpeed
-        print("speed", currentSpeed, err)
+        # print("speed", currentSpeed, err)
 
         self.i_err += err
-        if err >= 0:
-            res = currentSpeed + p * err + self.i_err*0.2
+        if err >= 0.0:
+            res = currentSpeed + p * err + self.i_err * 0.2
 
         if err < 0.0:
             brake = err * 7 * (-1)
@@ -243,8 +249,8 @@ if __name__ == "__main__":
     rospy.init_node('erp42_encoder')
 
     """ Param """
-    #port = rospy.get_param('/erp_port', '/dev/ttyUSB1')
-    port = '/dev/ttyUSB1'
+    port = rospy.get_param('/erp_port', '/dev/ttyUSB0')
+    # port = '/dev/ttyUSB2'
     """ Object """
     mycar = control(port_num=port)
 
@@ -257,7 +263,7 @@ if __name__ == "__main__":
         '/erp42_encoder', encoderMsg, queue_size=1)
 
     """ Subscriber"""
-    #rospy.Subscriber("/Control_msg", stanleyMsg, mycar.cmd_vel_callback)
+    rospy.Subscriber("/Control_msg", stanleyMsg, mycar.cmd_vel_callback)
     # rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
     start_time = rospy.Time.now()

@@ -31,22 +31,22 @@
     
     <!-- IMU -->
     <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
-        <arg name="port" value="/dev/ttyUSB0" />
+        <arg name="port" value="/dev/ttyUSB1" />
     </include>
     
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
-    <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
+    <!-- <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
     <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include>
-    <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
+    <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" /> -->
     <!-- <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include> -->
         
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <param name="erp_port" type="str" value="/dev/ttyUSB1" />
+    <param name="erp_port" type="str" value="/dev/ttyUSB3" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
-    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
+    <!-- <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
     
     <!-- Localization -->
@@ -57,16 +57,16 @@
     <!-- Obstacles -->
     <!-- /scan_filtered => /obstacles -->
     <!-- <node name="obstacle_detection" pkg="cone_tracker" type="obstacle_detection.py" /> -->
-    <param name="dbscan_deg" type="double" value="90.0" />
-    <node name="dbscan" pkg="cone_tracker" type="dbscan.py" />
+    <!-- <param name="dbscan_deg" type="double" value="90.0" />
+    <node name="dbscan" pkg="cone_tracker" type="dbscan.py" /> -->
     <!-- /scan_filtered => /ob_TF -->
-    <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" />
+    <!-- <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" /> -->
 
     <!-- Parking -->
-    <node name="parking_selection" pkg="parking" type="parking_selection.py" />
+    <!-- <node name="parking_selection" pkg="parking" type="parking_selection.py" /> -->
 
     <!-- State Machine -->
-    <node name="publish_state" pkg="path_planner" type="publish_state.py" />
+    <!-- <node name="publish_state" pkg="path_planner" type="publish_state.py" /> -->
     <!-- <node name="state_machine" pkg="state_machine" type="state_machine.py" output="screen" /> -->
 
     <!-- Model -->

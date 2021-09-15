@@ -25,44 +25,14 @@ except ImportError as ie:
 
 current_time = None
 last_time = None
+doTransform = True
 
 
 class FusionState(State):
-    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, odom=None):
+    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
         super(FusionState, self).__init__(x=x, y=y, yaw=yaw, v=v)
 
-        self.odometry = odom
-        self.quat = [0.0, 0.0, 0.0, 1.0]
-
-    def update(self):
-        current_time = rospy.Time.now()
-
-        dt = (current_time - last_time).to_sec()
-
-        vel, quat = self.odometry.handleData()
-        _, _, yaw = tf.transformations.euler_from_quaternion(quat)
-
-        self.v = vel
-        self.dx = vel * m.cos(yaw)
-        self.dy = vel * m.sin(yaw)
-        self.dyaw = yaw - self.last_yaw
-
-        self.x += self.dx * dt
-        self.y += self.dy * dt
-        self.yaw = yaw
-        self.quat = quat
-
-        self.last_x = self.x
-        self.last_y = self.y
-        self.last_yaw = self.yaw
-
-        # print(self.x, self.y)
-
-        self.odometry.last_time = rospy.Time.now()
-
-
-class FusionOdometry(object):
-    def __init__(self):
+        self.init_yaw = 0.0
 
         # Subscriber
 
@@ -75,21 +45,23 @@ class FusionOdometry(object):
         self.encoderMsg = encoderMsg()
         self.imuMsg = Imu()
 
-        # param
+    def imuCallback(self, msg):
+        self.imuMsg = msg
 
-        self.doTransform = True
+        if self.init_yaw == 0.0:
 
-        # Value
+            quat = [
+                self.imuMsg.orientation.x,
+                self.imuMsg.orientation.y,
+                self.imuMsg.orientation.z,
+                self.imuMsg.orientation.w,
+            ]
 
-        self.current_time = rospy.Time.now()
-        self.last_time = rospy.Time.now()
-        self.state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
+            _, _, YAW = tf.transformations.euler_from_quaternion(quat)
+            self.init_yaw = YAW
 
     def encoderCallback(self, msg):
         self.encoderMsg = msg
-
-    def imuCallback(self, msg):
-        self.imuMsg = msg
 
     def handleData(self):
 
@@ -104,6 +76,30 @@ class FusionOdometry(object):
 
         return vel, quat
 
+    def update(self):
+        current_time = rospy.Time.now()
+
+        dt = (current_time - last_time).to_sec()
+
+        vel, quat = self.handleData()
+        _, _, yaw = tf.transformations.euler_from_quaternion(quat)
+        yaw = yaw - self.init_yaw
+
+        self.v = vel
+        self.dx = vel * m.cos(yaw)
+        self.dy = vel * m.sin(yaw)
+        self.dyaw = yaw - self.last_yaw
+
+        self.x += self.dx * dt
+        self.y += self.dy * dt
+        self.yaw = yaw
+
+        self.last_x = self.x
+        self.last_y = self.y
+        self.last_yaw = self.yaw
+
+        # print(self.x, self.y)
+
 
 if __name__ == "__main__":
     rospy.init_node("erp42_fusion_odometry")
@@ -111,8 +107,7 @@ if __name__ == "__main__":
     current_time = rospy.Time.now()
     last_time = rospy.Time.now()
 
-    odometry = FusionOdometry()
-    state = FusionState(x=0.0, y=0.0, yaw=0.0, v=0.0, odom=odometry)
+    state = FusionState(x=0.0, y=0.0, yaw=0.0, v=0.0)
 
     odom_pub = rospy.Publisher(
         "/erp42_fusion_odometry", Odometry, queue_size=1)
@@ -139,7 +134,7 @@ if __name__ == "__main__":
             Vector3(0.0, 0.0, state.dyaw)
         )
 
-        if odometry.doTransform is True:
+        if doTransform is True:
             odom_broadcaster.sendTransform(
                 (state.x, state.y, 0.0),
                 state.quat,
