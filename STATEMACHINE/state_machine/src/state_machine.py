@@ -82,7 +82,7 @@ class Machine():
 
         self.Mode = 2
         self.trafficLight = []
-        self.trafficLine = TrafficStopLine(state=self.state)
+        # self.trafficLine = TrafficStopLine(state=self.state)
 
         self.parkingCnt = 0
 
@@ -199,22 +199,22 @@ if __name__ == '__main__':
 
                 machine.Mode = 1
 
-        # # Straight Traffic Mode
-        # if machine.Mode == 5:
-        #     if machine.trafficLine.isEND() is True:
-        #         if isTrafficStraight(machine.trafficLight) is False:
-        #             machine.doBrake(80)
-        #     else:
-        #         machine.global_stanley_node.main()
+        # Straight Traffic Mode
+        if machine.Mode == 5:
+            # if machine.trafficLine.isEND() is True:
+            if isTrafficStraight(machine.trafficLight) is False:
+                machine.doBrake(80)
+            else:
+                machine.global_stanley_node.main()
 
-        # # Left Traffic Mode
-        # if machine.Mode == 6:
-        #     if machine.trafficLine.isEND() is True:
-        #         if isTrafficLeft(machine.trafficLight) is False:
-        #             machine.doBrake(80)
+        # Left Traffic Mode
+        if machine.Mode == 6:
+            # if machine.trafficLine.isEND() is True:
+            if isTrafficLeft(machine.trafficLight) is False:
+                machine.doBrake(80)
 
-        #     else:
-        #         machine.global_stanley_node.main()
+            else:
+                machine.global_stanley_node.main()
 
         if machine.Mode == 7:
             pass

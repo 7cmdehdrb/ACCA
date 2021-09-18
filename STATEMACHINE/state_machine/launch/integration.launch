@@ -4,8 +4,8 @@
     <!-- Param --> 
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
     <param name="odometry_topic" type="str" value="/odom" />
-    <param name="global_path_file" type="str" value="odometry1.csv" />
-    <param name="area_file_name" type="str" value="k_area.csv" />
+    <param name="global_path_file" type="str" value=".csv" />
+    <param name="area_file_name" type="str" value=".csv" />
     <!-- Stanley Control Params -->
     <param name="initial_idx" type="int" value="0" />
     <param name="c_gain" type="double" value="0.15" />
@@ -13,7 +13,8 @@
     <!-- Pure Pursuit Params -->
     <param name="k_gain" type="double" value="-0.5" />
     <!-- Encoder Params -->
-    <param name="p_gain" type="double" value="0.0" />
+    <param name="p_gain" type="double" value="5.0" />
+    <param name="i_err" type="double" value="0.05" />
     <!-- SPEED Settings -->
     <param name="desired_speed" type="double" value="8.0" />
     <param name="parking_speed" type="double" value="4.0" />
@@ -44,9 +45,9 @@
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <!-- <param name="erp_port" type="str" value="/dev/ttyUSB0" /> -->
-    <!-- <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" /> -->
-    <!-- <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
+    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
+    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
+    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
     
     <!-- Localization -->
