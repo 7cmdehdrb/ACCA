@@ -71,7 +71,7 @@ class GlobalStanley(object):
 
         self.last_idx = len(self.path.cx) - 1
         self.target_idx, _ = self.stanley.calc_target_index(
-            self.state, self.path.cx[0:500], self.path.cy[0:500])
+            self.state, self.path.cx[:500], self.path.cy[:500])
 
         if initial_idx != 0:
             self.target_idx = initial_idx

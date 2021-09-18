@@ -41,6 +41,7 @@ class control():
         self.feedback_encoder = 0
         self.i_err = rospy.get_param("i_err", 0.0)
         self.p_gain = rospy.get_param("p_gain", 0.0)
+        self.steer_offset = rospy.get_param("steer_offset", -1.2)
 
         """
             Encoder variable
@@ -229,7 +230,7 @@ class control():
         distance = msg.data
 
         if distance < 3.0:
-            self.distance_ratio = (1 / 3) * distance
+            self.distance_ratio = (1.0 / 3.0) * distance
         else:
             self.distance_ratio = 1.0
 
@@ -272,12 +273,12 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
 
         sp = mycar.control_msg.speed
-        st = m.degrees(mycar.control_msg.steer)
+        st = m.degrees(mycar.control_msg.steer) + mycar.steer_offset
         br = int(mycar.control_msg.brake)
 
         # print(sp, st, br)
 
-        mycar.send_data(SPEED=sp, STEER=st-1.2, BRAKE=br, GEAR=2)
+        mycar.send_data(SPEED=sp, STEER=st, BRAKE=br, GEAR=2)
 
         rate.sleep()
 

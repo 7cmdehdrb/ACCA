@@ -21,8 +21,8 @@ class Stanley(object):
         self.doPublish = False
 
         self.L = 1.040  # [m] Wheel base of vehicle
-        self.k = rospy.get_param("/c_gain", 100000.0)  # control gain
-        self.hdr_ratio = rospy.get_param("/hdr_ratio", 1.0)
+        self.k = rospy.get_param("/c_gain", 0.1)  # control gain
+        self.hdr_ratio = rospy.get_param("/hdr_ratio", 0.8)
 
         self.hdr = 0.0
         self.ctr = 0.0

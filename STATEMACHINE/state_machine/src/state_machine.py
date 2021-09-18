@@ -26,7 +26,8 @@ PARKING_WAIT_TIME = 5
 try:
     sys.path.insert(0, str(ACCA_FOLDER) + "/path_planner/src")
     from global_stanley import GlobalStanley
-    from selectTraffic import isTrafficLeft, isTrafficStraight, TrafficStopLine
+    from selectTraffic import isTrafficLeft, isTrafficStraight
+    from path_switcher import PathSwitcher
 except ImportError as ie:
     print("PATH PLANNER IMPORT ERROR")
     print(ie)
@@ -79,8 +80,10 @@ class Machine():
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
         self.parking_node = Parking(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
+        self.path_switcher_node = PathSwitcher(
+            state=self.state, cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, file_name="")
 
-        self.Mode = 2
+        self.Mode = 0
         self.trafficLight = []
         # self.trafficLine = TrafficStopLine(state=self.state)
 
@@ -89,8 +92,8 @@ class Machine():
     def stateCallback(self, msg):
         data = msg.data
 
-        # if data != -1:
-        #     self.Mode = data
+        if data != -1:
+            self.Mode = data
 
     def trafficLightCallback(self, msg):
         data = msg.data
@@ -124,7 +127,7 @@ if __name__ == '__main__':
                      machine.trafficLightCallback)
     rospy.Subscriber("/ob_TF", obTF, machine.estop_node.dynamicCallback)
 
-    rate = rospy.Rate(30.0)
+    rate = rospy.Rate(50.0)
 
     while not rospy.is_shutdown():
 
@@ -144,41 +147,41 @@ if __name__ == '__main__':
             # machine.global_stanley_node.main()
             pass
 
-        if machine.Mode == 1:
+        elif machine.Mode == 1:
             machine.global_stanley_node.main()
 
         # Static Obstacle Mode
-        if machine.Mode == 2:
-            machine.static_ob_node.start_point = [
-                machine.state.x, machine.state.y]
+        # elif machine.Mode == 2:
+        #     machine.static_ob_node.start_point = [
+        #         machine.state.x, machine.state.y]
 
-            while not rospy.is_shutdown():
+        #     while not rospy.is_shutdown():
 
-                find_goal = machine.static_ob_node.main()
+        #         find_goal = machine.static_ob_node.main()
 
-                if find_goal is not True:
-                    # print("NO PATH!")
-                    machine.global_stanley_node.main()
+        #         if find_goal is not True:
+        #             # print("NO PATH!")
+        #             machine.global_stanley_node.main()
 
-                if machine.Mode != 2:
-                    break
+        #         if machine.Mode != 2:
+        #             break
 
-                rate.sleep()
+        #         rate.sleep()
 
         # Dynamic Obstacle Mode
-        if machine.Mode == 3:
-            machine.global_stanley_node.setDesiredSpeed(DYNAMIC_SPEED)
-            machine.estop_node.main()
+        # elif machine.Mode == 3:
+        #     machine.global_stanley_node.setDesiredSpeed(DYNAMIC_SPEED)
+        #     machine.estop_node.main()
 
-            if machine.state.EStop is True:
-                machine.doEStop()
-            else:
-                machine.global_stanley_node.main()
+        #     if machine.state.EStop is True:
+        #         machine.doEStop()
+        #     else:
+        #         machine.global_stanley_node.main()
 
-            machine.global_stanley_node.setDesiredSpeed(GLOBAL_SPEED)
+        #     machine.global_stanley_node.setDesiredSpeed(GLOBAL_SPEED)
 
         # Parking Mode
-        if machine.Mode == 4:
+        elif machine.Mode == 4:
             if machine.state.parkingFlag is True:
                 machine.parking_node.main()
 
@@ -200,27 +203,32 @@ if __name__ == '__main__':
                 machine.Mode = 1
 
         # Straight Traffic Mode
-        if machine.Mode == 5:
-            # if machine.trafficLine.isEND() is True:
+        elif machine.Mode == 5:
             if isTrafficStraight(machine.trafficLight) is False:
                 machine.doBrake(80)
             else:
                 machine.global_stanley_node.main()
 
         # Left Traffic Mode
-        if machine.Mode == 6:
-            # if machine.trafficLine.isEND() is True:
+        elif machine.Mode == 6:
             if isTrafficLeft(machine.trafficLight) is False:
                 machine.doBrake(80)
 
             else:
                 machine.global_stanley_node.main()
 
-        if machine.Mode == 7:
+        elif machine.Mode == 7:
             pass
 
-        if machine.Mode == 8:
+        elif machine.Mode == 8:
             pass
+
+        # Static - main
+        elif machine.Mode == 2:
+            machine.path_switcher_node.main()
+
+        else:
+            rospy.loginfo("INVALID STATE")
 
         # print(machine.cmd_msg)
 

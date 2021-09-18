@@ -15,6 +15,7 @@
     <!-- Encoder Params -->
     <param name="p_gain" type="double" value="5.0" />
     <param name="i_err" type="double" value="0.05" />
+    <param name="steer_offset" type="double" value="-1.2" />
     <!-- SPEED Settings -->
     <param name="desired_speed" type="double" value="8.0" />
     <param name="parking_speed" type="double" value="4.0" />
@@ -22,6 +23,11 @@
     <param name="backward_speed" type="double" value="3.0" />
     <!-- Static Obstacle Params -->
     <param name="distance_gap" type="double" value="1.5" />
+    <param name="threshold_range" type="double" value="5.0" />
+    <!-- Path Switcher Params -->
+    <param name="errTolerance_HDR" type="double" value="0.1" />
+    <param name="errTolerance_CTR" type="double" value="0.01" />
+    <param name="switching_c_gain" type="double" value="1.5" />
     <!-- Parking Params -->
     <param name="max_steer" type="double" value="30.0" />
     <param name="save_parking" type="bool" value="false" />

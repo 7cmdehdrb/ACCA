@@ -29,7 +29,7 @@ except Exception as ex:
 
 
 class PathSwitcher(object):
-    def __init__(self, state, cmd_pub, cmd_msg=stanleyMsg(), file_name="path"):
+    def __init__(self, state, cmd_pub, cmd_msg, file_name="path"):
 
         self.paths = []
         self.file_name = file_name
@@ -54,8 +54,10 @@ class PathSwitcher(object):
         self.current_path_idx = -1
         self.current_path = None
         self.is_doing_switching = False
-        self.errTolerance_HDR = 0.1
-        self.errTolerance_CTR = 0.01
+        self.errTolerance_HDR = rospy.get_param("errTolerance_HDR", 0.1)
+        self.errTolerance_CTR = rospy.get_param("errTolerance_CTR", 0.01)
+        self.switching_c_gain = rospy.get_param("switching_c_gain", 1.5)
+
         self.changeTime = rospy.Time.now()
 
         self.speed = rospy.get_param("/desired_speed", 2.0)
@@ -126,6 +128,8 @@ class PathSwitcher(object):
 
                 self.current_path.pathPublish(pub=self.path_pub)
 
+                self.stanley.setCGain(self.switching_c_gain)
+
                 self.is_doing_switching = True
 
         except ValueError:
@@ -145,16 +149,17 @@ class PathSwitcher(object):
             if gap < 1.0:
                 return
 
-            hdr = self.stanley.getHDR()
-            ctr = self.stanley.getCTR()
+            # hdr = self.stanley.getHDR()
+            # ctr = self.stanley.getCTR()
 
-            # (-0.33111521135259675, 0.00355392724477499) =>
-            # (-0.05175765554117815, 0.0003130744525169138)
-
-            print(hdr, ctr)
+            # print(hdr, ctr)
 
             if abs(hdr) < self.errTolerance_HDR and abs(ctr) < self.errTolerance_CTR:
                 self.changeTime = rospy.Time.now()
+
+                c_gain = rospy.get_param("/c_gain", 0.1)
+                self.stanley.setCGain(float(c_gain))
+
                 self.is_doing_switching = False
 
         else:
@@ -179,11 +184,6 @@ class PathSwitcher(object):
 
     def main(self):
         self.isDoingSwitching()
-
-        # hdr = self.stanley.getHDR()
-        # ctr = self.stanley.getCTR()
-
-        # print(hdr, ctr)
 
         di, self.target_idx = self.stanley.stanley_control(
             self.state, self.current_path.cx, self.current_path.cy, self.current_path.cyaw, self.target_idx
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     path_switcher = PathSwitcher(
         state=state, cmd_pub=cmd_pub, file_name="test_path")
 
-    r = rospy.Rate(100.0)
+    r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
         path_switcher.main()
         r.sleep
