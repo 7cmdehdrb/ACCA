@@ -43,7 +43,7 @@ class FakeOdometry(erp42):
         )
 
         odom.header.stamp = self.currentTime
-        odom.header.frame_id = "map"
+        odom.header.frame_id = "odom"
         odom.child_frame_id = "base_link"
 
         odom.pose.pose = Pose(Point(self.x, self.y, 0.0),
@@ -85,10 +85,14 @@ class FakeOdometry(erp42):
 if __name__ == "__main__":
     rospy.init_node("fake_odometry")
 
+    _, _, yaw = tf.transformations.euler_from_quaternion(
+        [0.0, 0.0, 0.74161089767, 0.670830288864])
+
     # fake_odom = FakeOdometry(x=-7.487, y=-5.565, yaw=-2.182, v=0.0)
-    # fake_odom = FakeOdometry(x=-0.0, y=-0.0, yaw=-2.33, v=0.1)
-    fake_odom = FakeOdometry(-7.3254506274086735, -
-                             8.26976220919032, -2.33271992886, 0.0)
+    fake_odom = FakeOdometry(
+        x=0.932420730591, y=0.035516500473, yaw=yaw, v=0.0)
+    # fake_odom = FakeOdometry(-7.3254506274086735, -
+    #                          8.26976220919032, -2.33271992886, 0.0)
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()
