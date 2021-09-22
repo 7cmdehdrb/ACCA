@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import rospy
 import rospkg
 import csv
@@ -10,14 +11,19 @@ import threading
 from std_msgs.msg import Int32MultiArray, Empty
 from geometry_msgs.msg import PoseArray, Pose, Polygon, Point32, PoseStamped
 from visualization_msgs.msg import Marker, MarkerArray
+from nav_msgs.msg import Path
 
-# try:
-#     sys.path.insert(0, "/home/acca/catkin_ws/src/utils")
-#     from util_class import Obstacle, Map
-# except Exception as ex:
-#     print("UTIL CLASS IMPORT ERROR")
-#     print(ex)
 
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+
+
+try:
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils/")
+    from loadPose import LoadPose
+except ImportError as ie:
+    print("UTIL IMPORT ERROR")
+    print(ie)
+    sys.exit()
 
 """
 
@@ -38,7 +44,6 @@ def checkIsInParking(obstacle, box):
     dist = np.hypot(box.x - obstacle.x, box.y - obstacle.y)
 
     if dist == 0.0:
-        print("HELLO")
         return True
 
     area_VEC = np.array([
@@ -323,6 +328,9 @@ if __name__ == "__main__":
         th = threading.Thread(target=caryn.saveParking)
         th.start()
 
+        lp = LoadPose(file_name="kcity_parking2.csv")
+        tpub = rospy.Publisher("test_parking", Path, queue_size=10)
+
     else:
         rospy.loginfo("RUNNING LOAD MODE")
         caryn.loadParking()
@@ -338,6 +346,7 @@ if __name__ == "__main__":
 
         # caryn.publishObstacle(publisher=obstacle_pub) # TEST
 
-        print(data.data)
+        # print(data.data)
+        # lp.pathPublish(pub=tpub)
 
         r.sleep()

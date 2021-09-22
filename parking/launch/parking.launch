@@ -3,9 +3,9 @@
     <!-- Sensors -->
     
     <!-- IMU -->
-    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+    <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
         <arg name="port" value="/dev/ttyUSB1" />
-    </include>
+    </include> -->
     
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
@@ -14,18 +14,18 @@
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
-    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
+    <!-- <param name="erp_port" type="str" value="/dev/ttyUSB0" /> -->
+    <!-- <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" /> -->
     <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" /> -->
 
     <!-- Parking --> 
     <node name="parking_selection" pkg="parking" type="parking_selection.py" output="screen" />
-    <node name="parking" pkg="parking" type="parking.py" output="screen" />
+    <!-- <node name="parking" pkg="parking" type="parking.py" output="screen" /> -->
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
-        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+        <arg name="map_file" value="$(find hdl_localization)/data/KCityMap.pcd" /> 
     </include>
 
     <!-- Model -->

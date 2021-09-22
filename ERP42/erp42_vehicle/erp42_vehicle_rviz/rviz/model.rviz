@@ -6,12 +6,9 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Frames1
-        - /TF1/Tree1/map1
-        - /TF1/Tree1/map1/odom1
         - /Odometry1
         - /Odometry1/Shape1
         - /Odometry2
-        - /Odometry2/Status1
         - /Odometry2/Shape1
         - /Odometry3
         - /Odometry3/Shape1
@@ -553,16 +550,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 88.17191314697266
+      Distance: 117.6278076171875
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -26.107913970947266
-        Y: -9.24333381652832
-        Z: -13.112415313720703
+        X: -9.486513137817383
+        Y: -37.17228698730469
+        Z: -11.558923721313477
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
@@ -571,7 +568,7 @@ Visualization Manager:
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.8209100961685181
+      Yaw: 1.1890956163406372
     Saved: ~
 Window Geometry:
   Displays:
