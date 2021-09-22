@@ -81,7 +81,7 @@ class Machine():
         self.parking_node = Parking(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
         self.path_switcher_node = PathSwitcher(
-            state=self.state, cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, file_name="")
+            state=self.state, cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, file_name="kcity_staticpath")
 
         self.Mode = 0
         self.trafficLight = []
@@ -231,5 +231,5 @@ if __name__ == '__main__':
             rospy.loginfo("INVALID STATE")
 
         # print(machine.cmd_msg)
-
+        # print(machine.global_stanley_node.)
         rate.sleep()

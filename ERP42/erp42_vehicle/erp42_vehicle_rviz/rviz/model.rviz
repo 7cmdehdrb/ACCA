@@ -6,14 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Frames1
-        - /TF1/Tree1/map1
-        - /TF1/Tree1/map1/odom1
-        - /Odometry1
         - /Odometry1/Shape1
-        - /Odometry2
-        - /Odometry2/Status1
         - /Odometry2/Shape1
-        - /Odometry3
         - /Odometry3/Shape1
       Splitter Ratio: 0.6997166872024536
     Tree Height: 796
@@ -143,27 +137,9 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: false
-        front_left_steer_link:
-          Value: true
-        front_left_wheel_link:
-          Value: true
-        front_right_steer_link:
-          Value: true
-        front_right_wheel_link:
-          Value: true
-        front_steer_link:
-          Value: true
         imu_link:
           Value: false
-        map:
-          Value: true
         odom:
-          Value: true
-        rear_left_wheel_link:
-          Value: true
-        rear_right_wheel_link:
-          Value: true
-        rear_wheel_link:
           Value: true
         velodyne:
           Value: false
@@ -175,28 +151,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_link:
-              front_left_steer_link:
-                front_left_wheel_link:
-                  {}
-              front_right_steer_link:
-                front_right_wheel_link:
-                  {}
-              front_steer_link:
-                {}
-              imu_link:
-                {}
-              rear_left_wheel_link:
-                {}
-              rear_right_wheel_link:
-                {}
-              rear_wheel_link:
-                {}
-              velodyne_base_link:
-                velodyne:
-                  {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -214,7 +169,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 100
+      Max Intensity: 135
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
@@ -368,7 +323,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 0
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -384,7 +339,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Arrow Length: 0.30000001192092896
       Axes Length: 0.30000001192092896
@@ -474,7 +429,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: false
-      Enabled: true
+      Enabled: false
       Keep: 0
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -490,7 +445,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /odometry/filtered
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -508,7 +463,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: false
-      Enabled: true
+      Enabled: false
       Keep: 0
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -524,7 +479,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /erp42_fusion_odometry
       Unreliable: false
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 200; 200; 200
@@ -553,16 +508,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 88.17191314697266
+      Distance: 181.28414916992188
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -26.107913970947266
-        Y: -9.24333381652832
-        Z: -13.112415313720703
+        X: -79.53485870361328
+        Y: -217.84994506835938
+        Z: -12.897139549255371
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
@@ -571,7 +526,7 @@ Visualization Manager:
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.8209100961685181
+      Yaw: 1.2959096431732178
     Saved: ~
 Window Geometry:
   Displays:
