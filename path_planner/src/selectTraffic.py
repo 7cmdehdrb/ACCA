@@ -102,7 +102,7 @@ def isTrafficLeft(traffic=[]):
         if left is True:
             return True
 
-        if straight is True and left if False:
+        if straight is True and left is False:
             return False
 
         # if straight is True and left is False:

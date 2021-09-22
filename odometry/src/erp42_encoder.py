@@ -153,7 +153,7 @@ class control():
 
     def PIControl(self, currentSpeed, desiredSpeed, brake):
         if desiredSpeed < 0.0:
-            return desiredSpeed
+            return desiredSpeed, brake
 
         if brake != 1:
             return desiredSpeed, brake

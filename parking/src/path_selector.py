@@ -37,7 +37,7 @@ class PathSelector(object):
 
         for i in range(self.len):
             try:
-                f = "parking_path" + str(i) + ".csv"
+                f = "kcity_parking" + str(i) + ".csv"
                 self.pathArray.append(LoadPose(file_name=f))
             except IOError as ioe:
                 self.pathArrsave_file_nameay.append(
