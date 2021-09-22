@@ -6,6 +6,7 @@ import time as t
 from std_msgs.msg import Int32MultiArray
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+PARKING_PATH_FILE = rospy.get_param("/parking_path", "parking_path")
 
 
 try:
@@ -37,7 +38,7 @@ class PathSelector(object):
 
         for i in range(self.len):
             try:
-                f = "kcity_parking" + str(i) + ".csv"
+                f = str(PARKING_PATH_FILE) + str(i) + ".csv"
                 self.pathArray.append(LoadPose(file_name=f))
             except IOError as ioe:
                 self.pathArrsave_file_nameay.append(

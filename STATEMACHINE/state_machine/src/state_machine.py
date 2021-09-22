@@ -21,12 +21,13 @@ BACKWARD_SPEED = rospy.get_param("/backward_speed", 1.0)
 
 WB = 1.040
 PARKING_WAIT_TIME = 5
+DELIVERY_WAIT_TIME = 5
 
 
 try:
     sys.path.insert(0, str(ACCA_FOLDER) + "/path_planner/src")
     from global_stanley import GlobalStanley
-    from selectTraffic import isTrafficLeft, isTrafficStraight
+    from selectTraffic import isTrafficLeft2, isTrafficStraight2
     from path_switcher import PathSwitcher
 except ImportError as ie:
     print("PATH PLANNER IMPORT ERROR")
@@ -60,6 +61,15 @@ except ImportError as ie:
     sys.exit()
 
 
+try:
+    sys.path.insert(0, str(ACCA_FOLDER) + "/delivery/src")
+    from deliveryPy import Delivery
+except ImportError as ie:
+    print("DELIVERY IMPORT ERROR")
+    print(ie)
+    sys.exit()
+
+
 class Machine():
     def __init__(self):
         self.cmd_pub = rospy.Publisher(
@@ -83,11 +93,17 @@ class Machine():
         self.path_switcher_node = PathSwitcher(
             state=self.state, cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, file_name="kcity_staticpath")
 
+        self.delivery_A_node = Delivery(
+            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryA.csv")
+        self.delivery_B_node = Delivery(
+            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryB.csv")
+
         self.Mode = 0
-        self.trafficLight = []
+        self.trafficLight = 0
         # self.trafficLine = TrafficStopLine(state=self.state)
 
         self.parkingCnt = 0
+        self.deliveryCnt = 0
 
     def stateCallback(self, msg):
         data = msg.data
@@ -102,15 +118,28 @@ class Machine():
 
         self.trafficLight = data
 
+    def resetDelivery(self):
+        self.delivery_A_node.reset()
+        self.delivery_B_node.reset()
+
+        self.deliveryCnt = 0
+        self.Mode = 1
+
+        print("DELIVERY RESET")
+
     def doEStop(self):
         self.cmd_msg.speed = 0.0
         self.cmd_msg.brake = 200
+
+        # print(self.cmd_msg)
 
         self.cmd_pub.publish(self.cmd_msg)
 
     def doBrake(self, value):
         self.cmd_msg.speed = 0.0
         self.cmd_msg.brake = int(value)
+
+        # print(self.cmd_msg)
 
         self.cmd_pub.publish(self.cmd_msg)
 
@@ -123,7 +152,7 @@ if __name__ == '__main__':
 
     rospy.Subscriber(ODOMETRY_TOPIC, Odometry, machine.state.odometryCallback)
     rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
-    rospy.Subscriber("/traffic_light", Int32MultiArray,
+    rospy.Subscriber("/traffic_light", Int32,
                      machine.trafficLightCallback)
     rospy.Subscriber("/ob_TF", obTF, machine.estop_node.dynamicCallback)
 
@@ -140,15 +169,17 @@ if __name__ == '__main__':
 
     while not rospy.is_shutdown():
 
-        print(machine.Mode)
+        # print(machine.Mode)
+        machine.global_stanley_node.main()
+        machine.global_stanley_node.doPublishingMsg = False
 
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
-            # machine.global_stanley_node.main()
-            pass
+            machine.global_stanley_node.doPublishingMsg = True
+            # pass
 
         elif machine.Mode == 1:
-            machine.global_stanley_node.main()
+            machine.global_stanley_node.doPublishingMsg = True
 
         # Static Obstacle Mode
         # elif machine.Mode == 2:
@@ -187,7 +218,8 @@ if __name__ == '__main__':
 
             else:
 
-                while machine.parkingCnt < 30.0 * PARKING_WAIT_TIME and not rospy.is_shutdown():
+                while machine.parkingCnt < 50.0 * PARKING_WAIT_TIME and not rospy.is_shutdown():
+                    machine.doBrake(100)
                     machine.parkingCnt += 1
                     rate.sleep()
 
@@ -195,7 +227,7 @@ if __name__ == '__main__':
                     print("GO BACK")
                     machine.parking_node.goBack(speed=BACKWARD_SPEED)
 
-                    while machine.parkingCnt < 30.0 * (PARKING_WAIT_TIME + 3) and not rospy.is_shutdown():
+                    while machine.parkingCnt < 50.0 * (PARKING_WAIT_TIME + 3) and not rospy.is_shutdown():
                         machine.doBrake(50)
                         machine.parkingCnt += 1
                         rate.sleep()
@@ -204,24 +236,43 @@ if __name__ == '__main__':
 
         # Straight Traffic Mode
         elif machine.Mode == 5:
-            if isTrafficStraight(machine.trafficLight) is False:
+            if isTrafficStraight2(machine.trafficLight) is False:
                 machine.doBrake(80)
             else:
-                machine.global_stanley_node.main()
+                machine.global_stanley_node.doPublishingMsg = True
+                # machine.global_stanley_node.main()
 
         # Left Traffic Mode
         elif machine.Mode == 6:
-            if isTrafficLeft(machine.trafficLight) is False:
+            if isTrafficLeft2(machine.trafficLight) is False:
                 machine.doBrake(80)
 
             else:
-                machine.global_stanley_node.main()
+                machine.global_stanley_node.doPublishingMsg = True
+                # machine.global_stanley_node.main()
 
         elif machine.Mode == 7:
-            pass
+            machine.delivery_A_node.main()
+            # print(machine.delivery_A_node.target_idx)
+
+            if machine.delivery_A_node.isEnd is True:
+                while machine.deliveryCnt < 30.0 * DELIVERY_WAIT_TIME and not rospy.is_shutdown():
+                    machine.doBrake(99)
+                    machine.deliveryCnt += 1
+                    rate.sleep()
+
+                machine.resetDelivery()
 
         elif machine.Mode == 8:
-            pass
+            machine.delivery_B_node.main()
+
+            if machine.delivery_B_node.isEnd is True:
+                while machine.deliveryCnt < 30.0 * DELIVERY_WAIT_TIME and not rospy.is_shutdown():
+                    machine.doBrake(99)
+                    machine.deliveryCnt += 1
+                    rate.sleep()
+
+                machine.resetDelivery()
 
         # Static - main
         elif machine.Mode == 2:
@@ -231,5 +282,7 @@ if __name__ == '__main__':
             rospy.loginfo("INVALID STATE")
 
         # print(machine.cmd_msg)
-        # print(machine.global_stanley_node.)
+        # print("idx: " + str(machine.global_stanley_node.target_idx))
+        # print("mode: " + str(machine.Mode))
+
         rate.sleep()

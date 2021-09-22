@@ -112,3 +112,23 @@ def isTrafficLeft(traffic=[]):
         return False
 
     return True
+
+
+def isTrafficLeft2(idx):
+    if idx == 0:
+        return True
+
+    if idx == 1303 or 1305 or 1403 or 1405:
+        return True
+
+    return False
+
+
+def isTrafficStraight2(idx):
+    if idx == 0:
+        return True
+
+    if idx == 1300 or 1400 or 1405:
+        return True
+
+    return False

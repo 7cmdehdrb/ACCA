@@ -2,8 +2,8 @@
 
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
     <param name="odometry_topic" type="str" value="/fake_odom" />
-    <param name="area_file_name" type="str" value="k_main_area.csv" />
-    <param name="save_area" type="bool" value="false" />
+    <param name="area_file_name" type="str" value="deliveryTestArea.csv" />
+    <param name="save_area" type="bool" value="true" />
 
     <!-- 
         0: LANE
@@ -29,12 +29,14 @@
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
-        <arg name="map_file" value="$(find hdl_localization)/data/KCityMap.pcd" /> 
+        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
     </include>
 
 
     <!-- Model -->
-    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch">
+        <arg name="rvizconfig" value="/home/acca/model.rviz" />
+    </include>
 
     <!-- Test -->
     <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" />

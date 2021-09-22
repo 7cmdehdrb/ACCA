@@ -7,7 +7,7 @@ import tf
 import math as m
 import numpy as np
 from nav_msgs.msg import Odometry, Path
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseStamped
 from path_planner.msg import stanleyMsg
 
 
@@ -65,9 +65,15 @@ class GlobalStanley(object):
 
         self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_publisher
+        self.doPublishingMsg = True
+
+        self.goal_msg = PoseStamped()
+        self.goal_msg.header.frame_id = "map"
 
         self.path_pub = rospy.Publisher(
             "/cublic_global_path", Path, queue_size=1)
+        self.goal_pub = rospy.Publisher(
+            "/global_goal", PoseStamped, queue_size=5)
 
         self.last_idx = len(self.path.cx) - 1
         self.target_idx, _ = self.stanley.calc_target_index(
@@ -91,18 +97,33 @@ class GlobalStanley(object):
         speed, brake = self.checkGoal(
             last_idx=self.last_idx, current_idx=self.target_idx)
 
-        self.cmd_msg.speed = speed
-        self.cmd_msg.steer = -di
-        self.cmd_msg.brake = brake
+        if self.doPublishingMsg is True:
 
-        self.cmd_pub.publish(self.cmd_msg)
+            self.cmd_msg.speed = speed
+            self.cmd_msg.steer = -di
+            self.cmd_msg.brake = brake
+
+            self.cmd_pub.publish(self.cmd_msg)
 
         if self.pubFlag is True:
             # self.path.load.pathPublish(pub=self.path_pub)
             self.load.pathPublish(pub=self.path_pub)
             self.pubFlag = False
 
-        # print(self.cmd_msg)
+        self.goal_msg.header.stamp = rospy.Time.now()
+
+        self.goal_msg.pose.position.x = self.path.cx[self.target_idx]
+        self.goal_msg.pose.position.y = self.path.cy[self.target_idx]
+
+        quat = tf.transformations.quaternion_from_euler(
+            0.0, 0.0, self.path.cyaw[self.target_idx])
+
+        self.goal_msg.pose.orientation.x = quat[0]
+        self.goal_msg.pose.orientation.y = quat[1]
+        self.goal_msg.pose.orientation.z = quat[2]
+        self.goal_msg.pose.orientation.w = quat[3]
+
+        self.goal_pub.publish(self.goal_msg)
 
     def checkGoal(self, last_idx, current_idx):
         temp_speed = 0.0

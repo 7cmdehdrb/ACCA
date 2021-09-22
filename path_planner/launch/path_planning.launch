@@ -2,7 +2,7 @@
 
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
     <param name="odometry_topic" type="str" value="/fake_odom" />
-    <param name="save_file_name" type="str" value="test_path1.csv"></param>
+    <param name="save_file_name" type="str" value="deliveryB.csv"></param>
     <param name="save_parking" type="bool" value="true" />
 
     <!-- Sensors -->
@@ -26,7 +26,9 @@
 
 
     <!-- Model -->
-    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch">
+        <arg name="rvizconfig" value="/home/acca/model.rviz" />
+    </include>
 
     <!-- Test -->
     <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" />

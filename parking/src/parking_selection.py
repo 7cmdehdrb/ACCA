@@ -15,7 +15,7 @@ from nav_msgs.msg import Path
 
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
-
+PARKING_AREA_FILE = rospy.get_param("/parking_area", "parking.csv")
 
 try:
     sys.path.insert(0, str(ACCA_FOLDER) + "/utils/")
@@ -258,7 +258,7 @@ class CarYN(object):
         rospy.loginfo("TRYING TO SAVE PARKING...")
 
         output_file_path = rospkg.RosPack().get_path(
-            'parking')+"/saved_data/parking.csv"
+            'parking')+"/saved_data/" + PARKING_AREA_FILE
 
         with open(output_file_path, 'w') as csvfile:
             for box in self.boxes:
@@ -283,7 +283,7 @@ class CarYN(object):
 
     def loadParking(self):
         output_file_path = rospkg.RosPack().get_path(
-            'parking')+"/saved_data/parking.csv"
+            'parking')+"/saved_data/" + PARKING_AREA_FILE
 
         rospy.loginfo("LOADING CSV FILE...")
         with open(output_file_path, "r") as csvFile:
