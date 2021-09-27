@@ -1,0 +1,24 @@
+<launch>
+
+    <arg name="project" default="lio_sam"/>
+    
+    <!-- Parameters -->
+    <rosparam file="$(find lio_sam)/config/params.yaml" command="load" />
+
+    <!--- LOAM -->
+    <include file="$(find lio_sam)/launch/include/module_loam.launch" />
+
+    <!--- Robot State TF -->
+    <include file="$(find lio_sam)/launch/include/module_robot_state_publisher.launch" />
+
+    <!--- Run Navsat -->
+    <include file="$(find lio_sam)/launch/include/module_navsat.launch" />
+
+    <!--- Run Rviz-->
+    <!-- <include file="$(find lio_sam)/launch/include/module_rviz.launch" /> -->
+
+    <!-- <node pkg="tf" type="static_transform_publisher" name="base_odom_broadcaster" args="0 0 0 0 0 0 odom base_link 10"/>
+    <node pkg="tf" type="static_transform_publisher" name="map_odom_broadcaster" args="0 0 0 0 0 0 map odom 10"/> -->
+     
+
+</launch>

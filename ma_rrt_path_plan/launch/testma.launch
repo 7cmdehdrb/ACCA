@@ -1,0 +1,12 @@
+<launch>
+    <node pkg="ma_rrt_path_plan" type="main.py" name="ma_rrt_path_plan_node" output="screen">
+        <param name="desiredWaypointsFrequency" value="10" type="int" />
+        <param name="odom_topic" value="/lio_sam/mapping/odometry_incremental"/>
+        <!-- <param name="odom_topic" value="odometry/filtered"/> -->
+        <param name="world_frame" value="odom"/>
+        <param name="publishWaypoints" type="bool" value="true" />
+    </node>
+
+    <!-- <node pkg="cone_tracker" type="pathplan.py" name="cone_path" /> -->
+    <!-- <node pkg="cone_tracker" type="coneloop.py" name="cone_odom" /> -->
+</launch>
