@@ -3,19 +3,12 @@
     <!-- Param --> 
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
     <param name="odometry_topic" type="str" value="/odom" />
-<<<<<<< HEAD
-    <param name="global_path_file" type="str" value="k_path.csv" />
-    <param name="area_file_name" type="str" value="k_area.csv" />
-=======
     <param name="global_path_file" type="str" value="kcity_main_path.csv" />
     <param name="area_file_name" type="str" value="k_main_area.csv" />
->>>>>>> switcher
     <!-- Stanley Control Params -->
     <param name="initial_idx" type="int" value="14000" />
     <param name="c_gain" type="double" value="0.18" />
     <param name="hdr_ratio" type="double" value="0.70" />
-    <!-- Pure Pursuit Params -->
-    <param name="k_gain" type="double" value="-0.5" />
     <!-- Encoder Params -->
     <param name="p_gain" type="double" value="1.0" />
     <param name="i_err" type="double" value="0.05" />
@@ -33,13 +26,17 @@
     <param name="errTolerance_HDR" type="double" value="0.1" />
     <param name="errTolerance_CTR" type="double" value="0.01" />
     <param name="switching_c_gain" type="double" value="1.5" />
+    <param name="switcher_path" type="str" value="kcity_staticpath" />
     <!-- Parking Params -->
     <param name="parking_area" type="str" value="k_parking2.csv" />
     <param name="parking_path" type="str" value="kcity_parking" />
-    <param name="save_parking" type="bool" value="false" />
     <param name="backward_distance" type="double" value="6.0" />
+    <!-- DELIVERY PARAMS -->
+    <param name="delivery_A" type="str" value="deliveryA3.csv" />
+    <param name="delivery_B" type="str" value="deliveryB_K.csv" />
     <!-- ETC -->
-    <param name="max_steer" type="double" value="30.0" />
+    <param name="max_steer" type="double" value="26.0" />
+    <param name="save_parking" type="bool" value="false" />
     <param name="save_area" type="bool" value="false" />
     
     <!-- Sensors -->

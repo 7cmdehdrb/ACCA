@@ -37,15 +37,24 @@ class LoadPose(object):
         output_file_path = rospkg.RosPack().get_path('path_planner') + \
             "/saved_path/" + str(self.file_name)
 
-        rospy.loginfo("LOADING CSV FILE...")
+        text = "LOADING <"
+        text += str(self.file_name)
+        text += "> ......"
+
+        cnt = 0
+
+        rospy.loginfo(text)
         with open(output_file_path, "r") as csvFile:
             reader = csv.reader(csvFile, delimiter=",")
             for row in reader:
                 self.cx.append(float(row[0]))
                 self.cy.append(float(row[1]))
                 self.cyaw.append(float(row[2]))
+                cnt += 1
 
         rospy.loginfo("LOADING FINISHED")
+        rospy.loginfo("LOAD " + str(cnt) + " LINE")
+        rospy.loginfo("")
 
     def pathPublish(self, pub):
         msg = Path()
@@ -75,4 +84,5 @@ class LoadPose(object):
 
             msg.poses.append(pose)
 
+        # for i in range(5):
         pub.publish(msg)

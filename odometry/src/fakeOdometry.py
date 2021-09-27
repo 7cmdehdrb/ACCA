@@ -89,12 +89,12 @@ if __name__ == "__main__":
         [0.0, 0.0, 0.74161089767, 0.670830288864])
 
     # (x=-7.487, y=-5.565, yaw=-2.182, v=0.0)
-    fake_odom = FakeOdometry(x=-62.46763773539315,
-                             y=-13.191812771617606, yaw=2.35560702892, v=0.0)
+    # fake_odom = FakeOdometry(x=-62.46763773539315,
+    #                          y=-13.191812771617606, yaw=2.35560702892, v=0.0)
     # fake_odom = FakeOdometry(
     #     x=0.932420730591, y=0.035516500473, yaw=yaw, v=0.0)
-    # fake_odom = FakeOdometry(-7.3254506274086735, -
-    #                          8.26976220919032, -2.33271992886, 0.0)
+    fake_odom = FakeOdometry(-7.3254506274086735, -
+                             8.26976220919032, -2.33271992886, 0.0)
 
     odom_pub = rospy.Publisher("/fake_odom", Odometry, queue_size=1)
     odom_broadcaster = tf.TransformBroadcaster()

@@ -61,8 +61,8 @@ class Parking(object):
         self.state = state
         self.stanley = Stanley()
 
-        self.stanley.k = 0.15
-        self.stanley.hdr_ratio = 0.7
+        # self.stanley.k = 0.15
+        # self.stanley.hdr_ratio = 0.7
 
         self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_publisher

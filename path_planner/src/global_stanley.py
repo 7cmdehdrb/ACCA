@@ -17,7 +17,7 @@ ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 max_steer = rospy.get_param("/max_steer", 30.0)  # DEG
 initial_idx = int(rospy.get_param("/initial_idx", 0))
 
-global_path_file = rospy.get_param("/global_path_file", "path.csv")
+global_path_file = rospy.get_param("/global_path_file", "odometry1.csv")
 
 
 try:
@@ -88,9 +88,10 @@ class GlobalStanley(object):
 
     def main(self):
         target_idx = self.target_idx
+
         di, target_idx = self.stanley.stanley_control(
-            self.state, self.path.cx[:target_idx+1000], self.path.cy[:target_idx+1000], self.path.cyaw[:target_idx+1000], target_idx)
-        
+            self.state, self.path.cx[:target_idx+100], self.path.cy[:target_idx+100], self.path.cyaw[:target_idx+100], target_idx)
+
         self.target_idx = target_idx
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 
@@ -107,6 +108,7 @@ class GlobalStanley(object):
 
         if self.pubFlag is True:
             # self.path.load.pathPublish(pub=self.path_pub)
+            print("PUBLISH PATH")
             self.load.pathPublish(pub=self.path_pub)
             self.pubFlag = False
 
