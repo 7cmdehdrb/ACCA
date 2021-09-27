@@ -1,9 +1,16 @@
 <launch>
 
-    <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
+    <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
     <param name="odometry_topic" type="str" value="/fake_odom" />
+<<<<<<< HEAD
     <param name="save_file_name" type="str" value="deliveryGlobal.csv"></param>
     <param name="save_parking" type="bool" value="true" />
+=======
+    <param name="save_file_name" type="str" value="deliveryA3.csv"></param>
+    <param name="save_parking" type="bool" value="false" />
+
+    <param name="parking_area" type="str" value="k_parking2.csv" />
+>>>>>>> 5f175ef1fef57a07dc377c201926c9df57c66cae
 
     <!-- VISUAL -->
     <param name="area_file_name" type="str" value="deliveryTestArea2.csv" />

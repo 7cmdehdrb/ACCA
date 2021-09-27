@@ -49,10 +49,6 @@ class Goal(object):
 
         dot = np.dot(car_VEC, goal_VEC)
 
-        print(car_VEC)
-        print(goal_VEC)
-        print(dot)
-        print()
 
         if dot < 0.0:
             return True
@@ -81,7 +77,7 @@ class Delivery(object):
 
         """ Subscriber """
 
-        rospy.Subscriber("/sign_pub", UInt8,
+        rospy.Subscriber("/delivery_sign", UInt8,
                          callback=self.deliverySignCallback)
         rospy.Subscriber("/hdl_state", Int32, self.stateCallback)
 
@@ -139,7 +135,7 @@ class Delivery(object):
 
                 print("IS END")
 
-                self.doBrake(value=100)
+                self.doBrake(value=50)
                 self.isEnd = True
                 return
 
@@ -161,7 +157,7 @@ class Delivery(object):
 
             print("DELIVERY FLAG IS TRUE")
 
-            idx = self.target_idx + 10
+            idx = self.target_idx + 0
 
             if idx > self.last_idx:
                 idx = self.last_idx

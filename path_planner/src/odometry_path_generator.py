@@ -65,7 +65,7 @@ class OdometryPath(State):
 
         distance = np.hypot(self.xs[-1] - self.x, self.ys[-1] - self.y)
 
-        if distance > 1.0:
+        if distance > 0.1:
             self.xs.append(self.x)
             self.ys.append(self.y)
 

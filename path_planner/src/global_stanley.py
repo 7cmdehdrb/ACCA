@@ -89,8 +89,8 @@ class GlobalStanley(object):
     def main(self):
         target_idx = self.target_idx
         di, target_idx = self.stanley.stanley_control(
-            self.state, self.path.cx[:target_idx+100], self.path.cy[:target_idx+100], self.path.cyaw[:target_idx+100], target_idx)
-
+            self.state, self.path.cx[:target_idx+1000], self.path.cy[:target_idx+1000], self.path.cyaw[:target_idx+1000], target_idx)
+        
         self.target_idx = target_idx
         di = np.clip(di, -m.radians(max_steer), m.radians(max_steer))
 

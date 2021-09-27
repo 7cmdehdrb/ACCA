@@ -168,7 +168,7 @@ class control():
             res = currentSpeed + p * err + self.i_err * 0.2
 
         if err < 0.0:
-            brake = err * 7 * (-1)
+            brake = err * 9 * (-1)
             print(brake)
             return currentSpeed, int(brake)
 
@@ -179,6 +179,7 @@ class control():
             Function to send serial to ERP42 with
             speed(KPH), steer(Deg), Brake(1~200), Gear(2: drive)
         """
+        GEAR = 2 if SPEED >= 0.0 else 0
 
         if self.doPIControl is True:
 
@@ -186,8 +187,6 @@ class control():
             desired_speed = SPEED  # kph
             SPEED, BRAKE = self.PIControl(
                 currentSpeed=current_speed, desiredSpeed=desired_speed, brake=BRAKE)
-
-        GEAR = 2 if SPEED >= 0.0 else 0
 
         SPEED = abs(SPEED) * 10
         if SPEED > 200:
