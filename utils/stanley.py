@@ -24,6 +24,8 @@ class Stanley(object):
         self.k = rospy.get_param("/c_gain", 0.1)  # control gain
         self.hdr_ratio = rospy.get_param("/hdr_ratio", 0.8)
 
+        self.ind = 0
+
         self.hdr = 0.0
         self.ctr = 0.0
 
@@ -59,6 +61,8 @@ class Stanley(object):
         current_target_idx, error_front_axle = self.calc_target_index(
             state, cx, cy)
 
+        # print(current_target_idx)
+
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
@@ -80,6 +84,8 @@ class Stanley(object):
 
             self.ctr_publisher.publish(theta_e)
             self.hdr_publisher.publish(theta_d)
+
+        self.ind = current_target_idx
 
         return delta, current_target_idx
 
@@ -110,8 +116,30 @@ class Stanley(object):
         fy = state.y + self.L * np.sin(state.yaw) / 2.0
 
         # Search nearest point index
-        dx = [fx - icx for icx in cx]
-        dy = [fy - icy for icy in cy]
+        dx = []
+        dy = []
+
+        i = 0
+        for icx in cx:
+            if i < self.ind - 1000:
+                dx.append(float("inf"))
+            else:
+                dx.append(fx - icx)
+            i += 1
+
+        i = 0
+        for icy in cy:
+            if i < self.ind - 1000:
+                dy.append(float("inf"))
+            else:
+                dy.append(fy - icy)
+            i += 1
+
+
+        # dx = [fx - icx for icx in cx]
+        # dy = [fy - icy for icy in cy]
+
+        
         d = np.hypot(dx, dy)
         target_idx = np.argmin(d)
 

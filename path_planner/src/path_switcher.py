@@ -60,7 +60,7 @@ class PathSwitcher(object):
 
         self.changeTime = rospy.Time.now()
 
-        self.speed = rospy.get_param("/desired_speed", 2.0)
+        self.speed = rospy.get_param("/static_obstacles_speed", 2.0)
         self.brake = 1
 
         """ INIT """
@@ -149,8 +149,8 @@ class PathSwitcher(object):
             if gap < 1.0:
                 return
 
-            # hdr = self.stanley.getHDR()
-            # ctr = self.stanley.getCTR()
+            hdr = self.stanley.getHDR()
+            ctr = self.stanley.getCTR()
 
             # print(hdr, ctr)
 

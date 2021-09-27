@@ -18,7 +18,7 @@
     <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     <!-- Path Planner -->
-    <param name="save_file_name" type="str" value="kcity_staticpath1.csv" />
+    <param name="save_file_name" type="str" value="kcity_parking3.csv" />
     <node name="odometry_path_generator" pkg="path_planner" type="odometry_path_generator.py" output="screen" />
 
     <!-- Localization -->
@@ -26,8 +26,11 @@
         <arg name="map_file" value="$(find hdl_localization)/data/KCityMap.pcd" /> 
     </include>
 
+    
     <!-- Model -->
-    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch">
+        <arg name="rvizconfig" value="/home/acca/model.rviz" />
+    </include>
 
     <!-- Test -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" /> -->

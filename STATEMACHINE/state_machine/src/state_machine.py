@@ -94,9 +94,9 @@ class Machine():
             state=self.state, cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, file_name="kcity_staticpath")
 
         self.delivery_A_node = Delivery(
-            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryA.csv")
+            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryA3.csv")
         self.delivery_B_node = Delivery(
-            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryB.csv")
+            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryB_K.csv")
 
         self.Mode = 0
         self.trafficLight = 0
@@ -109,7 +109,13 @@ class Machine():
         data = msg.data
 
         if data != -1:
-            self.Mode = data
+
+            ind = self.global_stanley_node.target_idx
+
+            if 18000 < ind and ind < 22000:
+                pass
+            else:
+                self.Mode = data
 
     def trafficLightCallback(self, msg):
         data = msg.data
@@ -125,7 +131,7 @@ class Machine():
         self.deliveryCnt = 0
         self.Mode = 1
 
-        print("DELIVERY RESET")
+        # print("DELIVERY RESET")
 
     def doEStop(self):
         self.cmd_msg.speed = 0.0
@@ -175,10 +181,10 @@ if __name__ == '__main__':
 
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
-            machine.global_stanley_node.doPublishingMsg = True
-            # pass
+            # machine.global_stanley_node.doPublishingMsg = True
+            pass
 
-        elif machine.Mode == 1:
+        if machine.Mode == 1:
             machine.global_stanley_node.doPublishingMsg = True
 
         # Static Obstacle Mode
@@ -212,14 +218,14 @@ if __name__ == '__main__':
         #     machine.global_stanley_node.setDesiredSpeed(GLOBAL_SPEED)
 
         # Parking Mode
-        elif machine.Mode == 4:
+        if machine.Mode == 4:
             if machine.state.parkingFlag is True:
                 machine.parking_node.main()
 
             else:
 
                 while machine.parkingCnt < 50.0 * PARKING_WAIT_TIME and not rospy.is_shutdown():
-                    machine.doBrake(100)
+                    machine.doBrake(120)
                     machine.parkingCnt += 1
                     rate.sleep()
 
@@ -228,14 +234,14 @@ if __name__ == '__main__':
                     machine.parking_node.goBack(speed=BACKWARD_SPEED)
 
                     while machine.parkingCnt < 50.0 * (PARKING_WAIT_TIME + 3) and not rospy.is_shutdown():
-                        machine.doBrake(50)
+                        machine.doBrake(100)
                         machine.parkingCnt += 1
                         rate.sleep()
 
                 machine.Mode = 1
 
         # Straight Traffic Mode
-        elif machine.Mode == 5:
+        if machine.Mode == 5:
             if isTrafficStraight2(machine.trafficLight) is False:
                 machine.doBrake(80)
             else:
@@ -243,7 +249,7 @@ if __name__ == '__main__':
                 # machine.global_stanley_node.main()
 
         # Left Traffic Mode
-        elif machine.Mode == 6:
+        if machine.Mode == 6:
             if isTrafficLeft2(machine.trafficLight) is False:
                 machine.doBrake(80)
 
@@ -251,38 +257,36 @@ if __name__ == '__main__':
                 machine.global_stanley_node.doPublishingMsg = True
                 # machine.global_stanley_node.main()
 
-        elif machine.Mode == 7:
+        if machine.Mode == 7:
             machine.delivery_A_node.main()
             # print(machine.delivery_A_node.target_idx)
 
             if machine.delivery_A_node.isEnd is True:
                 while machine.deliveryCnt < 30.0 * DELIVERY_WAIT_TIME and not rospy.is_shutdown():
-                    machine.doBrake(99)
+                    machine.doBrake(90)
                     machine.deliveryCnt += 1
                     rate.sleep()
-
+        
                 machine.resetDelivery()
 
-        elif machine.Mode == 8:
+        if machine.Mode == 8:
             machine.delivery_B_node.main()
 
             if machine.delivery_B_node.isEnd is True:
                 while machine.deliveryCnt < 30.0 * DELIVERY_WAIT_TIME and not rospy.is_shutdown():
-                    machine.doBrake(99)
+                    machine.doBrake(90)
                     machine.deliveryCnt += 1
                     rate.sleep()
 
                 machine.resetDelivery()
 
         # Static - main
-        elif machine.Mode == 2:
+        if machine.Mode == 2:
             machine.path_switcher_node.main()
 
-        else:
-            rospy.loginfo("INVALID STATE")
 
-        # print(machine.cmd_msg)
-        # print("idx: " + str(machine.global_stanley_node.target_idx))
-        # print("mode: " + str(machine.Mode))
+        print(machine.cmd_msg)
+        print("idx: " + str(machine.global_stanley_node.target_idx))
+        print("mode: " + str(machine.Mode))
 
         rate.sleep()
