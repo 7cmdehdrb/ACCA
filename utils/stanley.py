@@ -135,11 +135,9 @@ class Stanley(object):
                 dy.append(fy - icy)
             i += 1
 
-
         # dx = [fx - icx for icx in cx]
         # dy = [fy - icy for icy in cy]
 
-        
         d = np.hypot(dx, dy)
         target_idx = np.argmin(d)
 
