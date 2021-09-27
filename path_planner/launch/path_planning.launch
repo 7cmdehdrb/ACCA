@@ -4,7 +4,7 @@
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
     <!-- <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" /> -->
     <param name="odometry_topic" type="str" value="/fake_odom" />
-    <param name="save_file_name" type="str" value="ssu_deliveryB.csv"></param>
+    <param name="save_file_name" type="str" value="ssu_switcher1.csv"></param>
     
     <param name="save_parking" type="bool" value="false" />
     <param name="parking_area" type="str" value="k_parking2.csv" />

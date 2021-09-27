@@ -93,6 +93,25 @@ class PathSwitcher(object):
                 print(ex)
                 continue
 
+            self.current_path_idx = idx
+            self.changeTime = rospy.Time.now()
+
+            self.current_path_idx = idx
+            self.current_path = self.paths[self.current_path_idx]
+
+            self.target_idx, _ = self.stanley.calc_target_index(
+                self.state, self.current_path.cx, self.current_path.cy
+            )
+
+            self.current_path.pathPublish(pub=self.path_pub)
+
+            self.stanley.setCGain(self.switching_c_gain)
+            print("SET GAIN TO " + str(self.stanley.k))
+
+            self.is_doing_switching = True
+
+            """
+
             self.is_doing_switching = True
             self.changeTime = rospy.Time.now()
 
@@ -102,6 +121,8 @@ class PathSwitcher(object):
             self.target_idx, _ = self.stanley.calc_target_index(
                 self.state, self.current_path.cx, self.current_path.cy
             )
+
+            """
 
     def setSpeed(self, value):
         self.speed = value
@@ -119,8 +140,9 @@ class PathSwitcher(object):
 
         try:
 
-            if self.current_path_idx == 0 or 1:
-                self.current_path_idx = 0 if self.current_path_idx == 1 else 1
+            if self.current_path_idx == 0 or self.current_path_idx == 1:
+                self.current_path_idx = (
+                    0 if self.current_path_idx == 1 else 1)
                 self.current_path = self.paths[self.current_path_idx]
 
                 self.target_idx, _ = self.stanley.calc_target_index(
@@ -129,6 +151,7 @@ class PathSwitcher(object):
 
                 self.current_path.pathPublish(pub=self.path_pub)
 
+                print("SET GAIN TO " + str(self.stanley.k))
                 self.stanley.setCGain(self.switching_c_gain)
 
                 self.is_doing_switching = True
@@ -153,15 +176,18 @@ class PathSwitcher(object):
             hdr = self.stanley.getHDR()
             ctr = self.stanley.getCTR()
 
-            # print(hdr, ctr)
+            print(hdr, ctr)
 
-            if abs(hdr) < self.errTolerance_HDR and abs(ctr) < self.errTolerance_CTR:
+            if abs(hdr) < self.errTolerance_HDR and abs(ctr) < self.errTolerance_CTR and abs(ctr) > 0.0001:
                 self.changeTime = rospy.Time.now()
 
                 c_gain = rospy.get_param("/c_gain", 0.1)
                 self.stanley.setCGain(float(c_gain))
 
+                print("Adapting Finished!!")
                 self.is_doing_switching = False
+            else:
+                print("Adapting...")
 
         else:
             if self.ob_TF.front_left == 1 or self.ob_TF.front_right == 1:

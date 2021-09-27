@@ -144,6 +144,7 @@ class Stanley(object):
         # Project RMS error onto front axle vector
         front_axle_vec = [-np.cos(state.yaw + np.pi / 2), -
                           np.sin(state.yaw + np.pi / 2)]
+
         error_front_axle = np.dot(
             [dx[target_idx], dy[target_idx]], front_axle_vec)
 
