@@ -50,7 +50,7 @@ class Track2Waypoints(object):
         waypointsFrequency = rospy.get_param('~desiredWaypointsFrequency', 5)
         self.waypointsPublishInterval = 1.0 / waypointsFrequency
         self.lastPublishWaypointsTime = 0
-        
+        mjydmujyc,yc,
         self.state = state
 
         self.carPosX = 0.0
