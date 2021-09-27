@@ -60,6 +60,10 @@ class Parking(object):
 
         self.state = state
         self.stanley = Stanley()
+
+        self.stanley.k = 0.15
+        self.stanley.hdr_ratio = 0.7
+
         self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_publisher
         self.path_pub = rospy.Publisher("parking_path", Path, queue_size=1)
@@ -108,7 +112,7 @@ class Parking(object):
 
         while not rospy.is_shutdown():
             distance = np.hypot(
-                self.main_path.cx[self.last_idx] - self.state.x, self.main_path.cy[self.last_idx] - self.state.y)
+                self.main_path.cx[-1] - self.state.x, self.main_path.cy[-1] - self.state.y)
 
             self.cmd_msg.speed = speed * -1.0
             self.cmd_msg.steer = 0.0

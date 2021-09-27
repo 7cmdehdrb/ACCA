@@ -380,7 +380,7 @@ class StaticObstacles(object):
             self.box.publishBox()
 
         if goal_point is None:
-            print("NO GOAL POINT")
+            # print("NO GOAL POINT")
             self.target_idx = 0
             return False
 

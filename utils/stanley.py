@@ -20,9 +20,14 @@ class Stanley(object):
 
         self.doPublish = False
 
-        self.k = rospy.get_param("/c_gain", 0.5)  # control gain
-        self.hdr_ratio = rospy.get_param("/hdr_ratio", 0.8)
         self.L = 1.040  # [m] Wheel base of vehicle
+        self.k = rospy.get_param("/c_gain", 0.1)  # control gain
+        self.hdr_ratio = rospy.get_param("/hdr_ratio", 0.8)
+
+        self.ind = 0
+
+        self.hdr = 0.0
+        self.ctr = 0.0
 
         self.ctr_publisher = rospy.Publisher(
             "stanley_ctr", Float32, queue_size=1)
@@ -37,6 +42,12 @@ class Stanley(object):
         self.hdr_ratio = value
         return self.hdr_ratio
 
+    def getHDR(self):
+        return self.hdr
+
+    def getCTR(self):
+        return self.ctr
+
     def stanley_control(self, state, cx, cy, cyaw, last_target_idx):
         """
         Stanley steering control.
@@ -50,6 +61,8 @@ class Stanley(object):
         current_target_idx, error_front_axle = self.calc_target_index(
             state, cx, cy)
 
+        # print(current_target_idx)
+
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
@@ -58,8 +71,12 @@ class Stanley(object):
             cyaw[current_target_idx] - state.yaw)) * self.hdr_ratio
 
         # theta_d corrects the cross track error
-
         theta_d = np.arctan2(self.k * error_front_axle, state.v)
+
+        # Field
+        self.hdr = theta_e
+        self.ctr = theta_d
+
         # Steering control
         delta = theta_e + theta_d
 
@@ -67,6 +84,8 @@ class Stanley(object):
 
             self.ctr_publisher.publish(theta_e)
             self.hdr_publisher.publish(theta_d)
+
+        self.ind = current_target_idx
 
         return delta, current_target_idx
 
@@ -97,8 +116,28 @@ class Stanley(object):
         fy = state.y + self.L * np.sin(state.yaw) / 2.0
 
         # Search nearest point index
-        dx = [fx - icx for icx in cx]
-        dy = [fy - icy for icy in cy]
+        dx = []
+        dy = []
+
+        i = 0
+        for icx in cx:
+            if i < self.ind - 1000:
+                dx.append(float("inf"))
+            else:
+                dx.append(fx - icx)
+            i += 1
+
+        i = 0
+        for icy in cy:
+            if i < self.ind - 1000:
+                dy.append(float("inf"))
+            else:
+                dy.append(fy - icy)
+            i += 1
+
+        # dx = [fx - icx for icx in cx]
+        # dy = [fy - icy for icy in cy]
+
         d = np.hypot(dx, dy)
         target_idx = np.argmin(d)
 

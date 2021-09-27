@@ -1,15 +1,20 @@
 <launch>
 
+     <!-- Param --> 
+     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
+     <param name="odometry_topic" type="str" value="/fake_odom" />
+     <param name="global_path_file" type="str" value="odometry1.csv" />
+     <!-- <param name="area_file_name" type="str" value="deliveryTestArea.csv" /> -->
     
     <!-- Sensors -->
     
     <!-- IMU -->
-    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+    <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
         <arg name="port" value="/dev/ttyUSB1" />
-    </include>
+    </include> -->
     
     <!-- LiDAR -->
-    <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+    <!-- <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" /> -->
     <!-- <node name="velodyne_laserscan_node" pkg="velodyne_laserscan" type="velodyne_laserscan_node" /> -->
     
     <!-- Sensors end -->
@@ -22,9 +27,9 @@
 
     
     <!-- Path Publish --> 
-    <param name="c_gain" type="double" value="100.0" />
-    <param name="desired_speed" type="double" value="0.5" />
-    <node name="stanley_method" pkg="path_planner" type="global_stanley.py" output="screen" />
+    <!-- <param name="c_gain" type="double" value="100.0" /> -->
+    <param name="desired_speed" type="double" value="10" />
+    <!-- <node name="stanley_method" pkg="path_planner" type="global_stanley.py" output="screen" /> -->
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">

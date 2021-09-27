@@ -2,10 +2,14 @@
 
     <!-- Sensors -->
 
+<<<<<<< HEAD
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
     <param name="odometry_topic" type="str" value="/odom" />
     <param name="save_file_name" type="str" value="k_path.csv"></param>
     
+=======
+        <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
+>>>>>>> switcher
 
         <!-- IMU -->
         <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
@@ -21,6 +25,10 @@
     <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" />
 
     <!-- Path Planner -->
+<<<<<<< HEAD
+=======
+    <param name="save_file_name" type="str" value="kcity_parking3.csv" />
+>>>>>>> switcher
     <node name="odometry_path_generator" pkg="path_planner" type="odometry_path_generator.py" output="screen" />
 
     <!-- Localization -->
@@ -28,8 +36,11 @@
         <arg name="map_file" value="$(find hdl_localization)/data/KCityMap.pcd" /> 
     </include>
 
+    
     <!-- Model -->
-    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch">
+        <arg name="rvizconfig" value="/home/acca/model.rviz" />
+    </include>
 
     <!-- Test -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 0.0 0.0 0.0 0.0 0 map odom 10" /> -->

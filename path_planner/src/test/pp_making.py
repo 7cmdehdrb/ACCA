@@ -147,8 +147,8 @@ if __name__ == '__main__':
     rospy.init_node('pure_pursuit_point')
     r = rospy.Rate(30)
     st = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
-    lp = LoadPose(file_name="path.csv")
-    rospy.Subscriber("/odom", Odometry, st.odometryCallback)
+    lp = LoadPose(file_name="odometry1.csv")
+    rospy.Subscriber("/fake_odom", Odometry, st.odometryCallback)
 
     if ind == 0:
         st = closest_path_point(state=st, load=lp)

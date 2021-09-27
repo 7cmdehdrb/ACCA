@@ -8,6 +8,7 @@ import numpy as np
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3, Vector3Stamped
+from odometry.msg import encoderMsg
 
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
@@ -42,7 +43,13 @@ class IMUOdometry(object):
 
         self.dt = 0.0
 
+        self.encoderV = 0.0
+
         self.doTransform = False
+
+    def encoder_callback(self, msg):
+
+        self.encoderV = msg.speed
 
     def imu_callback(self, msg):
         data = msg
@@ -71,11 +78,9 @@ class IMUOdometry(object):
         ax = data.vector.x
         ay = data.vector.y
 
-        # if abs(ax) < 0.05:
-        #     ax = 0.0
-
-        # if abs(ay) < 0.05:
-        #     ay = 0.0
+        if self.encoderV == 0.0:
+            ax = 0.0
+            ay = 0.0
 
         self.ax = ax
         self.ay = ay
@@ -99,11 +104,13 @@ class IMUOdometry(object):
 
         self.dt = (self.currentTime - self.lastTime).to_sec()
 
+        self.x += self.dx * self.dt + 0.5 * \
+            m.cos(self.yaw) * self.ax * (self.dt ** 2)
+        self.y += self.dy * self.dt + 0.5 * \
+            m.sin(self.yaw) * self.ax * (self.dt ** 2)
+
         self.dx += self.ax * m.cos(self.yaw) * self.dt
         self.dy += self.ax * m.sin(self.yaw) * self.dt
-
-        self.x += self.dx * self.dt
-        self.y += self.dy * self.dt
 
         print(self.x, self.y)
 
@@ -117,7 +124,7 @@ if __name__ == "__main__":
     odom_broadcaster = tf.TransformBroadcaster()
 
     odom = Odometry()
-    odom.header.frame_id = "map"
+    odom.header.frame_id = "odom"
     odom.child_frame_id = "base_link"
 
     """ Subscriber """
@@ -125,6 +132,7 @@ if __name__ == "__main__":
     rospy.Subscriber("/filter/free_acceleration",
                      Vector3Stamped, my_odom.acc_callback)
     rospy.Subscriber("/imu/data", Imu, my_odom.imu_callback)
+    rospy.Subscriber("/erp42_encoder", encoderMsg, my_odom.encoder_callback)
 
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():

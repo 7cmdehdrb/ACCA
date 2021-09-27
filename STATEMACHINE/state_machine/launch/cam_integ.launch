@@ -1,0 +1,10 @@
+<launch>
+    <include file="$(find usb_cam)/launch/yolo_usb_cam-test.launch" />
+    <include file="$(find avt_vimba_camera)/launch/mono_camera.launch" />
+
+    <!-- <node pkg="pinet" type="Lane_Detection.py" name="Lane_Dectection" /> -->
+
+    <!-- /home/acca/catkin_ws/src/CAM/darknet/data/traffic_light.py -->
+    <!-- /home/acca/catkin_ws/src/CAM/darknet/data/traffic_sign.py -->
+
+</launch>

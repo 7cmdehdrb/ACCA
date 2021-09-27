@@ -86,8 +86,8 @@ def isTrafficStraight(traffic=[]):
         if stop is True:
             return False
 
-        if left is True and straight is False:
-            return False
+        # if left is True and straight is False:
+        #     return False
 
     except ValueError:
         return False
@@ -102,13 +102,33 @@ def isTrafficLeft(traffic=[]):
         if left is True:
             return True
 
-        if straight is True:
-            return False
-
         if straight is True and left is False:
             return False
+
+        # if straight is True and left is False:
+        #     return False
 
     except ValueError:
         return False
 
     return True
+
+
+def isTrafficLeft2(idx):
+    if idx == 0:
+        return True
+
+    if idx == 1303 or idx == 1305 or idx == 1403 or idx == 1405:
+        return True
+
+    return False
+
+
+def isTrafficStraight2(idx):
+    if idx == 0:
+        return True
+
+    if idx == 1300 or idx == 1400 or idx == 1405:
+        return True
+    print("STOP")
+    return False

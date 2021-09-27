@@ -1,11 +1,15 @@
 <launch>
 
-    <!-- Sensors -->
+    <!-- Parking Params -->
+        <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
+    <param name="parking_area" type="str" value="k_parking2.csv" />
+    <param name="parking_path" type="str" value="kcity_parking" />
+    <param name="save_parking" type="bool" value="true" />
     
     <!-- IMU -->
-    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+    <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
         <arg name="port" value="/dev/ttyUSB1" />
-    </include>
+    </include> -->
     
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
@@ -14,23 +18,24 @@
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
-    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
+    <!-- <param name="erp_port" type="str" value="/dev/ttyUSB0" /> -->
+    <!-- <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" /> -->
     <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" output="screen" /> -->
 
     <!-- Parking --> 
-    <node name="parking_selection" pkg="parking" type="parking_selection.py" output="screen" />
-    <node name="parking" pkg="parking" type="parking.py" output="screen" />
+    <!-- <node name="parking_selection" pkg="parking" type="parking_selection.py" output="screen" /> -->
+    <!-- <node name="parking" pkg="parking" type="parking.py" output="screen" /> -->
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
-        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
+        <arg name="map_file" value="$(find hdl_localization)/data/KCityMap.pcd" /> 
     </include>
 
     <!-- Model -->
-    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch" />
-
+      <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch">
+        <arg name="rvizconfig" value="/home/acca/model.rviz" />
+    </include>
     <!-- Test -->
     <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.0 -0.0 0.0 -0.0 0.0 0.0 map odom 10" />
     <!-- -2.676659107208252,-3.7524757385253906,-2.29648101519 -->

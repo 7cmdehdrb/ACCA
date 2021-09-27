@@ -33,6 +33,12 @@ class TransformObstacles(object):
 
         try:
             for pose in poses:
+
+                dist = np.hypot(pose.position.x, pose.position.y)
+
+                if dist > 5.0:
+                    continue
+
                 new_obstacle = PoseStamped()
 
                 new_obstacle.header.frame_id = "laser"
@@ -84,9 +90,9 @@ if __name__ == "__main__":
 
     tf_node = tf.TransformListener()
 
-    ob_pub = rospy.Publisher("/track", PoseArray, queue_size=1)
+    ob_pub = rospy.Publisher("/transform_obstacles", PoseArray, queue_size=1)
 
-    rospy.Subscriber("/obstacles", PoseArray, tf_ob.obstaclesCallback)
+    rospy.Subscriber("/cone_position", PoseArray, tf_ob.obstaclesCallback)
 
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():

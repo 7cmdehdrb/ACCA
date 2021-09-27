@@ -17,7 +17,7 @@ wheeltrack = 0.985
 TICK2RAD = 0.06283185307
 wheel_radius = 0.265
 
-p_gain = rospy.get_param("p_gain", 0.0)
+#p_gain = rospy.get_param("p_gain", 0.0)
 
 
 class control():
@@ -39,6 +39,9 @@ class control():
         self.control_msg = stanleyMsg()
 
         self.feedback_encoder = 0
+        self.i_err = rospy.get_param("i_err", 0.0)
+        self.p_gain = rospy.get_param("p_gain", 0.0)
+        self.steer_offset = rospy.get_param("steer_offset", -1.2)
 
         """
             Encoder variable
@@ -73,6 +76,7 @@ class control():
 
     def receive_data(self):
         line = []
+
         while not exitThread:
             try:
                 for i in self.ser.read():
@@ -147,35 +151,42 @@ class control():
     def cmd_vel_callback(self, msg):
         self.control_msg = msg
 
-    def PIControl(self, currentSpeed, desiredSpeed):
-        if desiredSpeed < 0:
-            return desiredSpeed
+    def PIControl(self, currentSpeed, desiredSpeed, brake):
+        if desiredSpeed < 0.0:
+            return desiredSpeed, brake
 
-        p = p_gain
+        if brake != 1:
+            return desiredSpeed, brake
+
+        p = self.p_gain
+
         err = desiredSpeed - currentSpeed
+        # print("speed", currentSpeed, err)
 
-        res = desiredSpeed + p * err
+        self.i_err += err
+        if err >= 0.0:
+            res = currentSpeed + p * err + self.i_err * 0.2
 
-        if res < 0.0:
-            return 0.0
+        if err < 0.0:
+            brake = err * 9 * (-1)
+            print(brake)
+            return currentSpeed, int(brake)
 
-        return res
+        return res, brake
 
     def send_data(self, SPEED, STEER, BRAKE, GEAR):
         """
             Function to send serial to ERP42 with
             speed(KPH), steer(Deg), Brake(1~200), Gear(2: drive)
         """
+        GEAR = 2 if SPEED >= 0.0 else 0
 
         if self.doPIControl is True:
 
             current_speed = self.mps2kph(self.feedbackMsg.speed)    # kph
             desired_speed = SPEED  # kph
-
-            SPEED = self.PIControl(
-                currentSpeed=current_speed, desiredSpeed=desired_speed)
-
-        GEAR = 2 if SPEED >= 0.0 else 0
+            SPEED, BRAKE = self.PIControl(
+                currentSpeed=current_speed, desiredSpeed=desired_speed, brake=BRAKE)
 
         SPEED = abs(SPEED) * 10
         if SPEED > 200:
@@ -218,7 +229,7 @@ class control():
         distance = msg.data
 
         if distance < 3.0:
-            self.distance_ratio = (1 / 3) * distance
+            self.distance_ratio = (1.0 / 3.0) * distance
         else:
             self.distance_ratio = 1.0
 
@@ -239,7 +250,7 @@ if __name__ == "__main__":
 
     """ Param """
     port = rospy.get_param('/erp_port', '/dev/ttyUSB0')
-
+    # port = '/dev/ttyUSB2'
     """ Object """
     mycar = control(port_num=port)
 
@@ -255,16 +266,18 @@ if __name__ == "__main__":
     rospy.Subscriber("/Control_msg", stanleyMsg, mycar.cmd_vel_callback)
     # rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
+    start_time = rospy.Time.now()
+
     rate = rospy.Rate(50.0)
     while not rospy.is_shutdown():
 
         sp = mycar.control_msg.speed
-        st = m.degrees(mycar.control_msg.steer)
+        st = m.degrees(mycar.control_msg.steer) + mycar.steer_offset
         br = int(mycar.control_msg.brake)
 
-        print(sp, st, br)
+        # print(sp, st, br)
 
-        mycar.send_data(SPEED=(sp), STEER=(st), BRAKE=(br), GEAR=2)
+        mycar.send_data(SPEED=sp, STEER=st, BRAKE=br, GEAR=2)
 
         rate.sleep()
 

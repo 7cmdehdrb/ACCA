@@ -7,6 +7,10 @@ import csv
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
+# -21.4563045502,-46.2504959106,-1.29778019985,1.904,3.434
+# -21.7034759521,-48.9654655457,-1.37349931797,1.904,3.434
+
+
 """
 
 Export module

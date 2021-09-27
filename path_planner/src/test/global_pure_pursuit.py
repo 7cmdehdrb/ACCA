@@ -60,7 +60,7 @@ class GlobalPurePursuit(object):
     def __init__(self, state, cmd_msg, cmd_publisher):
 
         self.state = state
-        self.load = LoadPose()
+        self.load = LoadPose("odometry1.csv")
         self.path = PathFinder(load=self.load)
 
         self.target_idx = 10
