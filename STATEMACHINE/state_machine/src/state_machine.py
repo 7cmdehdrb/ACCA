@@ -8,7 +8,7 @@ import time
 from std_msgs.msg import Float32, Int32, Int32MultiArray
 from path_planner.msg import stanleyMsg, obTF
 from sensor_msgs.msg import Image
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry, Path
 
 
 ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
@@ -94,9 +94,9 @@ class Machine():
             state=self.state, cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, file_name="kcity_staticpath")
 
         self.delivery_A_node = Delivery(
-            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryA.csv")
+            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryA_K.csv")
         self.delivery_B_node = Delivery(
-            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryB.csv")
+            cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, state=self.state, file_name="deliveryB_K.csv")
 
         self.Mode = 0
         self.trafficLight = 0
@@ -150,6 +150,8 @@ if __name__ == '__main__':
 
     machine = Machine()
 
+    t_pub = rospy.Publisher("TEST2", Path, queue_size=1)
+
     rospy.Subscriber(ODOMETRY_TOPIC, Odometry, machine.state.odometryCallback)
     rospy.Subscriber("/hdl_state", Int32, machine.stateCallback)
     rospy.Subscriber("/traffic_light", Int32,
@@ -158,16 +160,18 @@ if __name__ == '__main__':
 
     rate = rospy.Rate(50.0)
 
+    # while not rospy.is_shutdown():
+
+    #     if machine.state.x == 0.0 and machine.state.y == 0.0 and machine.state.yaw == 0.0 and machine.state.v == 0.0:
+    #         pass
+    #     else:
+    #         break
+
+    #     rate.sleep()
+
     while not rospy.is_shutdown():
 
-        if machine.state.x == 0.0 and machine.state.y == 0.0 and machine.state.yaw == 0.0 and machine.state.v == 0.0:
-            pass
-        else:
-            break
-
-        rate.sleep()
-
-    while not rospy.is_shutdown():
+        machine.delivery_B_node.load.pathPublish(t_pub)
 
         # print(machine.Mode)
         machine.global_stanley_node.main()

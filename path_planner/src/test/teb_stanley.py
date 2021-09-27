@@ -168,7 +168,7 @@ if __name__ == "__main__":
     state = State(x=0.0, y=0.0, yaw=np.radians(0.0), v=0.0)
     path = PathPlanner()
 
-    rospy.Subscriber("/odom", Odometry, state.odometryCallback)
+    rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
     rospy.Subscriber("/move_base/TebLocalPlannerROS/local_plan",
                      Path, path.localPathCallback)
 

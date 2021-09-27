@@ -15,52 +15,52 @@ from state import State
 from loadPose import LoadPose
 
 
-SPEED = rospy.get_param("/desired_speed", 1.0)
+SPEED = rospy.get_param("/desired_speed", 3.0)
 
 
-class ConeTracker(object):
-    def __init__(self, load):
-        super(ConeTracker, self).__init__()
+# class ConeTracker(object):
+#     def __init__(self, load):
+#         super(ConeTracker, self).__init__()
 
-        self.path = Path()
-        self.isLoopClose = False
+#         self.path = Path()
+#         self.isLoopClose = False
 
-        self.load = load
+#         self.load = load
 
-        # rospy.Subscriber("/cone_path", Path, callback=self.pathCallback)
-        # rospy.Subscriber("/is_loop_close", UInt8,
-        #                  callback=self.loopCloseCallback)
+#         # rospy.Subscriber("/cone_path", Path, callback=self.pathCallback)
+#         # rospy.Subscriber("/is_loop_close", UInt8,
+#         #                  callback=self.loopCloseCallback)
 
-    def pathCallback(self, msg):
-        temp_x = []
-        temp_y = []
-        temp_yaw = []
+#     def pathCallback(self, msg):
+#         temp_x = []
+#         temp_y = []
+#         temp_yaw = []
 
-        poses = msg.poses
+#         poses = msg.poses
 
-        for pose in poses:
-            X = pose.pose.position.x
-            Y = pose.pose.position.y
+#         for pose in poses:
+#             X = pose.pose.position.x
+#             Y = pose.pose.position.y
 
-            ori_x = pose.pose.orientation.x
-            ori_y = pose.pose.orientation.y
-            ori_z = pose.pose.orientation.z
-            ori_w = pose.pose.orientation.w
+#             ori_x = pose.pose.orientation.x
+#             ori_y = pose.pose.orientation.y
+#             ori_z = pose.pose.orientation.z
+#             ori_w = pose.pose.orientation.w
 
-            quat = [ori_x, ori_y, ori_z, ori_w]
+#             quat = [ori_x, ori_y, ori_z, ori_w]
 
-            _, _, YAW = tf.transformations.euler_from_quaternion(quat)
+#             _, _, YAW = tf.transformations.euler_from_quaternion(quat)
 
-            temp_x.append(X)
-            temp_y.append(Y)
-            temp_yaw.append(YAW)
+#             temp_x.append(X)
+#             temp_y.append(Y)
+#             temp_yaw.append(YAW)
 
-        self.load.cx = temp_x
-        self.load.cy = temp_y
-        self.load.cyaw = temp_yaw
+#         self.load.cx = temp_x
+#         self.load.cy = temp_y
+#         self.load.cyaw = temp_yaw
 
-    def loopCloseCallback(self, msg):
-        self.isLoopClose = True if msg.data == 1 else False
+#     def loopCloseCallback(self, msg):
+#         self.isLoopClose = True if msg.data == 1 else False
 
 
 class PurePursuit(object):
@@ -107,7 +107,7 @@ class PurePursuit(object):
         dy = self.load.cy[i] - self.state.y
         d = np.hypot(dx, dy)
 
-        while (i < len(self.load.cx)):  # searching the whole path points
+        while (i < len(self.load.cx) / 10.0):  # searching the whole path points
             dx = self.load.cx[i] - self.state.x
             dy = self.load.cy[i] - self.state.y
             d = np.hypot(dx, dy)
@@ -138,7 +138,6 @@ class PurePursuit(object):
                 j += 1
                 self.c_x = self.load.cx[j + 1]
                 self.c_y = self.load.cy[j + 1]
-
             elif ((d1 < self.Lr) and (d2 > self.Lr)):
                 # in case the current point close than the required look ahead length and the next point is too far
                 b = True
@@ -159,6 +158,7 @@ class PurePursuit(object):
 
             else:
                 b = True
+                print(j)
 
         return self.c_x, self.c_y
 
@@ -176,7 +176,7 @@ class PurePursuit(object):
         if dx > 0:
             alpha *= -1.0
 
-        self.delta_ref = math.atan(2 * self.Ld * math.sin(alpha) / self.Ld)
+        self.delta_ref = math.atan(2 * self.L * math.sin(alpha) / self.Ld)
 
         return self.delta_ref
 
@@ -190,11 +190,51 @@ class PurePursuit(object):
         self.ind = new_ind
         return self.ind
 
+    def isEnd(self):
+
+        if self.ind < len(self.load.cx) * 0.9:
+            return False
+
+        x = self.load.cx[-1]
+        y = self.load.cy[-1]
+
+        car_VEC = np.array([
+            math.cos(self.state.yaw),
+            math.sin(self.state.yaw),
+        ])
+
+        goal_VEC = np.array([
+            x - self.state.x,
+            y - self.state.y
+        ])
+
+        dot = np.dot(car_VEC, goal_VEC)
+
+        if dot < 0.0:
+            return True
+
+        return False
+
     def main(self):
         self.update()
 
         if self.ind == 0:
             ind = self.closest_path_point()
+
+        print(self.ind)
+
+        end = self.isEnd()
+
+        if end is True:
+            self.cmd_msg.speed = 0.0
+            self.cmd_msg.steer = 0.0
+            self.cmd_msg.brake = 200
+
+            self.cmd_pub.publish(self.cmd_msg)
+
+            print("END")
+
+            return
 
         cx, cy = self.find_goal_point()
         di = self.set_steering()
@@ -209,25 +249,23 @@ class PurePursuit(object):
 if __name__ == '__main__':
     rospy.init_node("pure_pursuit_control")
 
-    state = State(x=-0.0, y=-0.0, yaw=-0.0, v=0.0)
+    state = State(x=0.0, y=0.0, yaw=0.0, v=0.0)
+    load = LoadPose(file_name="odometry1.csv")
+
     cmd_msg = stanleyMsg()
     cmd_pub = rospy.Publisher("Control_msg", stanleyMsg, queue_size=1)
-    load = LoadPose(file_name="path.csv")
-
-    cone_path = ConeLoad()
-    load = cone_path
 
     pure_pursuit = PurePursuit(
         state=state, cmd_msg=cmd_msg, cmd_pub=cmd_pub, load=load)
 
     rospy.Subscriber("/fake_odom", Odometry, state.odometryCallback)
 
-    path_pub = rospy.Publisher("pp_path", Path, queue_size=1)
+    path_pub = rospy.Publisher("cublic_global_path", Path, queue_size=1)
 
     r = rospy.Rate(30.0)
     while not rospy.is_shutdown():
         pure_pursuit.main()
 
-        load.pathPublish(pub=path_pub)
+        # load.pathPublish(pub=path_pub)
 
         r.sleep()
