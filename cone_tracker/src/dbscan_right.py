@@ -3,14 +3,12 @@
 import rospy
 import math
 import numpy as np
-import tf
-import enum
-from geometry_msgs.msg import PointStamped, PoseArray, Pose, PoseStamped
-from nav_msgs.msg import Path
+# import tf
+# import enum
+from geometry_msgs.msg import PoseArray, Pose  # PointStamped, PoseStamped
+# from nav_msgs.msg import Path
 from sensor_msgs.msg import LaserScan
-from operator import pos
-
-
+# from operator import pos
 
 
 class DBSCAN(object):
@@ -27,16 +25,13 @@ class DBSCAN(object):
     def laserCallback(self, msg):
         self.scan_data = msg.ranges
 
-
-
-
     def cvtRange(self):
         if len(self.scan_data) == 0:
             pass
 
         else:
             self.x = []
-            for j in range(240-self.degree,360):
+            for j in range(240-self.degree, 360):
 
                 angle = j / 2.0
 
@@ -59,7 +54,7 @@ class DBSCAN(object):
             self.input = self.data
             # Clustering
             for i, vector in enumerate(self.data):
-                if self.visited[i] == False:
+                if self.visited[i] is False:
                     self.visited[i] = True
                     self.neighbors = self.regionQuery(i)
                     if len(self.neighbors) > self.minpts:
@@ -72,7 +67,7 @@ class DBSCAN(object):
 
     def regionQuery(self, i):
         g = self.dist[i, :] < self.epsilon
-        Neighbors = np.where(g == True)[0].tolist()
+        Neighbors = np.where(g is True)[0].tolist()
 
         return Neighbors
 
@@ -83,9 +78,9 @@ class DBSCAN(object):
         while True:
             try:
                 j = self.neighbors[k]
-            except:
+            except Exception:
                 pass
-            if self.visited[j] != True:
+            if self.visited[j] is not True:
                 self.visited[j] = True
 
                 self.neighbors2 = self.regionQuery(j)
@@ -109,7 +104,7 @@ class DBSCAN(object):
             for i in range(cnum):
 
                 k = np.where(self.idx == (i+1))[0].tolist()
-                
+
                 if not len(k) == 0:
                     self.cluster.append([self.input[k, :]])
 
@@ -121,13 +116,12 @@ class DBSCAN(object):
         self.centerpts = []
         for idx, group in enumerate(cluster):
             pt = np.mean(cluster[idx][0], axis=0).tolist()
-            if math.sqrt(math.pow(pt[1],2) + math.pow(pt[0],2)) < 10.0: 
+            if math.sqrt(math.pow(pt[1], 2) + math.pow(pt[0], 2)) < 10.0:
 
-            # print((np.sqrt(pow((group[0][:,0]-(np.mean(cluster[idx][0],axis=0)[0])),2)+pow((group[0][:,1]-(np.mean(cluster[idx][0],axis=0)[1])),2))))
-                self.centerpts.append(np.mean(cluster[idx][0], axis=0).tolist())
-        
-        
-        
+                # print((np.sqrt(pow((group[0][:,0]-(np.mean(cluster[idx][0],axis=0)[0])),2)+pow((group[0][:,1]-(np.mean(cluster[idx][0],axis=0)[1])),2))))
+                self.centerpts.append(
+                    np.mean(cluster[idx][0], axis=0).tolist())
+
         return self.centerpts
 
 
@@ -152,7 +146,7 @@ if __name__ == "__main__":
         cluster, _ = dbscan.sort()
 
         if not len(cluster) == 0:
-    
+
             position = dbscan.find_far_pt(cluster)
             if not len(position) < 3:
                 print(position)
@@ -164,12 +158,12 @@ if __name__ == "__main__":
                 del obstacle.poses[:]
 
                 for i in range(len(position)):
-                    
+
                     if position[i][0] != 0 and position[i][1] != 0:
                         pose = Pose()
 
                         pose.position.x = position[i][1]
-                        pose.position.y = position[i][0] 
+                        pose.position.y = position[i][0]
                         pose.position.z = 0
 
                         pose.orientation.x = 0.0
