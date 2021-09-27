@@ -2,14 +2,14 @@
   <node pkg="adaptive_clustering" name="adaptive_clustering" type="adaptive_clustering">
     <param name="print_fps" value="false"/>
     
-    <param name="cluster_size_min" value="1"/>
-    <param name="cluster_size_max" value="1000000"/>
+    <param name="cluster_size_min" value="3"/>
+    <param name="cluster_size_max" value="10000"/>
 
-    <param name="z_axis_min" value="-0.8"/>
-    <param name="z_axis_max" value="1.0"/>
+    <param name="z_axis_min" value="-1.0"/>
+    <param name="z_axis_max" value="-0.3"/>
 
     
   </node>
-  
+
   <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(env PWD)/adaptive_clustering.rviz"/> -->
 </launch>

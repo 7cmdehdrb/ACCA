@@ -11,7 +11,7 @@ from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3, Vector3St
 from odometry.msg import encoderMsg
 
 
-ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src")
+ACCA_FOLDER = rospy.get_param("/acca_folder", "/home/acca/catkin_ws/src/ACCA")
 
 
 try:
@@ -34,6 +34,8 @@ class FusionState(State):
         self.odometry = odom
         self.quat = [0.0, 0.0, 0.0, 1.0]
 
+        self.init_yaw = 0.0
+
     def update(self):
         current_time = rospy.Time.now()
 
@@ -41,6 +43,10 @@ class FusionState(State):
 
         vel, quat = self.odometry.handleData()
         _, _, yaw = tf.transformations.euler_from_quaternion(quat)
+
+        # yaw = yaw - self.init_yaw
+
+        print(yaw)
 
         self.v = vel
         self.dx = vel * m.cos(yaw)
@@ -55,6 +61,7 @@ class FusionState(State):
         self.last_x = self.x
         self.last_y = self.y
         self.last_yaw = self.yaw
+        
 
         # print(self.x, self.y)
 
@@ -77,7 +84,8 @@ class FusionOdometry(object):
 
         # param
 
-        self.doTransform = False
+        self.doTransform = True
+    
 
         # Value
 
@@ -90,6 +98,19 @@ class FusionOdometry(object):
 
     def imuCallback(self, msg):
         self.imuMsg = msg
+
+        if state.init_yaw == 0.0:
+
+            x = self.imuMsg.orientation.x
+            y = self.imuMsg.orientation.y
+            z = self.imuMsg.orientation.z
+            w = self.imuMsg.orientation.w
+
+            _, _, YAW = tf.transformations.euler_from_quaternion([x, y, z, w])
+            state.init_yaw = YAW
+
+            print("INITIALIZE SUCCESS")
+            print(YAW)
 
     def handleData(self):
 
@@ -123,7 +144,7 @@ if __name__ == "__main__":
     odom.header.frame_id = "odom"
     odom.child_frame_id = "base_link"
 
-    r = rospy.Rate(30.0)
+    r = rospy.Rate(100.0)
     while not rospy.is_shutdown():
 
         state.update()
@@ -139,11 +160,15 @@ if __name__ == "__main__":
             Vector3(0.0, 0.0, state.dyaw)
         )
 
+
         if odometry.doTransform is True:
+
+            quat = tf.transformations.quaternion_from_euler(0.0, 0.0, state.yaw)
+
             odom_broadcaster.sendTransform(
                 (state.x, state.y, 0.0),
-                state.quat,
-                current_time,
+                quat,
+                rospy.Time.now(),
                 "base_link",
                 "odom"
             )

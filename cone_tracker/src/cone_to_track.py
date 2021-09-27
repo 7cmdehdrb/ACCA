@@ -44,9 +44,10 @@ class DongjinTest(object):
                 temp.append(new_obstacle)
 
             self.obstacles = temp
+            print(self.obstacles)
 
         except Exception as ex:
-            pass
+            print
 
     def publishObstacles(self, publisher):
 
