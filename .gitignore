@@ -237,7 +237,7 @@ CATKIN_IGNORE
 *.msg
 *.pages
 *.rtf
-*.txt
+# *.txt
 *.wpd
 *.wps
 

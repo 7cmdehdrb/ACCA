@@ -8,7 +8,6 @@ from vehicle_msgs.msg import TrackCone, Command, Waypoint, WaypointsArray
 from vehicle_msgs.msg import Track
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
-from nav_msgs.msg import Path
 import math as m
 from geometry_msgs.msg import PoseArray,Pose, PoseStamped
 import numpy as np
@@ -105,10 +104,10 @@ class Track2Waypoints(object):
     def Tracktfpublish(self, publisher):
         test = PoseArray()
         test.header.frame_id = "odom"
-        for TrackCone in self.Map :
+        for cone in self.Map :
             temp = Pose()
-            temp.position.x = TrackCone.x
-            temp.position.y = TrackCone.y
+            temp.position.x = cone.x
+            temp.position.y = cone.y
             temp.position.z = 0.0
 
             temp.orientation.x = 0.0

@@ -105,10 +105,10 @@ class Track2Waypoints(object):
     def Tracktfpublish(self, publisher):
         test = PoseArray()
         test.header.frame_id = "odom"
-        for TrackCone in self.Map :
+        for cone in self.Map :
             temp = Pose()
-            temp.position.x = TrackCone.x
-            temp.position.y = TrackCone.y
+            temp.position.x = cone.x
+            temp.position.y = cone.y
             temp.position.z = 0.0
 
             temp.orientation.x = 0.0
@@ -162,8 +162,8 @@ class Track2Waypoints(object):
             unit = vector/norm
 
 
-            data1 = [maps[min1_index].x + 0.9*unit[0], maps[min1_index].y+0.9*unit[1]]
-            data2 = [maps[min2_index].x + 0.9*unit[0], maps[min2_index].y+0.9*unit[1]]
+            data1 = [maps[min1_index].x + 1.5*unit[0], maps[min1_index].y+1.5*unit[1]]
+            data2 = [maps[min2_index].x + 1.5*unit[0], maps[min2_index].y+1.5*unit[1]]
             
             print(x_vec)
             # print(vector)
