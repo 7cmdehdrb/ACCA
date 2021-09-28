@@ -214,8 +214,8 @@ if __name__ == '__main__':
     cmd_pub = rospy.Publisher("Control_msg", stanleyMsg, queue_size=1)
     load = LoadPose(file_name="path.csv")
 
-    cone_path = ConeLoad()
-    load = cone_path
+    # cone_path = ConeLoad()
+    # load = cone_path
 
     pure_pursuit = PurePursuit(
         state=state, cmd_msg=cmd_msg, cmd_pub=cmd_pub, load=load)
