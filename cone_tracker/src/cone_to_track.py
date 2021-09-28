@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-
-import sys
+# import sys
 import tf
 import rospy
-import numpy as np
-import math as m
-from geometry_msgs.msg import PoseArray, Pose, PoseStamped
+# import numpy as np
+# import math as m
+from geometry_msgs.msg import PoseArray, PoseStamped  # , Pose
 from vehicle_msgs.msg import TrackCone, Track
+
 
 class Obstacles(object):
     def __init__(self, x, y):
@@ -46,7 +46,7 @@ class DongjinTest(object):
             self.obstacles = temp
             print(self.obstacles)
 
-        except Exception as ex:
+        except Exception:
             print
 
     def publishObstacles(self, publisher):
