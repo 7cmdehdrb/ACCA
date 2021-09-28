@@ -234,7 +234,7 @@ CATKIN_IGNORE
 *.doc
 *.docx
 *.log
-*.msg
+# *.msg
 *.pages
 *.rtf
 # *.txt
