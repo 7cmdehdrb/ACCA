@@ -11,7 +11,6 @@ from sensor_msgs.msg import LaserScan
 from operator import pos
 
 
-DB_DEG = rospy.get_param("dbscan_deg", 30.0)
 
 
 class DBSCAN(object):
@@ -23,30 +22,27 @@ class DBSCAN(object):
         self.x = []
         self.data = []
         self.centerpts = []
+        self.degree = 0
 
     def laserCallback(self, msg):
         self.scan_data = msg.ranges
 
-    def cvtRange(self):
-        DEG = DB_DEG
 
+
+
+    def cvtRange(self):
         if len(self.scan_data) == 0:
             pass
 
         else:
             self.x = []
-            for j in range(len(self.scan_data)):
+            for j in range(0,120+self.degree):
 
-                center = len(self.scan_data) / 2.0
-                right = center - (DEG / 0.5)
-                left = center + (DEG / 0.5)
+                angle = j / 2.0
 
-                if right <= j and j <= left:
-                    angle = j / 2.0
-
-                    x = self.scan_data[j] * math.cos(math.radians(angle))
-                    y = self.scan_data[j] * math.sin(math.radians(angle))
-                    self.x.append([x, y])
+                x = self.scan_data[j] * math.cos(math.radians(angle))
+                y = self.scan_data[j] * math.sin(math.radians(angle))
+                self.x.append([x, y])
 
             self.data = np.array(self.x)
 
@@ -113,7 +109,7 @@ class DBSCAN(object):
             for i in range(cnum):
 
                 k = np.where(self.idx == (i+1))[0].tolist()
-
+                
                 if not len(k) == 0:
                     self.cluster.append([self.input[k, :]])
 
@@ -124,9 +120,14 @@ class DBSCAN(object):
     def find_far_pt(self, cluster):
         self.centerpts = []
         for idx, group in enumerate(cluster):
+            pt = np.mean(cluster[idx][0], axis=0).tolist()
+            if math.sqrt(math.pow(pt[1],2) + math.pow(pt[0],2)) < 12.0: 
 
             # print((np.sqrt(pow((group[0][:,0]-(np.mean(cluster[idx][0],axis=0)[0])),2)+pow((group[0][:,1]-(np.mean(cluster[idx][0],axis=0)[1])),2))))
-            self.centerpts.append(np.mean(cluster[idx][0], axis=0).tolist())
+                self.centerpts.append(np.mean(cluster[idx][0], axis=0).tolist())
+        
+        
+        
         return self.centerpts
 
 
@@ -136,7 +137,7 @@ if __name__ == "__main__":
     dbscan = DBSCAN(0.3, 2)
 
     rospy.Subscriber("/scan_filtered", LaserScan, dbscan.laserCallback)
-    pub = rospy.Publisher("/obstacles", PoseArray, queue_size=1)
+    pub = rospy.Publisher("/cone_position", PoseArray, queue_size=1)
 
     position = []
 
@@ -150,33 +151,43 @@ if __name__ == "__main__":
         dbscan.run()
         cluster, _ = dbscan.sort()
 
+
+            
+        
+
         if not len(cluster) == 0:
+        
+    
             position = dbscan.find_far_pt(cluster)
+            if not len(position) < 3:
+                print(position)
+                obstacle = PoseArray()
 
-            obstacle = PoseArray()
+                obstacle.header.frame_id = "laser"
+                obstacle.header.stamp = rospy.Time.now()
 
-            obstacle.header.frame_id = "laser"
-            obstacle.header.stamp = rospy.Time.now()
+                del obstacle.poses[:]
 
-            del obstacle.poses[:]
+                for i in range(len(position)):
+                    
+                    if position[i][0] != 0 and position[i][1] != 0:
+                        pose = Pose()
 
-            for i in range(len(position)):
-                if position[i][0] != 0 and position[i][1] != 0:
-                    pose = Pose()
+                        pose.position.x = position[i][1]
+                        pose.position.y = position[i][0] 
+                        pose.position.z = 0
 
-                    pose.position.x = position[i][1]
-                    pose.position.y = position[i][0] 
-                    pose.position.z = 0
+                        pose.orientation.x = 0.0
+                        pose.orientation.y = 0.0
+                        pose.orientation.z = 0.0
+                        pose.orientation.w = 1.0
 
-                    pose.orientation.x = 0.0
-                    pose.orientation.y = 0.0
-                    pose.orientation.z = 0.0
-                    pose.orientation.w = 1.0
+                        obstacle.poses.append(pose)
 
-                    obstacle.poses.append(pose)
-
-            pub.publish(obstacle)
-
+                pub.publish(obstacle)
+                dbscan.degree = 0
+            else:
+                dbscan.degree += 40
         else:
             print("NO OB")
 

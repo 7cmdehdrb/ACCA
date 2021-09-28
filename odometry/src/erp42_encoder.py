@@ -151,14 +151,16 @@ class control():
         if desiredSpeed < 0:
             return desiredSpeed
 
-        p = 4.0
+        if brake != 1 :
+            return desiredSpeed, brake
+            
+        p = 1.5
 
         err = desiredSpeed - currentSpeed
-        print("speed", currentSpeed, err)
 
         self.i_err += err
         if err >= 0:
-            res = currentSpeed + p * err + self.i_err*0.2
+            res = currentSpeed + p * err + self.i_err*0.0
 
         if err < 0.0:
             brake = err * 7 * (-1)
@@ -243,8 +245,8 @@ if __name__ == "__main__":
     rospy.init_node('erp42_encoder')
 
     """ Param """
-    #port = rospy.get_param('/erp_port', '/dev/ttyUSB1')
-    port = '/dev/ttyUSB1'
+    port = rospy.get_param('/erp_port', '/dev/ttyUSB0')
+    # port = '/dev/ttyUSB1'
     """ Object """
     mycar = control(port_num=port)
 
@@ -257,7 +259,7 @@ if __name__ == "__main__":
         '/erp42_encoder', encoderMsg, queue_size=1)
 
     """ Subscriber"""
-    #rospy.Subscriber("/Control_msg", stanleyMsg, mycar.cmd_vel_callback)
+    rospy.Subscriber("/Control_msg", stanleyMsg, mycar.cmd_vel_callback)
     # rospy.Subscriber("/laser_distance", Float32, mycar.distanceCallback)
 
     start_time = rospy.Time.now()
@@ -269,7 +271,7 @@ if __name__ == "__main__":
         st = m.degrees(mycar.control_msg.steer)
         br = int(mycar.control_msg.brake)
 
-        # print(sp, st, br)
+        print(sp, st, br)
 
         mycar.send_data(SPEED=sp, STEER=st-1.2, BRAKE=br, GEAR=2)
 
