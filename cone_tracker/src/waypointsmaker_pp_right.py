@@ -53,9 +53,9 @@ class Track2Waypoints(object):
         
         self.state = state
 
-        self.carPosX = 0.0
-        self.carPosY = 0.0
-        self.carPosYaw = 0.0
+        # self.carPosX = 0.0
+        # self.carPosY = 0.0
+        # self.carPosYaw = 0.0
         self.speed = speed
         self.cmd_msg = cmd_msg
         self.cmd_pub = cmd_pub
@@ -136,7 +136,7 @@ class Track2Waypoints(object):
         elif len(maps) >= 2:
             for i in range(len(maps)):
                 
-                dist = np.hypot(maps[i].x-self.state.x,maps[i].y-self.state.y)
+                dist = np.hypot(maps[i].x - self.state.x, maps[i].y - self.state.y)
                 distance.append(dist)
                 
             sorted_distance = sorted(distance)
@@ -145,7 +145,7 @@ class Track2Waypoints(object):
 
             x_vec = (maps[min2_index].x - maps[min1_index].x)
             y_vec = (maps[min2_index].y - maps[min1_index].y)
-            r = 1.0 
+            # r = 1.0 
      
             a=[x_vec, y_vec, 0.0]   # min2_ind - min1_ind
             b=[0.0, 0.0, -1.0]   # z_vector
@@ -216,25 +216,26 @@ class Track2Waypoints(object):
                 return self.delta_ref
             
             self.Ld = sorted_dist[0]
-            if self.Ld > 1.5:
-                alpha = m.atan((self.cy[idx] - self.state.y)/(self.cx[idx] - self.state.x)) - self.state.yaw
-
+            if self.Ld > 2.0:
+                alpha = m.atan((self.cy[idx] - self.state.y)/(self.cx[idx] - self.state.x)) - self.state.yaw  # + self.state.yaw
+                # alpha = m.asin(dy/self.Ld)  # if error -- change dx to dy
                 if dx > 0:
                     alpha *= -1.0
 
-                self.delta_ref = m.atan(2* self.Ld * m.sin(alpha) / self.Ld)
+                self.delta_ref = m.atan(2* self.L * m.sin(alpha) / self.Ld)
             else:
                 self.Ld = sorted_dist[1]
                
-                alpha = m.atan((self.cy[1] - self.state.y)/(self.cx[1] - self.state.x)) - self.state.yaw
+                alpha = m.atan((self.cy[1] - self.state.y)/(self.cx[1] - self.state.x)) - self.state.yaw  # + self.state.yaw
+                # alpha = m.asin(dy/self.Ld)  # if error -- change dx to dy
 
                 if dx > 0:
                     alpha *= -1.0
 
-                self.delta_ref = m.atan(2* 1.040 * m.sin(alpha) / self.Ld)
+                self.delta_ref = m.atan(2* self.L * m.sin(alpha) / self.Ld)
 
         # print(self.delta_ref)
-        return self.delta_ref*0.6
+        return self.delta_ref  # *0.6
 
     def steady_state_bias(self):  # this function insert steady state bias to servo
         self.delta_ref

@@ -24,6 +24,7 @@
     <!-- <node pkg="ma_rrt_path_plan" type="3dcone.py" name="cone_to_track" /> -->
 
 
+    <!-- lms1xx -->
     <node pkg="lms1xx" type="LMS1xx_node" name="lms1xx" output="screen">
         <param name="sensor_param" value="param_value" />
     </node>

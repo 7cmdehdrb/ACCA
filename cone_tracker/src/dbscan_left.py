@@ -36,7 +36,7 @@ class DBSCAN(object):
 
         else:
             self.x = []
-            for j in range(0,120+self.degree):
+            for j in range(0, 150+self.degree):
 
                 angle = j / 2.0
 
@@ -121,7 +121,7 @@ class DBSCAN(object):
         self.centerpts = []
         for idx, group in enumerate(cluster):
             pt = np.mean(cluster[idx][0], axis=0).tolist()
-            if math.sqrt(math.pow(pt[1],2) + math.pow(pt[0],2)) < 12.0: 
+            if math.sqrt(math.pow(pt[1],2) + math.pow(pt[0],2)) < 10.0: 
 
             # print((np.sqrt(pow((group[0][:,0]-(np.mean(cluster[idx][0],axis=0)[0])),2)+pow((group[0][:,1]-(np.mean(cluster[idx][0],axis=0)[1])),2))))
                 self.centerpts.append(np.mean(cluster[idx][0], axis=0).tolist())
@@ -187,7 +187,7 @@ if __name__ == "__main__":
                 pub.publish(obstacle)
                 dbscan.degree = 0
             else:
-                dbscan.degree += 40
+                dbscan.degree += 30
         else:
             print("NO OB")
 
