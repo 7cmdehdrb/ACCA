@@ -133,7 +133,7 @@ class Machine():
 
         """ FILED """
 
-        self.Mode = 0
+        self.Mode = 2
         self.trafficLight = 0
         # self.trafficLine = TrafficStopLine(state=self.state)
 

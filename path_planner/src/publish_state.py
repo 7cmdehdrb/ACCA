@@ -79,6 +79,43 @@ class PublishState(State):
         self.selectedIdx = 1
         self.areas = []
 
+    def defineColor(self, marker, idx):
+
+        marker.color.a = 0.5
+
+        if idx == 0:
+            marker.color.r = 1.0
+            marker.color.g = 0.0
+            marker.color.b = 0.0
+        elif idx == 1:
+            marker.color.r = 0.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+        elif idx == 2:
+            marker.color.r = 0.0
+            marker.color.g = 0.0
+            marker.color.b = 1.0
+        elif idx == 3:
+            marker.color.r = 0.5
+            marker.color.g = 0.5
+            marker.color.b = 0.0
+        elif idx == 4:
+            marker.color.r = 0.5
+            marker.color.g = 0.0
+            marker.color.b = 0.5
+        elif idx == 5:
+            marker.color.r = 0.0
+            marker.color.g = 0.5
+            marker.color.b = 0.5
+        elif idx == 6:
+            marker.color.r = 0.3
+            marker.color.g = 0.7
+            marker.color.b = 0.0
+        elif idx == 7:
+            marker.color.r = 0.3
+            marker.color.g = 0.0
+            marker.color.b = 0.7
+
     def checkAreas(self):
         result_idx = -1
 
@@ -107,13 +144,16 @@ class PublishState(State):
             marker.scale.y = area.r
             marker.scale.z = 0.1
 
-            marker.color.a = 0.5
-            marker.color.r = 1.0 if int(area.getIdx) == 0 or int(
-                area.getIdx) == 3 else 0.0
-            marker.color.g = 1.0 if int(area.getIdx) == 1 or int(
-                area.getIdx) == 3 or int(area.getIdx) == 4 else 0.0
-            marker.color.b = 1.0 if int(area.getIdx) == 2 or int(
-                area.getIdx) == 4 else 0.0
+
+            self.defineColor(marker, area.getIdx)
+
+            # marker.color.a = 0.5
+            # marker.color.r = 1.0 if int(area.getIdx) == 0 or int(
+            #     area.getIdx) == 3 else 0.0
+            # marker.color.g = 1.0 if int(area.getIdx) == 1 or int(
+            #     area.getIdx) == 3 or int(area.getIdx) == 4 else 0.0
+            # marker.color.b = 1.0 if int(area.getIdx) == 2 or int(
+            #     area.getIdx) == 4 else 0.0
 
             marker.pose.position.x = area.x
             marker.pose.position.y = area.y
