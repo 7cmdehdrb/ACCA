@@ -5,10 +5,10 @@
     <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
     <param name="odometry_topic" type="str" value="/fake_odom" />
     <param name="global_path_file" type="str" value="odometry1.csv" />
-    <param name="area_file_name" type="str" value="ssu_area.csv" />
+    <param name="area_file_name" type="str" value="no_area.csv" />
     <!-- Stanley Control Params -->
     <param name="initial_idx" type="int" value="0" />
-    <param name="c_gain" type="double" value="1000.0" />
+    <param name="c_gain" type="double" value="0.15" />
     <param name="hdr_ratio" type="double" value="0.8" />
     <!-- Encoder Params -->
     <param name="p_gain" type="double" value="1.0" />
@@ -22,11 +22,11 @@
 '   <param name="delivery_speed" type="double" value="5.0" />
     <!-- Static Obstacle Params -->
     <param name="distance_gap" type="double" value="1.5" />
-    <param name="threshold_range" type="double" value="6.0" />
+    <param name="threshold_range" type="double" value="5.0" />
     <!-- Path Switcher Params -->
     <param name="errTolerance_HDR" type="double" value="0.05" />
     <param name="errTolerance_CTR" type="double" value="0.01" />
-    <param name="switching_c_gain" type="double" value="15000.0" />
+    <param name="switching_c_gain" type="double" value="1.5" />
     <param name="switcher_path" type="str" value="ssu_switcher" />
     <!-- Parking Params -->
     <param name="parking_area" type="str" value="parking.csv" />
@@ -36,30 +36,30 @@
     <param name="delivery_A" type="str" value="ssu_deliveryA.csv" />
     <param name="delivery_B" type="str" value="ssu_deliveryB.csv" />
     <!-- ETC -->
-    <param name="max_steer" type="double" value="50.0" />
+    <param name="max_steer" type="double" value="28.0" />
     <param name="save_parking" type="bool" value="false" />
     <param name="save_area" type="bool" value="false" />
     
     <!-- Sensors -->
     
     <!-- IMU -->
-    <!-- <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
         <arg name="port" value="/dev/ttyUSB1" />
-    </include> -->
+    </include>
     
     <!-- LiDAR -->
     <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
-    <!-- <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" /> -->
-    <!-- <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include> -->
+    <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
+    <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include>
     <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
-    <!-- <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include> -->
+    <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include>
         
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <!-- <param name="erp_port" type="str" value="/dev/ttyUSB0" />
+    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
-    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" /> -->
+    <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
     
     <!-- Localization -->
@@ -69,10 +69,10 @@
 
     <!-- Obstacles -->
     <!-- /scan_filtered => /obstacles -->
-    <!-- <param name="dbscan_deg" type="double" value="90.0" /> -->
-    <!-- <node name="dbscan" pkg="cone_tracker" type="dbscan.py" /> -->
+    <param name="dbscan_deg" type="double" value="90.0" />
+    <node name="dbscan" pkg="cone_tracker" type="dbscan.py" />
     <!-- /scan_filtered => /ob_TF -->
-    <!-- <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" /> -->
+    <node name="check_obstacles" pkg="cone_tracker" type="check_obstacles.py" />
 
     <!-- Parking -->
     <node name="parking_selection" pkg="parking" type="parking_selection.py" />
@@ -86,7 +86,7 @@
         <arg name="rvizconfig" value="/home/acca/model.rviz" />
     </include>
 
-    <node pkg="tf" type="static_transform_publisher" name="map_pub" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 10" />
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_pub" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 10" /> -->
     
 
 </launch>
