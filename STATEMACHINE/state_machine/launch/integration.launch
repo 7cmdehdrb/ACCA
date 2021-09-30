@@ -13,6 +13,7 @@
     <param name="p_gain" type="double" value="1.0" />
     <param name="i_err" type="double" value="0.05" />
     <param name="steer_offset" type="double" value="-1.2" />
+    <param name="doPIControl" type="bool" value="true" />
     <!-- SPEED Settings -->
     <param name="desired_speed" type="double" value="12.0" />
     <param name="parking_speed" type="double" value="3.0" />

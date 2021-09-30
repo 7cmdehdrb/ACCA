@@ -32,7 +32,7 @@ class control():
         ETX1 = 10
         ALIVE = 0
 
-        self.doPIControl = True
+        self.doPIControl = rospy.get_param("doPIControl", False)
 
         self.stanley_control = stanleyMsg()
         self.feedbackMsg = encoderMsg()
@@ -180,6 +180,9 @@ class control():
             speed(KPH), steer(Deg), Brake(1~200), Gear(2: drive)
         """
         GEAR = 2 if SPEED >= 0.0 else 0
+
+        if self.feedbackMsg.AorM == 0:
+            return
 
         if self.doPIControl is True:
 

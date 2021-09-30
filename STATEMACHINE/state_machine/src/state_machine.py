@@ -108,7 +108,7 @@ class Machine():
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
         self.parking_node.stanley.k = 0.15
-        self.parking_node.stanley.hdr_ratio = 0.7
+        self.parking_node.stanley.hdr_ratio = 1.0
 
         """ PATH SWITCHER """
 
@@ -133,7 +133,7 @@ class Machine():
 
         """ FILED """
 
-        self.Mode = 2
+        self.Mode = 0
         self.trafficLight = 0
         # self.trafficLine = TrafficStopLine(state=self.state)
 
@@ -211,12 +211,12 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
 
         # print(machine.Mode)
-        # machine.global_stanley_node.main()
+        machine.global_stanley_node.main()
         machine.global_stanley_node.doPublishingMsg = False
 
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
-            machine.global_stanley_node.doPublishingMsg = True
+            # machine.global_stanley_node.doPublishingMsg = True
             pass
 
         if machine.Mode == 1:
@@ -289,9 +289,9 @@ if __name__ == '__main__':
 
                 machine.resetDelivery()
 
-        # print(machine.cmd_msg)
-        # print("idx: " + str(machine.global_stanley_node.target_idx))
-        # print("mode: " + str(machine.Mode))
+        print(machine.cmd_msg)
+        print("idx: " + str(machine.global_stanley_node.target_idx))
+        print("mode: " + str(machine.Mode))
 
         rate.sleep()
 

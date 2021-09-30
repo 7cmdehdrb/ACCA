@@ -74,14 +74,11 @@ except ImportError as ie:
     sys.exit()
 
 
-
 if __name__ == "__main__":
     rospy.init_node("test")
 
-
-    l0 = LoadPose("kcity_staticpath0.csv")
-    l1 = LoadPose("kcity_staticpath1.csv")
-
+    l0 = LoadPose("ssu_switcher1.csv")
+    l1 = LoadPose("ssu_switcher0.csv")
 
     pub0 = rospy.Publisher("static0", Path, queue_size=1)
     pub1 = rospy.Publisher("static1", Path, queue_size=1)
