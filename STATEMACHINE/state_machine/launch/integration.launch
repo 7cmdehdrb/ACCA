@@ -29,8 +29,8 @@
     <!-- <param name="c_gain" type="double" value="0.18" />
     <param name="hdr_ratio" type="double" value="0.70" /> -->
 
-    <param name="c_gain" type="double" value="20000.0" />
-    <param name="hdr_ratio" type="double" value="0.6" />
+    <param name="c_gain" type="double" value="12000.0" />
+    <param name="hdr_ratio" type="double" value="0.8" />
 
     <!-- Encoder Params -->
     <param name="p_gain" type="double" value="3.0" />
@@ -38,18 +38,11 @@
     <param name="steer_offset" type="double" value="-1.2" />
     <param name="doPIControl" type="bool" value="true" />
     <!-- SPEED Settings -->
-    <!-- <param name="desired_speed" type="double" value="3.334" />
+    <param name="desired_speed" type="double" value="3.334" />
     <param name="parking_speed" type="double" value="0.83" />
     <param name="static_obstacles_speed" type="double" value="1.39" />
     <param name="backward_speed" type="double" value="1.39" />
-'   <param name="delivery_speed" type="double" value="1.39" />    -->
-
-
-    <param name="desired_speed" type="double" value="8.0" />
-    <param name="parking_speed" type="double" value="3.0" />
-    <param name="static_obstacles_speed" type="double" value="5.0" />
-    <param name="backward_speed" type="double" value="5.0" />
-'   <param name="delivery_speed" type="double" value="5.0" />
+'   <param name="delivery_speed" type="double" value="1.39" />   
     <!-- Static Obstacle Params -->
     <param name="distance_gap" type="double" value="1.5" />
     <param name="threshold_range" type="double" value="6.0" />
