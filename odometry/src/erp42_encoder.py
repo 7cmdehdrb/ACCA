@@ -32,7 +32,7 @@ class control():
         ETX1 = 10
         ALIVE = 0
 
-        self.doPIControl = True
+        self.doPIControl = rospy.get_param("doPIControl", False)
 
         self.stanley_control = stanleyMsg()
         self.feedbackMsg = encoderMsg()
@@ -181,6 +181,9 @@ class control():
         """
         GEAR = 2 if SPEED >= 0.0 else 0
 
+        if self.feedbackMsg.AorM == 0:
+            return
+
         if self.doPIControl is True:
 
             current_speed = self.mps2kph(self.feedbackMsg.speed)    # kph
@@ -277,7 +280,7 @@ if __name__ == "__main__":
 
         # print(sp, st, br)
 
-        mycar.send_data(SPEED=12.0, STEER=st, BRAKE=br, GEAR=2)
+        mycar.send_data(SPEED=sp, STEER=st, BRAKE=br, GEAR=2)
 
         rate.sleep()
 

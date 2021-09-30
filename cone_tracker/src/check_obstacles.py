@@ -37,16 +37,18 @@ class Laser(object):
         partitionC = 0
         partitionD = 0
 
+        DEG = 10
+
         for i in range(len(self.ranges)):
             TF = self.ranges[i]
             if TF != 0 and TF <= self.threshold_range:
-                if i >= 0 and i < 180 - (15 * 2):
+                if i >= 0 and i < 180 - (DEG * 2):
                     partitionA = 1
-                if i >= 180 - (15 * 2) and i < 180:
+                if i >= 180 - (DEG * 2) and i < 180:
                     partitionB = 1
-                if i >= 180 and i < 180 + (15 * 2):
+                if i >= 180 and i < 180 + (DEG * 2):
                     partitionC = 1
-                if i >= 180 + (15 * 2) and i < 361:
+                if i >= 180 + (DEG * 2) and i < 361:
                     partitionD = 1
         self.part_fin = [partitionA, partitionB, partitionC, partitionD]
 
@@ -114,7 +116,7 @@ if __name__ == "__main__":
 
     laser = Laser(publisher=pub)
 
-    r = rospy.Rate(50.0)
+    r = rospy.Rate(100.0)
     while not rospy.is_shutdown():
         laser.main()
         r.sleep()

@@ -1,0 +1,44 @@
+<launch>
+
+    <!-- Param --> 
+
+    <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
+    <param name="odometry_topic" type="str" value="/erp42_fusion_odometry" />
+    
+    <param name="cone_speed" type="double" value="8.0" />
+    <param name="cone_offset" type="double" value="1.35" />
+    <param name="max_steer" type="double" value="30.0" />
+
+
+    <!-- lms1xx -->
+    <node pkg="lms1xx" type="LMS1xx_node" name="lms1xx" output="screen">
+        <param name="sensor_param" value="param_value" />
+    </node>
+    <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+        <rosparam command="load" file="$(find laser_filters)/my_laser_config.yaml" />
+    </node>
+    <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
+    
+    <!-- IMU -->
+
+    <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
+        <arg name="port" value="/dev/ttyUSB1" />
+    </include>
+
+    <!-- Cone Tracker -->
+
+    <node pkg="cone_tracker" type="dbscan_right.py" name="dbscan"/>      
+    <node pkg="cone_tracker" type="cone_to_track.py" name="cone_to_track"/>
+    <node pkg="cone_tracker" type="waypointsmaker_pp_right.py" name="waypointsmaker" output="screen"/>
+
+    <!-- Odometry -->
+    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
+    <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
+    <node name="erp42_odometry" pkg="odometry" type="erp42_fusion_odometry.py" />
+    
+
+    <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch">
+        <arg name="rvizconfig" value="/home/acca/catkin_ws/src/ACCA/cone_tracker/dddd.rviz" />
+    </include>
+    
+</launch>
