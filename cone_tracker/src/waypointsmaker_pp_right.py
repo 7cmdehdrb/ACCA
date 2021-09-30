@@ -4,15 +4,13 @@
 import sys
 import rospy
 import tf
-from vehicle_msgs.msg import TrackCone, Command, Waypoint, WaypointsArray
-from vehicle_msgs.msg import Track
-from visualization_msgs.msg import Marker
-from visualization_msgs.msg import MarkerArray
-from nav_msgs.msg import Path
 import math as m
-from geometry_msgs.msg import PoseArray,Pose, PoseStamped
 import numpy as np
+from visualization_msgs.msg import Marker, MarkerArray
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseArray,Pose, PoseStamped
 from path_planner.msg import stanleyMsg
+from vehicle_msgs.msg import TrackCone, Command, Waypoint, WaypointsArray, Track
 from nav_msgs.msg import Odometry, Path
 # from state import State
 
@@ -21,7 +19,7 @@ ODOMETRY_TOPIC = rospy.get_param("/odometry_topic", "/odom")
 
 
 try:
-    sys.path.insert(0,"/home/acca/catkin_ws/src" + "/ACCA/utils")
+    sys.path.insert(0, str(ACCA_FOLDER) + "/utils")
     # from cubic_spline_planner import calc_spline_course
     from state import State
 
