@@ -22,7 +22,7 @@
     <!-- IMU -->
 
     <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
-        <arg name="port" value="/dev/ttyUSB1" />
+        <arg name="port" value="/dev/ttyUSB2" />
     </include>
 
     <!-- Cone Tracker -->
@@ -32,7 +32,7 @@
     <node pkg="cone_tracker" type="waypointsmaker_pp_right.py" name="waypointsmaker" output="screen"/>
 
     <!-- Odometry -->
-    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
+    <param name="erp_port" type="str" value="/dev/ttyUSB3" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
     <node name="erp42_odometry" pkg="odometry" type="erp42_fusion_odometry.py" />
     

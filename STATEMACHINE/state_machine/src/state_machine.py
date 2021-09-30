@@ -107,8 +107,9 @@ class Machine():
         self.parking_node = Parking(
             state=self.state, cmd_msg=self.cmd_msg, cmd_publisher=self.cmd_pub)
 
-        self.parking_node.stanley.k = 0.15
+        self.parking_node.stanley.k = 0.5
         self.parking_node.stanley.hdr_ratio = 1.0
+        # self.parking_node.stanley.hdr_ratio = 0.8
 
         """ PATH SWITCHER """
 

@@ -181,8 +181,8 @@ class control():
         """
         GEAR = 2 if SPEED >= 0.0 else 0
 
-        if self.feedbackMsg.AorM == 0:
-            return
+        # if self.feedbackMsg.AorM == 0:
+        #     return
 
         if self.doPIControl is True:
 

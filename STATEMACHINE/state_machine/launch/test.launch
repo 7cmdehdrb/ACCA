@@ -28,7 +28,7 @@
     <param name="errTolerance_HDR" type="double" value="0.1" />
     <param name="errTolerance_CTR" type="double" value="0.02" />
     <param name="switching_c_gain" type="double" value="0.8" />
-    <param name="switcher_path" type="str" value="ssu_switcher" />
+    <param name="switcher_path" type="str" value="ssu_switcher2" />
     <!-- Parking Params -->
     <param name="parking_area" type="str" value="ssu_parking2.csv" />
     <param name="parking_path" type="str" value="ssu_parking2" />
@@ -45,7 +45,7 @@
     
     <!-- IMU -->
     <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
-        <arg name="port" value="/dev/ttyUSB0" />
+        <arg name="port" value="/dev/ttyUSB2" />
     </include>
     
     <!-- LiDAR -->
@@ -53,12 +53,12 @@
     <node name="lms1xx" pkg="lms1xx" type="LMS1xx_node" />
     <include file="$(find laser_filters)/my_laser_cloud_filter.launch"></include>
     <node pkg="tf" type="static_transform_publisher" name="laser_pub" args="0.52 -0.2 0.0 0.0 0.0 0.0 base_link laser 10" />
-    <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include>
+    <!-- <include file="$(find adaptive_clustering)/launch/adaptive_clustering.launch"></include> -->
         
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <param name="erp_port" type="str" value="/dev/ttyUSB1" />
+    <param name="erp_port" type="str" value="/dev/ttyUSB3" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
     <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->

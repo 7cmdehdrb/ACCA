@@ -77,8 +77,8 @@ except ImportError as ie:
 if __name__ == "__main__":
     rospy.init_node("test")
 
-    l0 = LoadPose("ssu_parking20.csv")
-    l1 = LoadPose("ssu_parking21.csv")
+    l0 = LoadPose("ssu_switcher20.csv")
+    l1 = LoadPose("ssu_switcher21.csv")
     l2 = LoadPose("ssu_parking22.csv")
 
     pub0 = rospy.Publisher("static0", Path, queue_size=1)
@@ -89,5 +89,5 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         l0.pathPublish(pub0)
         l1.pathPublish(pub1)
-        l2.pathPublish(pub2)
+        # l2.pathPublish(pub2)
         r.sleep()
