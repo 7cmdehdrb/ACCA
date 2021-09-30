@@ -70,7 +70,7 @@ class PathSwitcher(object):
 
         """ TEST """
 
-        self.doTest()
+        # self.doTest()
 
     def appendPath(self, path):
         self.paths.append(path)
@@ -170,7 +170,7 @@ class PathSwitcher(object):
             now = rospy.Time.now()
             gap = (now - self.changeTime).to_sec()
 
-            if gap < 1.0:
+            if gap < 2.0:
                 return
 
             hdr = self.stanley.getHDR()
@@ -212,7 +212,7 @@ class PathSwitcher(object):
     def main(self):
         self.isDoingSwitching()
 
-        self.current_path.pathPublish(pub=self.path_pub)
+        # self.current_path.pathPublish(pub=self.path_pub)
 
         di, self.target_idx = self.stanley.stanley_control(
             self.state, self.current_path.cx, self.current_path.cy, self.current_path.cyaw, self.target_idx

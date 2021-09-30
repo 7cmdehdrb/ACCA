@@ -1,9 +1,9 @@
 <launch>
 
     <!-- Param --> 
-    <!-- <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" /> -->
-    <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
-    <param name="odometry_topic" type="str" value="/fake_odom" />
+    <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
+    <!-- <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" /> -->
+    <param name="odometry_topic" type="str" value="/odom" />
     <param name="global_path_file" type="str" value="odometry1.csv" />
     <param name="area_file_name" type="str" value="no_area.csv" />
     <!-- Stanley Control Params -->
@@ -11,7 +11,7 @@
     <param name="c_gain" type="double" value="0.15" />
     <param name="hdr_ratio" type="double" value="0.8" />
     <!-- Encoder Params -->
-    <param name="p_gain" type="double" value="1.0" />
+    <param name="p_gain" type="double" value="3.0" />
     <param name="i_err" type="double" value="0.05" />
     <param name="steer_offset" type="double" value="-1.2" />
     <!-- SPEED Settings -->
@@ -22,12 +22,12 @@
 '   <param name="delivery_speed" type="double" value="5.0" />
     <!-- Static Obstacle Params -->
     <param name="distance_gap" type="double" value="1.5" />
-    <param name="threshold_range" type="double" value="5.0" />
+    <param name="threshold_range" type="double" value="6.0" />
     <!-- Path Switcher Params -->
-    <param name="errTolerance_HDR" type="double" value="0.05" />
-    <param name="errTolerance_CTR" type="double" value="0.01" />
-    <param name="switching_c_gain" type="double" value="1.5" />
-    <param name="switcher_path" type="str" value="ssu_switcher" />
+    <param name="errTolerance_HDR" type="double" value="0.1" />
+    <param name="errTolerance_CTR" type="double" value="0.02" />
+    <param name="switching_c_gain" type="double" value="0.8" />
+    <param name="switcher_path" type="str" value="ssu_switcher2" />
     <!-- Parking Params -->
     <param name="parking_area" type="str" value="parking.csv" />
     <param name="parking_path" type="str" value="parking_path" />
@@ -44,7 +44,7 @@
     
     <!-- IMU -->
     <include file="$(find xsens_mti_driver)/launch/xsens_mti_node.launch" >
-        <arg name="port" value="/dev/ttyUSB1" />
+        <arg name="port" value="/dev/ttyUSB0" />
     </include>
     
     <!-- LiDAR -->
@@ -57,7 +57,7 @@
     <!-- Sensors end -->
     
     <!-- Odometry -->
-    <param name="erp_port" type="str" value="/dev/ttyUSB0" />
+    <param name="erp_port" type="str" value="/dev/ttyUSB1" />
     <node name="erp42_encoder" pkg="odometry" type="erp42_encoder.py" />
     <node name="erp42_odometry" pkg="odometry" type="erp42_odometry.py" />
     <!-- <node name="fake_odometry" pkg="odometry" type="fakeOdometry.py" /> -->
@@ -83,7 +83,7 @@
 
     <!-- Model -->
     <include file="$(find erp42_vehicle_rviz)/launch/erp42_vehicle_rviz.launch">
-        <arg name="rvizconfig" value="/home/acca/model.rviz" />
+        <arg name="rvizconfig" value="/home/acca/ssu.rviz" />
     </include>
 
     <!-- <node pkg="tf" type="static_transform_publisher" name="map_pub" args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 10" /> -->

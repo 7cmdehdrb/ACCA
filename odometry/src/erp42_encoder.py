@@ -277,7 +277,7 @@ if __name__ == "__main__":
 
         # print(sp, st, br)
 
-        mycar.send_data(SPEED=12.0, STEER=st, BRAKE=br, GEAR=2)
+        mycar.send_data(SPEED=sp, STEER=st, BRAKE=br, GEAR=2)
 
         rate.sleep()
 

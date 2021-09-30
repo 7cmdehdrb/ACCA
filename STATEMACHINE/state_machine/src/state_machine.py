@@ -116,7 +116,7 @@ class Machine():
             state=self.state, cmd_pub=self.cmd_pub, cmd_msg=self.cmd_msg, file_name=SWITCHER_PATH)
 
         # self.parking_node.stanley.k = 0.0
-        # self.parking_node.stanley.hdr_ratio = 0.0
+        self.parking_node.stanley.hdr_ratio = 1.0
 
         """ DELIVERY """
 
@@ -211,7 +211,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
 
         # print(machine.Mode)
-        machine.global_stanley_node.main()
+        # machine.global_stanley_node.main()
         machine.global_stanley_node.doPublishingMsg = False
 
         if machine.Mode == 0:
