@@ -7,6 +7,7 @@ import csv
 import tf
 import math as m
 import numpy as np
+import time as t
 import threading
 from std_msgs.msg import Int32MultiArray, Empty
 from geometry_msgs.msg import PoseArray, Pose, Polygon, Point32, PoseStamped
@@ -98,6 +99,8 @@ class CarYN(object):
         self.boxes = []
         self.obstacles = []
         self.parkspace = []
+
+        self.deleteFlag = True
 
         self.tf_node = tf.TransformListener()
 
@@ -281,6 +284,22 @@ class CarYN(object):
 
         rospy.loginfo("SAVING FINISHED")
 
+    def deleteOne(self):
+        while not rospy.is_shutdown():
+            if self.deleteFlag is True:
+                rospy.wait_for_message("/delete_area", Empty)
+                rospy.loginfo("DELETE LATEST POINT... PLZ WAIT")
+
+                self.boxes.pop()
+
+                self.deleteFlag = False
+
+                t.sleep(5.0)
+
+                self.deleteFlag = True
+
+                rospy.loginfo("SUCCESS")
+
     def loadParking(self):
         output_file_path = rospkg.RosPack().get_path(
             'parking')+"/saved_data/" + PARKING_AREA_FILE
@@ -325,8 +344,11 @@ if __name__ == "__main__":
         rospy.loginfo("RUNNING SAVE MODE")
         rospy.Subscriber("/move_base_simple/goal", PoseStamped,
                          callback=caryn.parkingPositionCallback)
-        th = threading.Thread(target=caryn.saveParking)
-        th.start()
+
+        th1 = threading.Thread(target=caryn.saveParking)
+        th2 = threading.Thread(target=caryn.deleteOne)
+        th1.start()
+        th2.start()
 
         lp = LoadPose(file_name="kcity_parking2.csv")
         tpub = rospy.Publisher("test_parking", Path, queue_size=10)

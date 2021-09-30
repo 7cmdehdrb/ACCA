@@ -1,8 +1,8 @@
 <launch>
 
     <!-- Parking Params -->
-        <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src/ACCA" />
-    <param name="parking_area" type="str" value="k_parking2.csv" />
+        <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" />
+    <param name="parking_area" type="str" value="ssu_parking2.csv" />
     <param name="parking_path" type="str" value="kcity_parking" />
     <param name="save_parking" type="bool" value="true" />
     
@@ -29,7 +29,7 @@
 
     <!-- Localization -->
     <include file="$(find hdl_localization)/launch/hdl_localization.launch">
-        <arg name="map_file" value="$(find hdl_localization)/data/KCityMap.pcd" /> 
+        <arg name="map_file" value="$(find hdl_localization)/data/Globalmap2.pcd" /> 
     </include>
 
     <!-- Model -->
