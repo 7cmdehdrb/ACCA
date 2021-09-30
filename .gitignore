@@ -240,6 +240,7 @@ CATKIN_IGNORE
 # *.txt
 # *.wpd
 # *.wps
+TOKEN.txt
 
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,python,ros
