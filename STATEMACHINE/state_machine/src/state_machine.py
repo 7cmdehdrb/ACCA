@@ -23,8 +23,8 @@ DYNAMIC_SPEED = rospy.get_param("/dynamic_speed", 1.0)
 BACKWARD_SPEED = rospy.get_param("/backward_speed", 1.0)
 
 WB = 1.040
-PARKING_WAIT_TIME = 5
-DELIVERY_WAIT_TIME = 5
+PARKING_WAIT_TIME = 12
+DELIVERY_WAIT_TIME = 7
 
 
 try:
@@ -200,14 +200,14 @@ if __name__ == '__main__':
 
     rate = MyRate(hz=50)
 
-    while not rospy.is_shutdown():
+    # while not rospy.is_shutdown():
 
-        if machine.state.x == 0.0 and machine.state.y == 0.0 and machine.state.yaw == 0.0 and machine.state.v == 0.0:
-            pass
-        else:
-            break
+    #     if machine.state.x == 0.0 and machine.state.y == 0.0 and machine.state.yaw == 0.0 and machine.state.v == 0.0:
+    #         pass
+    #     else:
+    #         break
 
-        rate.sleep()
+    #     rate.sleep()
 
     while not rospy.is_shutdown():
 
@@ -217,8 +217,8 @@ if __name__ == '__main__':
 
         if machine.Mode == 0:
             # WILL USE LANE KEEPING
-            # machine.global_stanley_node.doPublishingMsg = True
-            pass
+            machine.global_stanley_node.doPublishingMsg = True
+            # pass
 
         if machine.Mode == 1:
             machine.global_stanley_node.doPublishingMsg = True
@@ -295,38 +295,3 @@ if __name__ == '__main__':
         print("mode: " + str(machine.Mode))
 
         rate.sleep()
-
-
-"""
-
-# Static Obstacle Mode
-        # elif machine.Mode == 2:
-        #     machine.static_ob_node.start_point = [
-        #         machine.state.x, machine.state.y]
-
-        #     while not rospy.is_shutdown():
-
-        #         find_goal = machine.static_ob_node.main()
-
-        #         if find_goal is not True:
-        #             # print("NO PATH!")
-        #             machine.global_stanley_node.main()
-
-        #         if machine.Mode != 2:
-        #             break
-
-        #         rate.sleep()
-
-        # Dynamic Obstacle Mode
-        # elif machine.Mode == 3:
-        #     machine.global_stanley_node.setDesiredSpeed(DYNAMIC_SPEED)
-        #     machine.estop_node.main()
-
-        #     if machine.state.EStop is True:
-        #         machine.doEStop()
-        #     else:
-        #         machine.global_stanley_node.main()
-
-        #     machine.global_stanley_node.setDesiredSpeed(GLOBAL_SPEED)
-
-"""

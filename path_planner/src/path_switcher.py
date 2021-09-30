@@ -70,7 +70,7 @@ class PathSwitcher(object):
 
         """ TEST """
 
-        # self.doTest()
+        self.doTest()
 
     def appendPath(self, path):
         self.paths.append(path)

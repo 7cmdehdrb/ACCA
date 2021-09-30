@@ -49,7 +49,6 @@ class Goal(object):
 
         dot = np.dot(car_VEC, goal_VEC)
 
-
         if dot < 0.0:
             return True
 
