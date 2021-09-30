@@ -5,7 +5,7 @@
     <!-- <param name="acca_folder" type="str" value="/home/acca/catkin_ws/src" /> -->
     <param name="odometry_topic" type="str" value="/odom" />
     <param name="global_path_file" type="str" value="odometry1.csv" />
-    <param name="area_file_name" type="str" value="ssu_area.csv" />
+    <param name="area_file_name" type="str" value="ssu_area2.csv" />
     <!-- Stanley Control Params -->
     <param name="initial_idx" type="int" value="0" />
     <param name="c_gain" type="double" value="0.18" />
@@ -30,12 +30,12 @@
     <param name="switching_c_gain" type="double" value="0.8" />
     <param name="switcher_path" type="str" value="ssu_switcher" />
     <!-- Parking Params -->
-    <param name="parking_area" type="str" value="parking.csv" />
-    <param name="parking_path" type="str" value="parking_path" />
+    <param name="parking_area" type="str" value="ssu_parking2.csv" />
+    <param name="parking_path" type="str" value="ssu_parking2" />
     <param name="backward_distance" type="double" value="6.0" />
     <!-- DELIVERY PARAMS -->
-    <param name="delivery_A" type="str" value="ssu_deliveryA.csv" />
-    <param name="delivery_B" type="str" value="ssu_deliveryB.csv" />
+    <param name="delivery_A" type="str" value="ssu_deliveryA2.csv" />
+    <param name="delivery_B" type="str" value="ssu_deliveryB2.csv" />
     <!-- ETC -->
     <param name="max_steer" type="double" value="28.0" />
     <param name="save_parking" type="bool" value="false" />
