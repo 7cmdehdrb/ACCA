@@ -85,6 +85,7 @@ class DBSCAN(object):
                 j = self.neighbors[k]
             except:
                 pass
+            
             if self.visited[j] != True:
                 self.visited[j] = True
 

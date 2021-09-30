@@ -155,8 +155,8 @@ class Track2Waypoints(object):
             unit = vector/norm
 
 
-            data1 = [maps[min1_index].x + 1.3*unit[0], maps[min1_index].y+1.3*unit[1]]
-            data2 = [maps[min2_index].x + 1.3*unit[0], maps[min2_index].y+1.3*unit[1]]
+            data1 = [maps[min1_index].x + 1.35*unit[0], maps[min1_index].y+1.35*unit[1]]
+            data2 = [maps[min2_index].x + 1.35*unit[0], maps[min2_index].y+1.35*unit[1]]
             
             # print(x_vec)
             # print(vector)
@@ -203,7 +203,7 @@ class Track2Waypoints(object):
 
     def set_steering(self):
         if self.cx:
-            dx, dy =0,0
+            dx, dy = 0,0
             dist = []
             for i in range(len(self.cx)):
                 dx = self.cx[i] - self.state.x
@@ -216,6 +216,7 @@ class Track2Waypoints(object):
                 return self.delta_ref
             
             self.Ld = sorted_dist[0]
+
             if self.Ld > 2.0:
                 alpha = m.atan((self.cy[idx] - self.state.y)/(self.cx[idx] - self.state.x)) - self.state.yaw  # + self.state.yaw
                 # alpha = m.asin(dy/self.Ld)  # if error -- change dx to dy
@@ -269,7 +270,7 @@ if __name__ == "__main__":
     cmd_msg = stanleyMsg()
 
     cmd_pub = rospy.Publisher("Control_msg", stanleyMsg, queue_size=1)
-    wp = Track2Waypoints(state=state,cmd_msg=cmd_msg, cmd_pub=cmd_pub, speed=10.0)
+    wp = Track2Waypoints(state=state,cmd_msg=cmd_msg, cmd_pub=cmd_pub, speed=8.0)
     test_pub = rospy.Publisher("waypoints", PoseArray, queue_size=1)
     track_pub = rospy.Publisher("track_re",PoseArray, queue_size=1)
     
